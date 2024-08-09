@@ -86,7 +86,7 @@ func (s *Server) handleRawMessage(msg []byte) error {
 
 func main() {
 	srv := NewServer(Config{
-		ListenAddress: ":8000",
+		ListenAddress: "127.0.0.1:8000",
 	})
 	log.Fatal(srv.Start())
 }

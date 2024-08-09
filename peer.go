@@ -25,6 +25,9 @@ func (p *Peer) readLoop() error {
 		}
 		msgBuf := make([]byte, n)
 		copy(msgBuf, buf[:n])
+
+		p.conn.Write([]byte("+OK\r\n"))
+
 		p.msgCh <- msgBuf
 	}
 }
