@@ -1,9 +1,10 @@
 package server
 
 import (
-	"fmt"
 	"log/slog"
 	"net"
+
+	"github.com/nahK994/ScratchCache/handlers"
 )
 
 type Config struct {
@@ -33,7 +34,7 @@ func (s *Server) loop() {
 	for {
 		select {
 		case rawMsg := <-s.msgCh:
-			if err := s.handleRawMessage(rawMsg); err != nil {
+			if err := handlers.HandleCommand(rawMsg); err != nil {
 				slog.Error("raw message error", "err", s.ListenAddress)
 			}
 		case <-s.quitCh:
@@ -76,9 +77,4 @@ func (s *Server) handleConn(conn net.Conn) {
 	if err := peer.readLoop(); err != nil {
 		slog.Error("peer read error", "err", err, "remoteAddr", conn.RemoteAddr())
 	}
-}
-
-func (s *Server) handleRawMessage(msg []byte) error {
-	fmt.Println(string(msg))
-	return nil
 }
