@@ -3,8 +3,6 @@ package server
 import (
 	"log/slog"
 	"net"
-
-	"github.com/nahK994/ScratchCache/handlers"
 )
 
 type Config struct {
@@ -13,45 +11,27 @@ type Config struct {
 
 type Server struct {
 	Config
-	peers     map[*Peer]bool
-	ln        net.Listener
-	addPeerCh chan *Peer
-	quitCh    chan struct{}
-	msgCh     chan []byte
+	peers map[*Peer]bool
+	ln    net.Listener
 }
 
 func NewServer(cfg Config) *Server {
 	return &Server{
-		Config:    cfg,
-		peers:     make(map[*Peer]bool),
-		addPeerCh: make(chan *Peer),
-		quitCh:    make(chan struct{}),
-		msgCh:     make(chan []byte),
+		Config: cfg,
+		peers:  make(map[*Peer]bool),
 	}
 }
 
-func (s *Server) loop() {
-	for {
-		select {
-		case rawMsg := <-s.msgCh:
-			if err := handlers.HandleCommand(rawMsg); err != nil {
-				slog.Error("raw message error", "err", s.ListenAddress)
-			}
-		case <-s.quitCh:
-			return
-		case peer := <-s.addPeerCh:
-			s.peers[peer] = true
-		}
-	}
-}
-
-func (s *Server) acceptLoop() error {
+func (s *Server) acceptConn() error {
 	for {
 		conn, err := s.ln.Accept()
 		if err != nil {
 			return err
 		}
-		go s.handleConn(conn)
+
+		peer := NewPeer(conn)
+		s.peers[peer] = true
+		go peer.readConn()
 	}
 }
 
@@ -62,19 +42,9 @@ func (s *Server) Start() error {
 	}
 
 	s.ln = ln
-
-	go s.loop()
+	defer ln.Close()
 
 	slog.Info("server running", "listenAddr", s.ListenAddress)
 
-	return s.acceptLoop()
-}
-
-func (s *Server) handleConn(conn net.Conn) {
-	peer := NewPeer(conn, s.msgCh)
-	s.addPeerCh <- peer
-	slog.Info("new peer connected", "remoteAddr", conn.RemoteAddr())
-	if err := peer.readLoop(); err != nil {
-		slog.Error("peer read error", "err", err, "remoteAddr", conn.RemoteAddr())
-	}
+	return s.acceptConn()
 }

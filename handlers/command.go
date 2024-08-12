@@ -8,7 +8,7 @@ import (
 
 func HandleCommand(msg []byte) error {
 	command := string(msg)
-	// fmt.Println(command)
+	fmt.Println(command)
 	commandSegments, err := parseCommand(command)
 	if err != nil {
 		return err
