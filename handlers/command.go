@@ -6,8 +6,7 @@ import (
 	"github.com/nahK994/ScratchCache/utils"
 )
 
-func HandleCommand(msg []byte) error {
-	command := string(msg)
+func HandleCommand(command string) error {
 	fmt.Println(command)
 	commandSegments, err := parseCommand(command)
 	if err != nil {
