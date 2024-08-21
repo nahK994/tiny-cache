@@ -1,4 +1,4 @@
-module github.com/nahK994/ScratchCache
+module github.com/nahK994/TinyCache
 
 go 1.22.4
 

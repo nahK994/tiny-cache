@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/nahK994/ScratchCache/utils"
+	"github.com/nahK994/TinyCache/utils"
 )
 
 func parseCommand(str string) ([]string, error) {

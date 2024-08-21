@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 
-	"github.com/nahK994/ScratchCache/utils"
+	"github.com/nahK994/TinyCache/utils"
 )
 
 func HandleCommand(command string) error {

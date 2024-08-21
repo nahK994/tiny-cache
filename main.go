@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/nahK994/ScratchCache/handlers"
 	"github.com/nahK994/TCPickle/models"
 	"github.com/nahK994/TCPickle/server"
+	"github.com/nahK994/TinyCache/handlers"
 )
 
 func main() {
