@@ -17,8 +17,8 @@ func NewPeer(conn net.Conn) *Peer {
 }
 
 func (p *Peer) readConn() {
-	buf := make([]byte, 1024)
 	for {
+		buf := make([]byte, 1024)
 		n, err := p.conn.Read(buf)
 		if err != nil {
 			slog.Error("peer read error", "err", err, "remoteAddr", p.conn.RemoteAddr())
@@ -27,6 +27,6 @@ func (p *Peer) readConn() {
 		}
 
 		fmt.Println(string(buf[:n]))
-		p.conn.Write([]byte("+Ok\r\n"))
+		p.conn.Write([]byte("+OK\r\n"))
 	}
 }
