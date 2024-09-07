@@ -1,4 +1,4 @@
-## SimpleCache
+## SimpleCache - A Lightweight Cache
 
 **SimpleCache** is an efficient, lightweight caching system designed to provide easy and fast data storage and retrieval. This project is currently in progress and open for contributions!
 
