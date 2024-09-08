@@ -7,26 +7,29 @@ import (
 )
 
 type Peer struct {
-	conn net.Conn
+	clientAddr string
+	conn       net.Conn
 }
 
-func NewPeer(conn net.Conn) *Peer {
+func NewPeer(addr string, conn net.Conn) *Peer {
 	return &Peer{
-		conn: conn,
+		clientAddr: addr,
+		conn:       conn,
 	}
 }
 
 func (p *Peer) readConn() {
+	slog.Info("Paired with", "client", p.clientAddr)
+	buf := make([]byte, 1024)
 	for {
-		buf := make([]byte, 1024)
 		n, err := p.conn.Read(buf)
 		if err != nil {
-			slog.Error("peer read error", "err", err, "remoteAddr", p.conn.RemoteAddr())
+			slog.Error("peer read error", "err", err, "client", p.clientAddr)
 			p.conn.Close()
 			return
 		}
 
-		fmt.Println(string(buf[:n]))
+		fmt.Print(string(buf[:n]))
 		p.conn.Write([]byte("+OK\r\n"))
 	}
 }

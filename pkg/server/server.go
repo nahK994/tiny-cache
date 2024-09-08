@@ -5,30 +5,30 @@ import (
 	"net"
 )
 
-type Config struct {
+type Server struct {
 	listenAddress string
 	ln            net.Listener
 }
 
-func Initiate(listenAddress string) *Config {
-	return &Config{
+func InitiateServer(listenAddress string) *Server {
+	return &Server{
 		listenAddress: listenAddress,
 	}
 }
 
-func (s *Config) acceptConn() error {
+func (s *Server) acceptConn() error {
 	for {
 		conn, err := s.ln.Accept()
 		if err != nil {
 			return err
 		}
 
-		peer := NewPeer(conn)
+		peer := NewPeer(conn.RemoteAddr().String(), conn)
 		go peer.readConn()
 	}
 }
 
-func (s *Config) Start() error {
+func (s *Server) Start() error {
 	ln, err := net.Listen("tcp", s.listenAddress)
 	if err != nil {
 		return err
