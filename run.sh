@@ -1,9 +1,12 @@
-echo "1) start process"
-echo "2) kill process"
+echo "1) Start server"
+echo "1) Start client"
+echo "2) Kill process"
 
 read -p "Type: " cmd
 if [[ $cmd == 1 ]]; then
-   go run cmd/main.go
+    go run cmd/server/main.go
 elif [[ $cmd == 2 ]]; then
+    go run cmd/client/main.go
+elif [[ $cmd == 3 ]]; then
     sudo kill -9 $(sudo lsof -t -i:8000)
 fi
