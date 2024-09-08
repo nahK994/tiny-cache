@@ -10,7 +10,7 @@ type Peer struct {
 	conn       net.Conn
 }
 
-func NewPeer(addr string, conn net.Conn) *Peer {
+func newPeer(addr string, conn net.Conn) *Peer {
 	return &Peer{
 		clientAddr: addr,
 		conn:       conn,

@@ -23,7 +23,7 @@ func (s *Server) acceptConn() error {
 			return err
 		}
 
-		peer := NewPeer(conn.RemoteAddr().String(), conn)
+		peer := newPeer(conn.RemoteAddr().String(), conn)
 		go peer.handleConn()
 	}
 }

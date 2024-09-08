@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/nahK994/SimpleCache/pkg/client"
+	"github.com/nahK994/SimpleCache/connection/client"
 )
 
 func main() {
