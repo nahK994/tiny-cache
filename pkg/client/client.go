@@ -2,6 +2,7 @@ package client
 
 import (
 	"bufio"
+	"fmt"
 	"log/slog"
 	"net"
 	"os"
@@ -9,6 +10,7 @@ import (
 
 type Client struct {
 	dialingAddr string
+	conn        net.Conn
 }
 
 func InitClient(addr string) *Client {
@@ -22,13 +24,25 @@ func (c *Client) Start() error {
 	if err != nil {
 		return err
 	}
+	c.conn = conn
 	defer conn.Close()
 
 	slog.Info("Paired with", "server", c.dialingAddr)
+	return c.handleConn()
+}
+
+func (c *Client) handleConn() error {
+	buf := make([]byte, 1024)
 	userReader := bufio.NewReader(os.Stdin)
 
 	for {
 		str, _ := userReader.ReadString('\n')
-		conn.Write([]byte(str))
+		c.conn.Write([]byte(str))
+
+		n, err := c.conn.Read(buf)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(buf[:n]))
 	}
 }

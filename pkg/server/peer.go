@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"log/slog"
 	"net"
 )
@@ -18,7 +17,7 @@ func NewPeer(addr string, conn net.Conn) *Peer {
 	}
 }
 
-func (p *Peer) readConn() {
+func (p *Peer) handleConn() {
 	slog.Info("Paired with", "client", p.clientAddr)
 	buf := make([]byte, 1024)
 	for {
@@ -29,7 +28,7 @@ func (p *Peer) readConn() {
 			return
 		}
 
-		fmt.Print(string(buf[:n]))
+		slog.Info("request from client", p.clientAddr, string(buf[:n-1]))
 		p.conn.Write([]byte("+OK\r\n"))
 	}
 }
