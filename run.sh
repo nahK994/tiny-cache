@@ -1,6 +1,6 @@
 echo "1) Start server"
-echo "1) Start client"
-echo "2) Kill process"
+echo "2) Start client"
+echo "3) Kill process"
 
 read -p "Type: " cmd
 if [[ $cmd == 1 ]]; then
