@@ -1,6 +1,6 @@
-## SimpleCache - A Lightweight Cache
+## TinyCache - A Lightweight Cache
 
-**SimpleCache** is an efficient, lightweight caching system designed to provide easy and fast data storage and retrieval. This project is currently in progress and open for contributions!
+**TinyCache** is an efficient, lightweight caching system designed to provide easy and fast data storage and retrieval. This project is currently in progress and open for contributions!
 
 ### Roadmap
 
@@ -27,7 +27,7 @@ We welcome contributions of all kinds! Whether you're fixing bugs, adding new fe
 2. **Clone your forked repository** to your local machine:
 
    ```bash
-   git clone https://github.com/nahK994/SimpleCache.git
+   git clone https://github.com/nahK994/TinyCache.git
    ```
    
 4. **Create a new branch** for your feature or fix:
