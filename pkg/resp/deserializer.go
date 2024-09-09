@@ -1,5 +1,7 @@
 package resp
 
+import "errors"
+
 type segmentLength int
 type nextIndex int
 type segment string
@@ -53,5 +55,8 @@ func Deserializer(cmd string) ([]string, error) {
 		numSegments--
 	}
 
+	if index != len(cmd) {
+		return nil, errors.New("malformed error")
+	}
 	return segments, nil
 }
