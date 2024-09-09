@@ -1,6 +1,6 @@
 package resp
 
-import "github.com/nahK994/SimpleCache/pkg/errors"
+import "github.com/nahK994/TinyCache/pkg/errors"
 
 type segmentLength int
 type nextIndex int

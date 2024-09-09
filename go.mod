@@ -1,3 +1,3 @@
-module github.com/nahK994/SimpleCache
+module github.com/nahK994/TinyCache
 
 go 1.22.4

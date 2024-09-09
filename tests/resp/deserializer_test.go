@@ -3,7 +3,7 @@ package resp
 import (
 	"testing"
 
-	"github.com/nahK994/SimpleCache/pkg/resp"
+	"github.com/nahK994/TinyCache/pkg/resp"
 )
 
 type testCase struct {
