@@ -1,6 +1,6 @@
 package resp
 
-import "errors"
+import "github.com/nahK994/SimpleCache/pkg/errors"
 
 type segmentLength int
 type nextIndex int
@@ -56,7 +56,7 @@ func Deserializer(cmd string) ([]string, error) {
 	}
 
 	if index != len(cmd) {
-		return nil, errors.New("malformed error")
+		return nil, errors.MalformedErr{Msg: "Mal"}
 	}
 	return segments, nil
 }

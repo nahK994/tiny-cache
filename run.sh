@@ -14,7 +14,7 @@ elif [[ $cmd == 3 ]]; then
 elif [[ $cmd == 4 ]]; then
     sudo kill -9 $(sudo lsof -t -i:8000)
 elif [[ $cmd == 5 ]]; then
-    cd pkg/resp
+    cd tests/resp
     go test -v -cover
     cd ../..
 fi
