@@ -6,12 +6,12 @@ import (
 	"github.com/nahK994/TinyCache/pkg/resp"
 )
 
-type testCase struct {
+type deserializeTestCase struct {
 	input  string
 	output []string
 }
 
-var testCases = []testCase{
+var deserializeTestCases = []deserializeTestCase{
 	{
 		input:  "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$12\r\nvalue\r\nvalue\r\n",
 		output: []string{"SET", "key", "value\r\nvalue"},
@@ -64,7 +64,7 @@ var testCases = []testCase{
 
 // Test basic deserialization of a simple RESP command
 func TestDeserializer_Basic(t *testing.T) {
-	for _, item := range testCases {
+	for _, item := range deserializeTestCases {
 		respCmd := item.input
 		expected := item.output
 
@@ -87,7 +87,7 @@ func TestDeserializer_Basic(t *testing.T) {
 
 // Test deserialization with different segment lengths
 func TestDeserializer_VariedLength(t *testing.T) {
-	for _, item := range testCases {
+	for _, item := range deserializeTestCases {
 		respCmd := item.input
 		expected := item.output
 
