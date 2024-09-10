@@ -14,7 +14,5 @@ elif [[ $cmd == 3 ]]; then
 elif [[ $cmd == 4 ]]; then
     sudo kill -9 $(sudo lsof -t -i:8000)
 elif [[ $cmd == 5 ]]; then
-    cd tests/resp
-    go test -v -cover
-    cd ../..
+    go test -coverpkg=github.com/nahK994/TinyCache/pkg/resp tests/resp/* -v
 fi
