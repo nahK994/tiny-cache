@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+
+	"github.com/nahK994/TinyCache/pkg/handlers"
 )
 
 type Peer struct {
@@ -30,6 +32,11 @@ func (p *Peer) handleConn() {
 		}
 
 		fmt.Printf("%s> %s", p.clientAddr, string(buf[:n]))
-		p.conn.Write([]byte("+OK\r\n"))
+		resp, err := handlers.HandleCommand(string(buf[:n]))
+		if err != nil {
+			p.conn.Write([]byte(err.Error()))
+		} else {
+			p.conn.Write([]byte(resp))
+		}
 	}
 }
