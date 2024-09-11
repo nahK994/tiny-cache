@@ -31,6 +31,7 @@ type RESPCommands struct {
 	MSET     string
 	MGET     string
 	LRANGE   string
+	EXISTS   string
 }
 
 var respCommands = RESPCommands{
@@ -64,4 +65,21 @@ var respCommands = RESPCommands{
 	MSET:     "MSET",
 	MGET:     "MGET",
 	LRANGE:   "LRANGE",
+	EXISTS:   "EXISTS",
+}
+
+type ReplyType struct {
+	Int    rune
+	Bulk   rune
+	Error  rune
+	Array  rune
+	Status rune
+}
+
+var replyType ReplyType = ReplyType{
+	Int:    ':',
+	Bulk:   '$',
+	Array:  '*',
+	Error:  '-',
+	Status: '+',
 }
