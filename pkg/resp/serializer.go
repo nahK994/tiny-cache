@@ -18,12 +18,12 @@ func getCmdSegments(cmd string) []string {
 	return ans
 }
 
-func Serialize(cmd string) (string, error) {
+func Serialize(cmd string) string {
 	if cmd == "" {
-		return "*0\r\n", nil
+		return "*0\r\n"
 	}
 	if cmd == " " {
-		return "*1\r\n$1\r\n \r\n", nil
+		return "*1\r\n$1\r\n \r\n"
 	}
 
 	segments := getCmdSegments(cmd)
@@ -33,5 +33,5 @@ func Serialize(cmd string) (string, error) {
 		serializedCmd += ("$" + strconv.Itoa(len(seg)) + "\r\n" + seg + "\r\n")
 	}
 
-	return serializedCmd, nil
+	return serializedCmd
 }

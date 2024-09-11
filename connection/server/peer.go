@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log/slog"
 	"net"
 )
@@ -28,7 +29,7 @@ func (p *Peer) handleConn() {
 			return
 		}
 
-		slog.Info("request from client", p.clientAddr, string(buf[:n-1]))
+		fmt.Printf("%s> %s", p.clientAddr, string(buf[:n]))
 		p.conn.Write([]byte("+OK\r\n"))
 	}
 }

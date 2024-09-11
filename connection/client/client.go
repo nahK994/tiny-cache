@@ -3,9 +3,10 @@ package client
 import (
 	"bufio"
 	"fmt"
-	"log/slog"
 	"net"
 	"os"
+
+	"github.com/nahK994/TinyCache/pkg/resp"
 )
 
 type Client struct {
@@ -27,7 +28,8 @@ func (c *Client) Start() error {
 	c.conn = conn
 	defer conn.Close()
 
-	slog.Info("Paired with", "server", c.dialingAddr)
+	// slog.Info("Paired with", "server", c.dialingAddr)
+	fmt.Printf("Paired with server %s\n\n", c.dialingAddr)
 	return c.handleConn()
 }
 
@@ -36,8 +38,11 @@ func (c *Client) handleConn() error {
 	userReader := bufio.NewReader(os.Stdin)
 
 	for {
+		fmt.Printf("(%s) client-cli> ", c.conn.LocalAddr())
 		str, _ := userReader.ReadString('\n')
-		c.conn.Write([]byte(str))
+
+		serializedCmd := resp.Serialize(str[:len(str)-1])
+		c.conn.Write([]byte(serializedCmd))
 
 		n, err := c.conn.Read(buf)
 		if err != nil {
