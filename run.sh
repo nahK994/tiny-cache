@@ -1,7 +1,7 @@
 echo "1) Start server"
 echo "2) Start client"
 echo "3) Start playground"
-echo "4) Kill process"
+echo "4) Kill running server and client"
 echo "5) Run test"
 
 read -p "Type: " cmd
