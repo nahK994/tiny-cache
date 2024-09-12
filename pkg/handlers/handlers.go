@@ -16,10 +16,10 @@ var c *cache.Cache = cache.InitCache()
 func handleGET(segments []string) (string, error) {
 	replytype := utils.GetReplyTypes()
 	if len(segments) > 1 {
-		return "", errors.MalformedErr{Msg: "-ERR wrong number of arguments for 'GET' command\r\n"}
+		return "", errors.Err{Msg: "-ERR wrong number of arguments for 'GET' command\r\n", File: "handlers/handlers.go", Line: 19}
 	}
 	if !c.IsKeyExist(segments[0]) {
-		return "", errors.MalformedErr{Msg: "-Key not exists\r\n"}
+		return "", errors.Err{Msg: "-Key not exists\r\n", File: "handlers/handlers.go", Line: 22}
 	}
 
 	val := c.ReadCache(segments[0])
@@ -35,7 +35,7 @@ func handleGET(segments []string) (string, error) {
 		}
 		return resp, nil
 	default:
-		return "", errors.MalformedErr{Msg: "-Unknown datatype\r\n"}
+		return "", errors.Err{Msg: "-Unknown datatype\r\n", File: "handlers/handlers.go", Line: 38}
 	}
 }
 
@@ -50,7 +50,7 @@ func handleSET(segments []string) (string, error) {
 
 func handleKeyExist(segments []string) (string, error) {
 	if len(segments) > 1 || len(segments) < 1 {
-		return "", errors.MalformedErr{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n"}
+		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 53}
 	}
 
 	if c.IsKeyExist(segments[0]) {

@@ -1,9 +1,17 @@
 package errors
 
-type MalformedErr struct {
-	Msg string
+import "fmt"
+
+type Err struct {
+	Msg  string
+	File string
+	Line int
 }
 
-func (e MalformedErr) Error() string {
+func (e Err) Error() string {
 	return e.Msg
+}
+
+func (e Err) ErrorInfo() string {
+	return fmt.Sprintln("error found in", e.File, "from", e.Line)
 }
