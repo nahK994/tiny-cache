@@ -41,8 +41,14 @@ func (c *Client) handleConn() error {
 		fmt.Printf("(%s) client-cli> ", c.conn.LocalAddr())
 		str, _ := userReader.ReadString('\n')
 
-		serializedCmd := resp.Serialize(str[:len(str)-1])
-		c.conn.Write([]byte(serializedCmd))
+		serializedCmd, err := resp.Serialize(str[:len(str)-1])
+		var resp string
+		if err != nil {
+			resp = err.Error()
+		} else {
+			resp = serializedCmd
+		}
+		c.conn.Write([]byte(resp))
 
 		n, err := c.conn.Read(buf)
 		if err != nil {

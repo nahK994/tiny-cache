@@ -75,7 +75,7 @@ func HandleCommand(serializedCmd string) (string, error) {
 		return handleKeyExist(cmdSegments[1:])
 	default:
 		return fmt.Sprintln("Please use these commands:", strings.Join([]string{
-			respCmd.SET, respCmd.GET,
+			respCmd.SET, respCmd.GET, respCmd.EXISTS,
 		}, ", ")), nil
 	}
 }

@@ -1,37 +1,88 @@
 package resp
 
 import (
-	"strconv"
+	"fmt"
 	"strings"
+
+	"github.com/nahK994/TinyCache/pkg/errors"
+	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
 func getCmdSegments(cmd string) []string {
+	var words []string
 	temp := strings.Split(cmd, " ")
-	var ans []string
 	for _, ch := range temp {
 		if len(ch) == 0 {
 			continue
 		}
-		ans = append(ans, ch)
+		words = append(words, ch)
 	}
-
-	return ans
+	return words
 }
 
-func Serialize(cmd string) string {
-	if cmd == "" {
-		return "*0\r\n"
+func getRESPformat(segments []string) string {
+	serializedCmd := fmt.Sprintf("*%d\r\n", len(segments))
+	for i := 0; i < len(segments); i++ {
+		serializedCmd += fmt.Sprintf("$%d\r\n%s\r\n", len(segments[i]), segments[i])
 	}
-	if cmd == " " {
-		return "*1\r\n$1\r\n \r\n"
-	}
-
-	segments := getCmdSegments(cmd)
-	serializedCmd := "*" + strconv.Itoa(len(segments)) + "\r\n"
-
-	for _, seg := range segments {
-		serializedCmd += ("$" + strconv.Itoa(len(seg)) + "\r\n" + seg + "\r\n")
-	}
-
 	return serializedCmd
+}
+
+func getCommandName(cmd string) string {
+	seg := ""
+	for _, ch := range cmd {
+		if ch == ' ' {
+			break
+		}
+		seg += string(ch)
+	}
+
+	return seg
+}
+
+func processSETcommand(cmd string) (string, error) {
+	words := getCmdSegments(cmd)
+	if len(words) < 3 {
+		return "", errors.Err{Msg: "invalid SET command argument", File: "resp/serializer.go", Line: 34}
+	}
+
+	words = []string{words[0], words[1], strings.Join(words[2:], " ")}
+	return getRESPformat(words), nil
+}
+
+func processGETcommand(cmd string) (string, error) {
+	words := getCmdSegments(cmd)
+	if len(words) != 2 {
+		return "", errors.Err{Msg: "invalid GET command argument", File: "resp/serializer.go", Line: 47}
+	}
+
+	return getRESPformat(words), nil
+}
+
+func processEXISTScommand(cmd string) (string, error) {
+	words := getCmdSegments(cmd)
+	if len(words) != 2 {
+		return "", errors.Err{Msg: "invalid EXISTS command argument", File: "resp/serializer.go", Line: 56}
+	}
+
+	return getRESPformat(words), nil
+}
+
+func Serialize(cmd string) (string, error) {
+	respCmd := utils.GetRESPCommands()
+	var serializedCmd string
+
+	switch getCommandName(cmd) {
+	case respCmd.SET:
+		return processSETcommand(cmd)
+	case respCmd.GET:
+		return processGETcommand(cmd)
+	case respCmd.EXISTS:
+		return processEXISTScommand(cmd)
+	default:
+		fmt.Sprintln("Please use these commands:", strings.Join([]string{
+			respCmd.SET, respCmd.GET, respCmd.EXISTS,
+		}, ", "))
+	}
+	return serializedCmd, nil
 }

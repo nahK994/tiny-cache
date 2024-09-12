@@ -136,6 +136,10 @@ var deserializeTestCases = []deserializeTestCase{
 		input:  "*2\r\n$7\r\nINVALID\r\n$3\r\nkey\r\n",
 		output: []string{"INVALID", "key"},
 	},
+	{
+		input:  "*3\r\n$3\r\nSET\r\n$4\r\nname\r\n$10\r\nShomi Khan\r\n",
+		output: []string{"SET", "name", "Shomi Khan"},
+	},
 }
 
 var serializeTestCases = []serializeTestCase{
@@ -150,7 +154,7 @@ var serializeTestCases = []serializeTestCase{
 	},
 	{
 		input:  "SET name Shomi Khan",
-		output: "*4\r\n$3\r\nSET\r\n$4\r\nname\r\n$5\r\nShomi\r\n$4\r\nKhan\r\n",
+		output: "*3\r\n$3\r\nSET\r\n$4\r\nname\r\n$10\r\nShomi Khan\r\n",
 	},
 	{
 		input:  "",
