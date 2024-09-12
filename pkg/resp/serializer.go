@@ -36,7 +36,6 @@ func getCommandName(cmd string) string {
 		}
 		seg += string(ch)
 	}
-
 	return seg
 }
 
@@ -70,9 +69,8 @@ func processEXISTScommand(cmd string) (string, error) {
 
 func Serialize(cmd string) (string, error) {
 	respCmd := utils.GetRESPCommands()
-	var serializedCmd string
 
-	switch getCommandName(cmd) {
+	switch strings.ToUpper(getCommandName(cmd)) {
 	case respCmd.SET:
 		return processSETcommand(cmd)
 	case respCmd.GET:
@@ -80,9 +78,8 @@ func Serialize(cmd string) (string, error) {
 	case respCmd.EXISTS:
 		return processEXISTScommand(cmd)
 	default:
-		fmt.Sprintln("Please use these commands:", strings.Join([]string{
+		return "", errors.Err{Msg: fmt.Sprintln("Please use these commands:", strings.Join([]string{
 			respCmd.SET, respCmd.GET, respCmd.EXISTS,
-		}, ", "))
+		}, ", ")), File: "resp/serializer.go", Line: 82}
 	}
-	return serializedCmd, nil
 }

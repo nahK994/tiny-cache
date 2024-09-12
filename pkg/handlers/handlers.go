@@ -21,26 +21,16 @@ func handleGET(segments []string) (string, error) {
 		return "$-1\r\n", nil
 	}
 
-	val := c.ReadCache(segments[0])
-	switch v := val.(type) {
-	case int:
-		return fmt.Sprintf("%c%v\r\n", replytype.Int, v), nil
-	case string:
-		return fmt.Sprintf("%c%v\r\n", replytype.Bulk, v), nil
-	case []string:
-		resp := fmt.Sprintf("%c%v\r\n", replytype.Array, v)
-		for _, item := range v {
-			resp += fmt.Sprintf("%c%v\r\n", replytype.Array, item)
-		}
-		return resp, nil
-	default:
-		return "", errors.Err{Msg: "-Unknown datatype\r\n", File: "handlers/handlers.go", Line: 38}
+	val, ok := c.ReadCache(segments[0]).(string)
+	if !ok {
+		return "", errors.Err{Msg: "-Unknown datatype\r\n", File: "handlers/handlers.go", Line: 26}
 	}
+	return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(val), val), nil
 }
 
 func handleSET(segments []string) (string, error) {
 	key := segments[0]
-	value := strings.Join(segments[1:], " ")
+	value := segments[1]
 	if err := c.WriteCache(key, value); err != nil {
 		return "", err
 	}
@@ -49,7 +39,7 @@ func handleSET(segments []string) (string, error) {
 
 func handleKeyExist(segments []string) (string, error) {
 	if len(segments) > 1 || len(segments) < 1 {
-		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 53}
+		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 42}
 	}
 
 	if c.IsKeyExist(segments[0]) {

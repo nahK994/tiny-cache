@@ -156,26 +156,6 @@ var serializeTestCases = []serializeTestCase{
 		input:  "SET name Shomi Khan",
 		output: "*3\r\n$3\r\nSET\r\n$4\r\nname\r\n$10\r\nShomi Khan\r\n",
 	},
-	{
-		input:  "",
-		output: "*0\r\n",
-	},
-	{
-		input:  "PING",
-		output: "*1\r\n$4\r\nPING\r\n",
-	},
-	{
-		input:  "HMSET hash field1 value1 field2 value2",
-		output: "*6\r\n$5\r\nHMSET\r\n$4\r\nhash\r\n$6\r\nfield1\r\n$6\r\nvalue1\r\n$6\r\nfield2\r\n$6\r\nvalue2\r\n",
-	},
-	{
-		input:  "LRANGE list 0 10",
-		output: "*4\r\n$6\r\nLRANGE\r\n$4\r\nlist\r\n$1\r\n0\r\n$2\r\n10\r\n",
-	},
-	{
-		input:  "AUTH myPwd",
-		output: "*2\r\n$4\r\nAUTH\r\n$5\r\nmyPwd\r\n",
-	},
 
 	// Edge case: Input with multiple spaces between arguments
 	{
@@ -195,12 +175,6 @@ var serializeTestCases = []serializeTestCase{
 		output: "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$15\r\nこんにちは\r\n",
 	},
 
-	// Edge case: Input with a single space character
-	{
-		input:  " ",
-		output: "*1\r\n$1\r\n \r\n",
-	},
-
 	// Edge case: Input with a newline character
 	{
 		input:  "SET key value\n",
@@ -215,6 +189,11 @@ var serializeTestCases = []serializeTestCase{
 }
 
 var malformedSerializedCmds []string = []string{
-	"*2\r\n$4\r\nPING\r\n$1\r\n1", // Missing the final \r\n
-	"*2\r\n$2\r\nPING\r\n$12\r\n1\r\n",
+	"SET",
+	"SET age ",
+	"GET age val",
+	"GET",
+	"EXISTS",
+	"EXISTS age val",
+	"TEST",
 }

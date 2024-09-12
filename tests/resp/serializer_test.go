@@ -17,3 +17,12 @@ func TestSerialize(t *testing.T) {
 		}
 	}
 }
+
+func TestSerialize_MalformedCommands(t *testing.T) {
+	for _, item := range malformedSerializedCmds {
+		_, err := resp.Serialize(item)
+		if err == nil {
+			t.Errorf("%s expected errors but no errors found", item)
+		}
+	}
+}
