@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/nahK994/TinyCache/pkg/cache"
@@ -19,19 +18,19 @@ func handleGET(segments []string) (string, error) {
 		return "", errors.Err{Msg: "-ERR wrong number of arguments for 'GET' command\r\n", File: "handlers/handlers.go", Line: 19}
 	}
 	if !c.IsKeyExist(segments[0]) {
-		return "", errors.Err{Msg: "-Key not exists\r\n", File: "handlers/handlers.go", Line: 22}
+		return "$-1\r\n", nil
 	}
 
 	val := c.ReadCache(segments[0])
 	switch v := val.(type) {
 	case int:
-		return fmt.Sprint(replytype.Int, v, "\r\n"), nil
+		return fmt.Sprintf("%c%v\r\n", replytype.Int, v), nil
 	case string:
-		return fmt.Sprint(replytype.Bulk, v, "\r\n"), nil
+		return fmt.Sprintf("%c%v\r\n", replytype.Bulk, v), nil
 	case []string:
-		resp := fmt.Sprint(replytype.Array, strconv.Itoa(len(v)), "\r\n")
+		resp := fmt.Sprintf("%c%v\r\n", replytype.Array, v)
 		for _, item := range v {
-			resp += fmt.Sprint(replytype.Bulk, item, "\r\n")
+			resp += fmt.Sprintf("%c%v\r\n", replytype.Array, item)
 		}
 		return resp, nil
 	default:
