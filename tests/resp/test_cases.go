@@ -186,6 +186,10 @@ var serializeTestCases = []serializeTestCase{
 		input:  "SET key value ",
 		output: "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n", // Trailing space ignored
 	},
+	{
+		input:  "PING",
+		output: "*1\r\n$4\r\nPING\r\n",
+	},
 }
 
 var malformedSerializedCmds []string = []string{

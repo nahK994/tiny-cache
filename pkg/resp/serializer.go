@@ -77,6 +77,8 @@ func Serialize(cmd string) (string, error) {
 		return processGETcommand(cmd)
 	case respCmd.EXISTS:
 		return processEXISTScommand(cmd)
+	case respCmd.PING:
+		return "*1\r\n$4\r\nPING\r\n", nil
 	default:
 		return "", errors.Err{Msg: fmt.Sprintln("Please use these commands:", strings.Join([]string{
 			respCmd.SET, respCmd.GET, respCmd.EXISTS,

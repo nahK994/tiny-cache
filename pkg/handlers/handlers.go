@@ -63,9 +63,11 @@ func HandleCommand(serializedCmd string) (string, error) {
 		return handleSET(cmdSegments[1:])
 	case respCmd.EXISTS:
 		return handleKeyExist(cmdSegments[1:])
+	case respCmd.PING:
+		return "+PONG\r\n", nil
 	default:
 		return fmt.Sprintln("Please use these commands:", strings.Join([]string{
-			respCmd.SET, respCmd.GET, respCmd.EXISTS,
+			respCmd.SET, respCmd.GET, respCmd.EXISTS, respCmd.PING,
 		}, ", ")), nil
 	}
 }
