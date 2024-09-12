@@ -23,32 +23,7 @@
 
 ### 🤝 Contributing
 
-We welcome contributions of all kinds! Whether you're fixing bugs, adding new features, or improving documentation, your input is appreciated.
-
-#### How to Contribute
-
-1. **Fork the repository** to your GitHub account.
-2. **Clone your forked repository** to your local machine:
-
-   ```bash
-   git clone https://github.com/nahK994/TinyCache.git
-   ```
-   
-4. **Create a new branch** for your feature or fix:
-    ```bash
-    git checkout -b feature/YourFeature
-    ```
-5. **Make your changes** and commit them with descriptive messages:
-    ```bash
-    git commit -m "Add new feature"
-    ```
-6. **Push your changes** to your forked repository:
-    ```bash
-    git push origin feature/YourFeature
-    ```
-7. **Open a pull request** to merge your changes into the main repository.
-
-
+We welcome contributions of all kinds! Whether you're fixing bugs, adding new features, or improving documentation, your input is appreciated. Please follow our [contribution guideline](./CONTRIBUTING.md).
 
 
 ### 📝 License
