@@ -85,6 +85,15 @@ func processDECR(cmd string) (string, error) {
 	return getRESPformat(words), nil
 }
 
+func processDEL(cmd string) (string, error) {
+	words := getCmdSegments(cmd)
+	if len(words) != 2 {
+		return "", errors.Err{Msg: "invalid DEL command argument", File: "resp/serializer.go", Line: 91}
+	}
+
+	return getRESPformat(words), nil
+}
+
 func Serialize(rawCmd string) (string, error) {
 	respCmd := utils.GetRESPCommands()
 
@@ -99,6 +108,8 @@ func Serialize(rawCmd string) (string, error) {
 		return processINCR(rawCmd)
 	case respCmd.DECR:
 		return processDECR(rawCmd)
+	case respCmd.DEL:
+		return processDEL(rawCmd)
 	case respCmd.PING:
 		return "*1\r\n$4\r\nPING\r\n", nil
 	default:

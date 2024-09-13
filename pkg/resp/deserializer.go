@@ -59,7 +59,7 @@ func Deserializer(rawCmd string) ([]string, error) {
 	index := 1 // Skip the initial '*'
 
 	if len(rawCmd) < 2 {
-		return nil, errors.Err{Msg: fmt.Sprintf("Malformed error from Deserializer for %s", rawCmd), File: "resp/deserializer.go", Line: 62}
+		return nil, errors.Err{Msg: fmt.Sprintf("Malformed error from Deserializer for %s\n", rawCmd), File: "resp/deserializer.go", Line: 62}
 	}
 
 	// Read number of segments
@@ -70,7 +70,7 @@ func Deserializer(rawCmd string) ([]string, error) {
 			break
 		}
 		if !(ch >= '0' && ch <= '9') {
-			return nil, errors.Err{Msg: fmt.Sprintf("Malformed error from Deserializer for %s", rawCmd), File: "resp/deserializer.go", Line: 73}
+			return nil, errors.Err{Msg: fmt.Sprintf("Malformed error from Deserializer for %s\n", rawCmd), File: "resp/deserializer.go", Line: 73}
 		}
 
 		numSegments = 10*numSegments + int(ch-48)
@@ -94,7 +94,7 @@ func Deserializer(rawCmd string) ([]string, error) {
 	}
 
 	if index != len(rawCmd) {
-		return nil, errors.Err{Msg: fmt.Sprintf("Malformed error from Deserializer for %s", rawCmd), File: "resp/deserializer.go", Line: 97}
+		return nil, errors.Err{Msg: fmt.Sprintf("Malformed error from Deserializer for %s\n", rawCmd), File: "resp/deserializer.go", Line: 97}
 	}
 	return segments, nil
 }

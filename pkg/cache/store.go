@@ -26,3 +26,10 @@ func (c *Cache) IsKeyExist(key string) bool {
 	_, isKeyExists := c.info[key]
 	return isKeyExists
 }
+
+func (c *Cache) DeleteCache(key string) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	delete(c.info, key)
+}
