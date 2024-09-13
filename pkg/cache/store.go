@@ -1,5 +1,11 @@
 package cache
 
+import (
+	"fmt"
+
+	"github.com/nahK994/TinyCache/pkg/errors"
+)
+
 func InitCache() *Cache {
 	return &Cache{
 		info: make(map[string]interface{}),
@@ -32,4 +38,30 @@ func (c *Cache) DeleteCache(key string) {
 	defer c.mu.Unlock()
 
 	delete(c.info, key)
+}
+
+func (c *Cache) INCRCache(key string) (string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	val, ok := c.ReadCache(key).(int)
+	if !ok {
+		return "", errors.Err{Msg: "-ERR value aren't available for INCR\r\n", File: "handlers/handlers.go", Line: 49}
+	}
+
+	c.WriteCache(key, val+1)
+	return fmt.Sprintf(":%d\r\n", val), nil
+}
+
+func (c *Cache) DECRCache(key string) (string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	val, ok := c.ReadCache(key).(int)
+	if !ok {
+		return "", errors.Err{Msg: "-ERR value aren't available for DECR\r\n", File: "handlers/handlers.go", Line: 62}
+	}
+
+	c.WriteCache(key, val-1)
+	return fmt.Sprintf(":%d\r\n", val), nil
 }

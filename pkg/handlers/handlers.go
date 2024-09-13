@@ -68,40 +68,26 @@ func handleINCR(arguments []string) (string, error) {
 		c.WriteCache(arguments[0], 1)
 		return ":1\r\n", nil
 	} else {
-		val, ok := c.ReadCache(arguments[0]).(int)
-		if !ok {
-			return "", errors.Err{Msg: "-ERR value aren't available for INCR\r\n", File: "handlers/handlers.go", Line: 73}
-		}
-
-		val++
-		c.WriteCache(arguments[0], val)
-		return fmt.Sprintf(":%d\r\n", val), nil
+		return c.INCRCache(arguments[0])
 	}
 }
 
 func handleDECR(arguments []string) (string, error) {
 	if len(arguments) != 1 {
-		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 84}
+		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 77}
 	}
 
 	if !c.IsKeyExist(arguments[0]) {
 		c.WriteCache(arguments[0], -1)
 		return ":-1\r\n", nil
 	} else {
-		val, ok := c.ReadCache(arguments[0]).(int)
-		if !ok {
-			return "", errors.Err{Msg: "-ERR value aren't available for INCR\r\n", File: "handlers/handlers.go", Line: 93}
-		}
-
-		val--
-		c.WriteCache(arguments[0], val)
-		return fmt.Sprintf(":%d\r\n", val), nil
+		return c.DECRCache(arguments[0])
 	}
 }
 
 func handleDEL(arguments []string) (string, error) {
 	if len(arguments) != 1 {
-		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 104}
+		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 90}
 	}
 
 	if c.IsKeyExist(arguments[0]) {
