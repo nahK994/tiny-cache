@@ -186,9 +186,37 @@ var serializeTestCases = []serializeTestCase{
 		input:  "SET key value ",
 		output: "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n", // Trailing space ignored
 	},
+
+	// Simple command test case
 	{
 		input:  "PING",
 		output: "*1\r\n$4\r\nPING\r\n",
+	},
+
+	// INCR command test cases
+	{
+		input:  "INCR age",
+		output: "*2\r\n$4\r\nINCR\r\n$3\r\nage\r\n",
+	},
+	{
+		input:  "INCR counter",
+		output: "*2\r\n$4\r\nINCR\r\n$7\r\ncounter\r\n",
+	},
+
+	// DECR command test cases
+	{
+		input:  "DECR age",
+		output: "*2\r\n$4\r\nDECR\r\n$3\r\nage\r\n",
+	},
+	{
+		input:  "DECR counter",
+		output: "*2\r\n$4\r\nDECR\r\n$7\r\ncounter\r\n",
+	},
+
+	// DEL command test cases
+	{
+		input:  "DEL age",
+		output: "*2\r\n$3\r\nDEL\r\n$3\r\nage\r\n",
 	},
 }
 
@@ -200,4 +228,12 @@ var malformedSerializedCmds []string = []string{
 	"EXISTS",
 	"EXISTS age val",
 	"TEST",
+
+	// Malformed INCR/DECR/DEL commands
+	"INCR",         // Missing key argument
+	"DECR",         // Missing key argument
+	"DEL",          // Missing key argument
+	"INCR age val", // Too many arguments for INCR
+	"DECR age val", // Too many arguments for DECR
+	"DEL key1 key2 key3",
 }
