@@ -7,3 +7,7 @@ func GetRESPCommands() RESPCommands {
 func GetReplyTypes() ReplyType {
 	return replyType
 }
+
+func GetClientMessage() string {
+	return clientMessage
+}

@@ -39,7 +39,7 @@ func getCommandName(cmd string) string {
 	return seg
 }
 
-func processSETcommand(cmd string) (string, error) {
+func processSET(cmd string) (string, error) {
 	words := getCmdSegments(cmd)
 	if len(words) < 3 {
 		return "", errors.Err{Msg: "invalid SET command argument", File: "resp/serializer.go", Line: 34}
@@ -49,7 +49,7 @@ func processSETcommand(cmd string) (string, error) {
 	return getRESPformat(words), nil
 }
 
-func processGETcommand(cmd string) (string, error) {
+func processGET(cmd string) (string, error) {
 	words := getCmdSegments(cmd)
 	if len(words) != 2 {
 		return "", errors.Err{Msg: "invalid GET command argument", File: "resp/serializer.go", Line: 47}
@@ -58,7 +58,7 @@ func processGETcommand(cmd string) (string, error) {
 	return getRESPformat(words), nil
 }
 
-func processEXISTScommand(cmd string) (string, error) {
+func processEXISTS(cmd string) (string, error) {
 	words := getCmdSegments(cmd)
 	if len(words) != 2 {
 		return "", errors.Err{Msg: "invalid EXISTS command argument", File: "resp/serializer.go", Line: 56}
@@ -67,21 +67,41 @@ func processEXISTScommand(cmd string) (string, error) {
 	return getRESPformat(words), nil
 }
 
-func Serialize(cmd string) (string, error) {
+func processINCR(cmd string) (string, error) {
+	words := getCmdSegments(cmd)
+	if len(words) != 2 {
+		return "", errors.Err{Msg: "invalid INCR command argument", File: "resp/serializer.go", Line: 73}
+	}
+
+	return getRESPformat(words), nil
+}
+
+func processDECR(cmd string) (string, error) {
+	words := getCmdSegments(cmd)
+	if len(words) != 2 {
+		return "", errors.Err{Msg: "invalid DECR command argument", File: "resp/serializer.go", Line: 82}
+	}
+
+	return getRESPformat(words), nil
+}
+
+func Serialize(rawCmd string) (string, error) {
 	respCmd := utils.GetRESPCommands()
 
-	switch strings.ToUpper(getCommandName(cmd)) {
+	switch strings.ToUpper(getCommandName(rawCmd)) {
 	case respCmd.SET:
-		return processSETcommand(cmd)
+		return processSET(rawCmd)
 	case respCmd.GET:
-		return processGETcommand(cmd)
+		return processGET(rawCmd)
 	case respCmd.EXISTS:
-		return processEXISTScommand(cmd)
+		return processEXISTS(rawCmd)
+	case respCmd.INCR:
+		return processINCR(rawCmd)
+	case respCmd.DECR:
+		return processDECR(rawCmd)
 	case respCmd.PING:
 		return "*1\r\n$4\r\nPING\r\n", nil
 	default:
-		return "", errors.Err{Msg: fmt.Sprintln("Please use these commands:", strings.Join([]string{
-			respCmd.SET, respCmd.GET, respCmd.EXISTS,
-		}, ", ")), File: "resp/serializer.go", Line: 82}
+		return "", errors.Err{Msg: utils.GetClientMessage(), File: "resp/serializer.go", Line: 82}
 	}
 }

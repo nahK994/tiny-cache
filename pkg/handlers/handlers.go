@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/nahK994/TinyCache/pkg/cache"
@@ -12,57 +13,108 @@ import (
 
 var c *cache.Cache = cache.InitCache()
 
-func handleGET(segments []string) (string, error) {
+func handleGET(arguments []string) (string, error) {
 	replytype := utils.GetReplyTypes()
-	if len(segments) > 1 {
+	if len(arguments) > 1 {
 		return "", errors.Err{Msg: "-ERR wrong number of arguments for 'GET' command\r\n", File: "handlers/handlers.go", Line: 19}
 	}
-	if !c.IsKeyExist(segments[0]) {
+	if !c.IsKeyExist(arguments[0]) {
 		return "$-1\r\n", nil
 	}
 
-	val, ok := c.ReadCache(segments[0]).(string)
-	if !ok {
-		return "", errors.Err{Msg: "-Unknown datatype\r\n", File: "handlers/handlers.go", Line: 26}
+	val_str, ok_str := c.ReadCache(arguments[0]).(string)
+	val_int, ok_int := c.ReadCache(arguments[0]).(int)
+	if ok_int {
+		str := strconv.Itoa(val_int)
+		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(str), str), nil
+	} else if ok_str {
+		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(val_str), val_str), nil
+	} else {
+		return "", errors.Err{Msg: "-Unknown datatype\r\n", File: "handlers/handlers.go", Line: 32}
 	}
-	return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(val), val), nil
 }
 
-func handleSET(segments []string) (string, error) {
-	key := segments[0]
-	value := segments[1]
+func handleSET(arguments []string) (string, error) {
+	key := arguments[0]
+	value := arguments[1]
 	if err := c.WriteCache(key, value); err != nil {
 		return "", err
 	}
 	return "+OK\r\n", nil
 }
 
-func handleKeyExist(segments []string) (string, error) {
-	if len(segments) > 1 || len(segments) < 1 {
+func handleKeyExist(arguments []string) (string, error) {
+	if len(arguments) != 1 {
 		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 42}
 	}
 
-	if c.IsKeyExist(segments[0]) {
+	if c.IsKeyExist(arguments[0]) {
 		return ":1\r\n", nil
 	} else {
 		return ":0\r\n", nil
 	}
 }
 
-func HandleCommand(serializedCmd string) (string, error) {
-	cmdSegments, err := resp.Deserializer(serializedCmd)
+func handleINCR(arguments []string) (string, error) {
+	if len(arguments) != 1 {
+		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 54}
+	}
+
+	if !c.IsKeyExist(arguments[0]) {
+		c.WriteCache(arguments[0], 1)
+		return ":1\r\n", nil
+	} else {
+		val, ok := c.ReadCache(arguments[0]).(int)
+		if !ok {
+			return "", errors.Err{Msg: "-ERR value aren't available for INCR\r\n", File: "handlers/handlers.go", Line: 63}
+		}
+
+		val++
+		c.WriteCache(arguments[0], val)
+		return fmt.Sprintf(":%d\r\n", val), nil
+	}
+}
+
+func handleDECR(arguments []string) (string, error) {
+	if len(arguments) != 1 {
+		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 75}
+	}
+
+	if !c.IsKeyExist(arguments[0]) {
+		c.WriteCache(arguments[0], -1)
+		return ":-1\r\n", nil
+	} else {
+		val, ok := c.ReadCache(arguments[0]).(int)
+		if !ok {
+			return "", errors.Err{Msg: "-ERR value aren't available for INCR\r\n", File: "handlers/handlers.go", Line: 84}
+		}
+
+		val--
+		c.WriteCache(arguments[0], val)
+		return fmt.Sprintf(":%d\r\n", val), nil
+	}
+}
+
+func HandleCommand(serializedRawCmd string) (string, error) {
+	cmdSegments, err := resp.Deserializer(serializedRawCmd)
 	respCmd := utils.GetRESPCommands()
 	if err != nil {
 		return "", err
 	}
+	cmd := cmdSegments[0]
+	args := cmdSegments[1:]
 
-	switch strings.ToUpper(cmdSegments[0]) {
+	switch strings.ToUpper(cmd) {
 	case respCmd.GET:
-		return handleGET(cmdSegments[1:])
+		return handleGET(args)
 	case respCmd.SET:
-		return handleSET(cmdSegments[1:])
+		return handleSET(args)
 	case respCmd.EXISTS:
-		return handleKeyExist(cmdSegments[1:])
+		return handleKeyExist(args)
+	case respCmd.INCR:
+		return handleINCR(args)
+	case respCmd.DECR:
+		return handleDECR(args)
 	case respCmd.PING:
 		return "+PONG\r\n", nil
 	default:

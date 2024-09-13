@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/nahK994/TinyCache/pkg/resp"
+	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
 type Client struct {
@@ -29,7 +30,8 @@ func (c *Client) Start() error {
 	defer conn.Close()
 
 	// slog.Info("Paired with", "server", c.dialingAddr)
-	fmt.Printf("Paired with server %s\n\n", c.dialingAddr)
+	fmt.Printf("Paired with server %s\n", c.dialingAddr)
+	fmt.Printf("%s\n\n", utils.GetClientMessage())
 	return c.handleConn()
 }
 

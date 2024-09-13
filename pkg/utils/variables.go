@@ -1,5 +1,10 @@
 package utils
 
+import (
+	"fmt"
+	"strings"
+)
+
 type RESPCommands struct {
 	SET      string
 	GET      string
@@ -83,3 +88,8 @@ var replyType ReplyType = ReplyType{
 	Error:  '-',
 	Status: '+',
 }
+
+var clientMessage string = fmt.Sprintf("Please use thses following commands:\n%s\n", strings.Join([]string{
+	respCommands.PING, respCommands.EXISTS,
+	respCommands.SET, respCommands.GET, respCommands.INCR, respCommands.DECR,
+}, ", "))

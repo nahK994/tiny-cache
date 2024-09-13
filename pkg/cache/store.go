@@ -12,7 +12,7 @@ func (c *Cache) ReadCache(key string) interface{} {
 	return c.info[key]
 }
 
-func (c *Cache) WriteCache(key string, value string) error {
+func (c *Cache) WriteCache(key string, value interface{}) error {
 	c.mu.Lock()         // Acquire write lock
 	defer c.mu.Unlock() // Release write lock
 	c.info[key] = value

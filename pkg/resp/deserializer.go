@@ -53,24 +53,24 @@ func getSegment(cmd string, startIndex int, segLength int) (segment, nextIndex, 
 	return segment(seg), nextIndex(startIndex + segLength + 2), nil // Skip '\r\n' after segment
 }
 
-func Deserializer(cmd string) ([]string, error) {
+func Deserializer(rawCmd string) ([]string, error) {
 	var segments []string
 	numSegments := 0
 	index := 1 // Skip the initial '*'
 
-	if len(cmd) < 2 {
-		return nil, errors.Err{Msg: fmt.Sprintf("Malformed error from Deserializer for %s", cmd), File: "resp/deserializer.go", Line: 62}
+	if len(rawCmd) < 2 {
+		return nil, errors.Err{Msg: fmt.Sprintf("Malformed error from Deserializer for %s", rawCmd), File: "resp/deserializer.go", Line: 62}
 	}
 
 	// Read number of segments
 	for {
-		ch := cmd[index]
+		ch := rawCmd[index]
 		if ch == '\r' {
 			index += 2 // Move past '\r\n'
 			break
 		}
 		if !(ch >= '0' && ch <= '9') {
-			return nil, errors.Err{Msg: fmt.Sprintf("Malformed error from Deserializer for %s", cmd), File: "resp/deserializer.go", Line: 73}
+			return nil, errors.Err{Msg: fmt.Sprintf("Malformed error from Deserializer for %s", rawCmd), File: "resp/deserializer.go", Line: 73}
 		}
 
 		numSegments = 10*numSegments + int(ch-48)
@@ -79,11 +79,11 @@ func Deserializer(cmd string) ([]string, error) {
 
 	// Read each segment based on the given number of segments
 	for numSegments > 0 {
-		length, nextIdx, err := getSegmentLength(cmd, index)
+		length, nextIdx, err := getSegmentLength(rawCmd, index)
 		if err != nil {
 			return nil, err
 		}
-		seg, nextIdx, err1 := getSegment(cmd, int(nextIdx), int(length))
+		seg, nextIdx, err1 := getSegment(rawCmd, int(nextIdx), int(length))
 		if err1 != nil {
 			return nil, err1
 		}
@@ -93,8 +93,8 @@ func Deserializer(cmd string) ([]string, error) {
 		numSegments--
 	}
 
-	if index != len(cmd) {
-		return nil, errors.Err{Msg: fmt.Sprintf("Malformed error from Deserializer for %s", cmd), File: "resp/deserializer.go", Line: 97}
+	if index != len(rawCmd) {
+		return nil, errors.Err{Msg: fmt.Sprintf("Malformed error from Deserializer for %s", rawCmd), File: "resp/deserializer.go", Line: 97}
 	}
 	return segments, nil
 }
