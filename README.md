@@ -7,7 +7,7 @@
 ### Milestone 1: Basic Cache System (In Progress)
 - [x] **Cache server and client**: Set up a cache server that handles requests and a client that interacts with the server to store and retrieve data.
 - [x] **RESP**: Build a simple communication protocol to send and receive data.
-- [x] **In-memory cache storage**: Implement some basic commands(like, SET, GET, PING) to create a basic caching system.
+- [x] **In-memory cache storage**: Implement some commands(like PING, SET, GET etc.) to create a basic caching system.
 - [x] **Thread-safe operations**: Ensure that the cache works correctly in programs with multiple tasks running at the same time.
 - [ ] **TTL (Time-to-Live)**: Add a feature that automatically removes cached data after a set time.
 - [ ] **Unit tests**: Write tests to make sure all parts of the cache work as expected.
