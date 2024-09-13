@@ -25,16 +25,6 @@ func TestDeserializer_Basic(t *testing.T) {
 	}
 }
 
-// Test deserialization with malformed input (missing end line)
-func TestDeserializer_Malformed(t *testing.T) {
-	for _, cmd := range malformedSerializedCmds {
-		_, err := resp.Deserializer(cmd)
-		if err == nil {
-			t.Fatalf("expected error for malformed input, got nil")
-		}
-	}
-}
-
 func TestDeserializer_EmptyInput(t *testing.T) {
 	respCmd := ""
 

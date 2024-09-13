@@ -43,14 +43,14 @@ func (c *Client) handleConn() error {
 		fmt.Printf("(%s) client-cli> ", c.conn.LocalAddr())
 		str, _ := userReader.ReadString('\n')
 
-		serializedCmd, err := resp.Serialize(str[:len(str)-1])
-		var resp string
-		if err != nil {
-			resp = err.Error()
+		str = str[:len(str)-1] // skip last \n
+		var response string
+		if err := utils.ValidateRawCommand(str); err != nil {
+			response = err.Error()
 		} else {
-			resp = serializedCmd
+			response = resp.Serialize(str)
 		}
-		c.conn.Write([]byte(resp))
+		c.conn.Write([]byte(response))
 
 		n, err := c.conn.Read(buf)
 		if err != nil {

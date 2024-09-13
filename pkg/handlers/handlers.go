@@ -16,7 +16,7 @@ var c *cache.Cache = cache.InitCache()
 func handleGET(arguments []string) (string, error) {
 	replytype := utils.GetReplyTypes()
 	if len(arguments) > 1 {
-		return "", errors.Err{Msg: "-ERR wrong number of arguments for 'GET' command\r\n", File: "handlers/handlers.go", Line: 19}
+		return "", errors.Err{Msg: "-ERR wrong number of arguments for 'GET' command\r\n"}
 	}
 	if !c.IsKeyExist(arguments[0]) {
 		return "$-1\r\n", nil
@@ -30,13 +30,13 @@ func handleGET(arguments []string) (string, error) {
 	} else if ok_str {
 		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(val_str), val_str), nil
 	} else {
-		return "", errors.Err{Msg: "-Unknown datatype\r\n", File: "handlers/handlers.go", Line: 32}
+		return "", errors.Err{Msg: "-Unknown datatype\r\n"}
 	}
 }
 
 func handleSET(arguments []string) (string, error) {
 	if len(arguments) != 2 {
-		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 39}
+		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n"}
 	}
 
 	key := arguments[0]
@@ -49,7 +49,7 @@ func handleSET(arguments []string) (string, error) {
 
 func handleKeyExist(arguments []string) (string, error) {
 	if len(arguments) != 1 {
-		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 52}
+		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n"}
 	}
 
 	if c.IsKeyExist(arguments[0]) {
@@ -61,7 +61,7 @@ func handleKeyExist(arguments []string) (string, error) {
 
 func handleINCR(arguments []string) (string, error) {
 	if len(arguments) != 1 {
-		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 64}
+		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n"}
 	}
 
 	if !c.IsKeyExist(arguments[0]) {
@@ -74,7 +74,7 @@ func handleINCR(arguments []string) (string, error) {
 
 func handleDECR(arguments []string) (string, error) {
 	if len(arguments) != 1 {
-		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 77}
+		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n"}
 	}
 
 	if !c.IsKeyExist(arguments[0]) {
@@ -87,7 +87,7 @@ func handleDECR(arguments []string) (string, error) {
 
 func handleDEL(arguments []string) (string, error) {
 	if len(arguments) != 1 {
-		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n", File: "handlers/handlers.go", Line: 90}
+		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n"}
 	}
 
 	if c.IsKeyExist(arguments[0]) {

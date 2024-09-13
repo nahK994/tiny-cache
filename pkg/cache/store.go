@@ -46,7 +46,7 @@ func (c *Cache) INCRCache(key string) (string, error) {
 
 	val, ok := c.info[key].(int)
 	if !ok {
-		return "", errors.Err{Msg: "-ERR value aren't available for INCR\r\n", File: "handlers/handlers.go", Line: 49}
+		return "", errors.Err{Msg: "-ERR value aren't available for INCR\r\n"}
 	}
 
 	c.info[key] = val + 1
@@ -59,7 +59,7 @@ func (c *Cache) DECRCache(key string) (string, error) {
 
 	val, ok := c.info[key].(int)
 	if !ok {
-		return "", errors.Err{Msg: "-ERR value aren't available for DECR\r\n", File: "handlers/handlers.go", Line: 62}
+		return "", errors.Err{Msg: "-ERR value aren't available for DECR\r\n"}
 	}
 
 	c.info[key] = val - 1
