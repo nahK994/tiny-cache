@@ -21,7 +21,7 @@ func newPeer(addr string, conn net.Conn) *Peer {
 }
 
 func (p *Peer) handleConn() {
-	slog.Info("Paired with", "client", p.clientAddr)
+	fmt.Printf("\nPaired with %s\n\n", p.clientAddr)
 	buf := make([]byte, 1024)
 	for {
 		n, err := p.conn.Read(buf)
@@ -31,8 +31,19 @@ func (p *Peer) handleConn() {
 			return
 		}
 
-		fmt.Printf("%s> %s", p.clientAddr, string(buf[:n]))
-		resp, err := handlers.HandleCommand(string(buf[:n]))
+		rawCmd := string(buf[:n])
+		formattedCmd := ""
+		for _, ch := range rawCmd {
+			if ch == '\r' {
+				formattedCmd += "\\r"
+			} else if ch == '\n' {
+				formattedCmd += "\\n"
+			} else {
+				formattedCmd += string(ch)
+			}
+		}
+		fmt.Printf("%s> %s\n", p.clientAddr, formattedCmd)
+		resp, err := handlers.HandleCommand(rawCmd)
 		if err != nil {
 			p.conn.Write([]byte(err.Error()))
 		} else {
