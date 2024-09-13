@@ -28,8 +28,8 @@ func (c *Cache) IsKeyExist(key string) bool {
 }
 
 func (c *Cache) DeleteCache(key string) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	delete(c.info, key)
 }
