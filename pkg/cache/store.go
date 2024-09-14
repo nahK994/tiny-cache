@@ -2,8 +2,6 @@ package cache
 
 import (
 	"fmt"
-
-	"github.com/nahK994/TinyCache/pkg/errors"
 )
 
 func InitCache() *Cache {
@@ -18,11 +16,10 @@ func (c *Cache) ReadCache(key string) interface{} {
 	return c.info[key]
 }
 
-func (c *Cache) WriteCache(key string, value interface{}) error {
+func (c *Cache) WriteCache(key string, value interface{}) {
 	c.mu.Lock()         // Acquire write lock
 	defer c.mu.Unlock() // Release write lock
 	c.info[key] = value
-	return nil
 }
 
 func (c *Cache) IsKeyExist(key string) bool {
@@ -40,28 +37,21 @@ func (c *Cache) DeleteCache(key string) {
 	delete(c.info, key)
 }
 
-func (c *Cache) INCRCache(key string) (string, error) {
+func (c *Cache) INCRCache(key string) string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	val, ok := c.info[key].(int)
-	if !ok {
-		return "", errors.Err{Msg: "-ERR value aren't available for INCR\r\n"}
-	}
-
+	val, _ := c.info[key].(int)
 	c.info[key] = val + 1
-	return fmt.Sprintf(":%d\r\n", c.info[key]), nil
+	return fmt.Sprintf(":%d\r\n", c.info[key])
 }
 
-func (c *Cache) DECRCache(key string) (string, error) {
+func (c *Cache) DECRCache(key string) string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	val, ok := c.info[key].(int)
-	if !ok {
-		return "", errors.Err{Msg: "-ERR value aren't available for DECR\r\n"}
-	}
+	val, _ := c.info[key].(int)
 
 	c.info[key] = val - 1
-	return fmt.Sprintf(":%d\r\n", c.info[key]), nil
+	return fmt.Sprintf(":%d\r\n", c.info[key])
 }

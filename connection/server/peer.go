@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/nahK994/TinyCache/pkg/handlers"
+	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
 type Peer struct {
@@ -43,11 +44,15 @@ func (p *Peer) handleConn() {
 			}
 		}
 		fmt.Printf("%s> %s\n", p.clientAddr, formattedCmd)
-		resp, err := handlers.HandleCommand(rawCmd)
-		if err != nil {
+
+		if err := utils.ValidateRawCommand(rawCmd); err != nil {
 			p.conn.Write([]byte(err.Error()))
 		} else {
-			p.conn.Write([]byte(resp))
+			if response, err := handlers.HandleCommand(rawCmd); err != nil {
+				p.conn.Write([]byte(err.Error()))
+			} else {
+				p.conn.Write([]byte(response))
+			}
 		}
 	}
 }

@@ -14,3 +14,12 @@ func Test_MalformedRawCommands(t *testing.T) {
 		}
 	}
 }
+
+func Test_MalformedSerializedCommands(t *testing.T) {
+	for _, item := range malformedSerializedCmds {
+		err := utils.ValidateSerializedCmd(item)
+		if err == nil {
+			t.Errorf("%s expected errors but no errors found", item)
+		}
+	}
+}

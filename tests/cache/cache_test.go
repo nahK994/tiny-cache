@@ -12,10 +12,7 @@ func TestCache(t *testing.T) {
 
 	// Test WriteCache and ReadCache for string value
 	t.Run("TestWriteAndReadCache", func(t *testing.T) {
-		err := c.WriteCache("name", "Shomi")
-		if err != nil {
-			t.Errorf("WriteCache returned an error: %v", err)
-		}
+		c.WriteCache("name", "Shomi")
 
 		val := c.ReadCache("name")
 		if val != "Shomi" {
@@ -25,10 +22,7 @@ func TestCache(t *testing.T) {
 
 	// Test WriteCache and ReadCache for int value
 	t.Run("TestWriteAndReadIntCache", func(t *testing.T) {
-		err := c.WriteCache("age", 25)
-		if err != nil {
-			t.Errorf("WriteCache returned an error: %v", err)
-		}
+		c.WriteCache("age", 25)
 
 		val := c.ReadCache("age")
 		if val != 25 {
@@ -49,10 +43,7 @@ func TestCache(t *testing.T) {
 
 	// Test INCRCache for an existing int key
 	t.Run("TestINCRCache", func(t *testing.T) {
-		result, err := c.INCRCache("age")
-		if err != nil {
-			t.Errorf("INCRCache returned an error: %v", err)
-		}
+		result := c.INCRCache("age")
 		expectedResult := ":26\r\n"
 		if result != expectedResult {
 			t.Errorf("Expected '%s', got %s", expectedResult, result)
@@ -66,10 +57,7 @@ func TestCache(t *testing.T) {
 
 	// Test DECRCache for an existing int key
 	t.Run("TestDECRCache", func(t *testing.T) {
-		result, err := c.DECRCache("age")
-		if err != nil {
-			t.Errorf("DECRCache returned an error: %v", err)
-		}
+		result := c.DECRCache("age")
 		expectedResult := ":25\r\n"
 		if result != expectedResult {
 			t.Errorf("Expected '%s', got %s", expectedResult, result)

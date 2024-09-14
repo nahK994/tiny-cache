@@ -12,119 +12,96 @@ import (
 )
 
 var c *cache.Cache = cache.InitCache()
+var errType = errors.GetErrorTypes()
 
-func handleGET(arguments []string) (string, error) {
+func handleGET(key string) string {
 	replytype := utils.GetReplyTypes()
-	if len(arguments) > 1 {
-		return "", errors.Err{Msg: "-ERR wrong number of arguments for 'GET' command\r\n"}
-	}
-	if !c.IsKeyExist(arguments[0]) {
-		return "$-1\r\n", nil
+	if !c.IsKeyExist(key) {
+		return "$-1\r\n"
 	}
 
-	val_str, ok_str := c.ReadCache(arguments[0]).(string)
-	val_int, ok_int := c.ReadCache(arguments[0]).(int)
-	if ok_int {
+	if val_int, ok_int := c.ReadCache(key).(int); ok_int {
 		str := strconv.Itoa(val_int)
-		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(str), str), nil
-	} else if ok_str {
-		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(val_str), val_str), nil
+		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(str), str)
 	} else {
-		return "", errors.Err{Msg: "-Unknown datatype\r\n"}
+		val_str, _ := c.ReadCache(key).(string)
+		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(val_str), val_str)
 	}
 }
 
-func handleSET(arguments []string) (string, error) {
-	if len(arguments) != 2 {
-		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n"}
-	}
-
+func handleSET(arguments []string) string {
 	key := arguments[0]
 	value := arguments[1]
-	if err := c.WriteCache(key, value); err != nil {
-		return "", err
-	}
-	return "+OK\r\n", nil
+	c.WriteCache(key, value)
+	return "+OK\r\n"
 }
 
-func handleKeyExist(arguments []string) (string, error) {
-	if len(arguments) != 1 {
-		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n"}
+func handleKeyExist(key string) string {
+	if c.IsKeyExist(key) {
+		return ":1\r\n"
+	} else {
+		return ":0\r\n"
 	}
+}
 
-	if c.IsKeyExist(arguments[0]) {
+func handleINCR(key string) (string, error) {
+	if !c.IsKeyExist(key) {
+		c.WriteCache(key, 1)
 		return ":1\r\n", nil
 	} else {
-		return ":0\r\n", nil
+		_, ok := c.ReadCache(key).(int)
+		if !ok {
+			return "", errors.Err{Type: errType.TypeError}
+		}
+		return c.INCRCache(key), nil
 	}
 }
 
-func handleINCR(arguments []string) (string, error) {
-	if len(arguments) != 1 {
-		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n"}
-	}
-
-	if !c.IsKeyExist(arguments[0]) {
-		c.WriteCache(arguments[0], 1)
-		return ":1\r\n", nil
-	} else {
-		return c.INCRCache(arguments[0])
-	}
-}
-
-func handleDECR(arguments []string) (string, error) {
-	if len(arguments) != 1 {
-		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n"}
-	}
-
-	if !c.IsKeyExist(arguments[0]) {
-		c.WriteCache(arguments[0], -1)
+func handleDECR(key string) (string, error) {
+	if !c.IsKeyExist(key) {
+		c.WriteCache(key, -1)
 		return ":-1\r\n", nil
 	} else {
-		return c.DECRCache(arguments[0])
+		_, ok := c.ReadCache(key).(int)
+		if !ok {
+			return "", errors.Err{Type: errType.TypeError}
+		}
+		return c.DECRCache(key), nil
 	}
 }
 
-func handleDEL(arguments []string) (string, error) {
-	if len(arguments) != 1 {
-		return "", errors.Err{Msg: "-ERR unknown command 'INVALID_COMMAND'\r\n"}
-	}
-
-	if c.IsKeyExist(arguments[0]) {
-		c.DeleteCache(arguments[0])
-		return ":1\r\n", nil
+func handleDEL(key string) string {
+	if c.IsKeyExist(key) {
+		c.DeleteCache(key)
+		return ":1\r\n"
 	} else {
-		return ":0\r\n", nil
+		return ":0\r\n"
 	}
 }
 
 func HandleCommand(serializedRawCmd string) (string, error) {
-	cmdSegments, err := resp.Deserializer(serializedRawCmd)
+	cmdSegments := resp.Deserializer(serializedRawCmd)
 	respCmd := utils.GetRESPCommands()
-	if err != nil {
-		return "", err
-	}
+
 	cmd := cmdSegments[0]
 	args := cmdSegments[1:]
 
 	switch strings.ToUpper(cmd) {
 	case respCmd.GET:
-		return handleGET(args)
+		return handleGET(args[0]), nil
 	case respCmd.SET:
-		return handleSET(args)
+		return handleSET(args), nil
 	case respCmd.EXISTS:
-		return handleKeyExist(args)
-	case respCmd.INCR:
-		return handleINCR(args)
-	case respCmd.DECR:
-		return handleDECR(args)
+		return handleKeyExist(args[0]), nil
 	case respCmd.DEL:
-		return handleDEL(args)
+		return handleDEL(args[0]), nil
 	case respCmd.PING:
 		return "+PONG\r\n", nil
+	case respCmd.INCR:
+		return handleINCR(args[0])
+	case respCmd.DECR:
+		return handleDECR(args[0])
 	default:
-		return fmt.Sprintln("Please use these commands:", strings.Join([]string{
-			respCmd.SET, respCmd.GET, respCmd.EXISTS, respCmd.PING,
-		}, ", ")), nil
+		return "", nil
 	}
 }
