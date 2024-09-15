@@ -33,6 +33,10 @@ func validateCmdArgs(words []string) error {
 		if len(words) != 2 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}
+	case respCommands.PING:
+		if len(words) != 1 {
+			return errors.Err{Type: errType.WrongNumberOfArguments}
+		}
 	default:
 		return errors.Err{Type: errType.UnknownCommand}
 	}

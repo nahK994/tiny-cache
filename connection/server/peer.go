@@ -45,7 +45,7 @@ func (p *Peer) handleConn() {
 		}
 		fmt.Printf("%s> %s\n", p.clientAddr, formattedCmd)
 
-		if err := utils.ValidateRawCommand(rawCmd); err != nil {
+		if err := utils.ValidateSerializedCmd(rawCmd); err != nil {
 			p.conn.Write([]byte(err.Error()))
 		} else {
 			if response, err := handlers.HandleCommand(rawCmd); err != nil {
