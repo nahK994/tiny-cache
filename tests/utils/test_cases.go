@@ -8,7 +8,7 @@ var malformedRawCmds []string = []string{
 	"EXISTS",
 	"EXISTS age val",
 	"TEST",
-
+	"PING haha",
 	// Malformed INCR/DECR/DEL commands
 	"INCR",         // Missing key argument
 	"DECR",         // Missing key argument
@@ -58,4 +58,11 @@ var malformedSerializedCmds []string = []string{
 	// Incomplete command (missing arguments)
 	"*1\r\n$3\r\nSET\r\n",
 	// Explanation: The array says 1 element, but `SET` requires at least 2 arguments.
+
+	"-3\r\n$3\r\nSET\r\n$3\r\nage\r\n$3\r\n123\r\n",
+	"*3\r\n-3\r\nSET\r\n$3\r\nage\r\n$3\r\n123\r\n",
+	"*3\r\n$3\r\nSET\r\n-3\r\nage\r\n$3\r\n123\r\n",
+	"*3\r\n$3\r\nSET\r\n$3\r\nage\r\n-3\r\n123\r\n",
+	"*3\r\n$3\r\nSET\r\n$3\r\nage\r\n$3\r\a123\r\n",
+	"*3\r\n$3\r\nGET\r\n$3\r\nage\r\n$3\r\n123\r\n",
 }

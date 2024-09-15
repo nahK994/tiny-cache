@@ -5,6 +5,7 @@ func Deserializer(rawCmd string) []string {
 	numSegments := 0
 	index := 1
 
+	// Get number of command segments
 	for {
 		ch := rawCmd[index]
 		if ch == '\r' {

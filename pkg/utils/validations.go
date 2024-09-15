@@ -54,10 +54,17 @@ func ValidateRawCommand(rawCmd string) error {
 	return validateCmdArgs(words)
 }
 
+func checkCRLF(serializedCmd string, index int) bool {
+	return index+1 < len(serializedCmd) && serializedCmd[index] == '\r' && serializedCmd[index+1] == '\n'
+}
+
 func ValidateSerializedCmd(serializedCmd string) error {
 	errTypes := errors.GetErrorTypes()
 	var cmdSegments []string
 	numCmdSegments := 0
+	if len(serializedCmd) == 0 || serializedCmd[0] != '*' {
+		return errors.Err{Type: errTypes.UnexpectedCharacter}
+	}
 	index := 1 // Skip the initial '*'
 	for {
 		if index >= len(serializedCmd) {
@@ -66,6 +73,9 @@ func ValidateSerializedCmd(serializedCmd string) error {
 
 		ch := serializedCmd[index]
 		if ch == '\r' {
+			if !checkCRLF(serializedCmd, index) {
+				return errors.Err{Type: errTypes.MissingCRLF}
+			}
 			index += 2 // Move past '\r\n'
 			break
 		}
@@ -77,9 +87,11 @@ func ValidateSerializedCmd(serializedCmd string) error {
 	}
 
 	size := 0
-	var i int
-	for i = 0; i < numCmdSegments; i++ {
+	for numCmdSegments != 0 {
 		size = 0
+		if serializedCmd[index] != '$' {
+			return errors.Err{Type: errTypes.UnexpectedCharacter}
+		}
 		index++
 		for {
 			if index >= len(serializedCmd) {
@@ -88,6 +100,9 @@ func ValidateSerializedCmd(serializedCmd string) error {
 
 			ch := serializedCmd[index]
 			if ch == '\r' {
+				if !checkCRLF(serializedCmd, index) {
+					return errors.Err{Type: errTypes.MissingCRLF}
+				}
 				index += 2
 				break
 			}
@@ -100,20 +115,17 @@ func ValidateSerializedCmd(serializedCmd string) error {
 		}
 		cmdSegments = append(cmdSegments, serializedCmd[index:index+size])
 
-		if index+size >= len(serializedCmd) || index+size+1 >= len(serializedCmd) {
-			return errors.Err{Type: errTypes.CommandLengthMismatch}
-		}
-
-		if !(serializedCmd[index+size] == '\r' && serializedCmd[index+size+1] == '\n') {
+		if !checkCRLF(serializedCmd, index+size) {
 			return errors.Err{Type: errTypes.MissingCRLF}
 		}
 		index += size + 2
+		numCmdSegments--
 	}
 
 	if index != len(serializedCmd) {
 		return errors.Err{Type: errTypes.SyntaxError}
 	}
-	if i != numCmdSegments {
+	if numCmdSegments != 0 {
 		return errors.Err{Type: errTypes.IncompleteCommand}
 	}
 
