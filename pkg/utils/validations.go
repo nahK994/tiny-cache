@@ -6,6 +6,8 @@ import (
 	"github.com/nahK994/TinyCache/pkg/errors"
 )
 
+var errType errors.ErrTypes = errors.GetErrorTypes()
+
 func validateCmdArgs(words []string) error {
 	errType := errors.GetErrorTypes()
 	switch strings.ToUpper(words[0]) {
@@ -58,75 +60,74 @@ func checkCRLF(serializedCmd string, index int) bool {
 	return index+1 < len(serializedCmd) && serializedCmd[index] == '\r' && serializedCmd[index+1] == '\n'
 }
 
-func ValidateSerializedCmd(serializedCmd string) error {
-	errTypes := errors.GetErrorTypes()
-	var cmdSegments []string
+func parseNumber(cmd string, index *int) (int, error) {
 	numCmdSegments := 0
-	if len(serializedCmd) == 0 || serializedCmd[0] != '*' {
-		return errors.Err{Type: errTypes.UnexpectedCharacter}
-	}
-	index := 1 // Skip the initial '*'
+	*index++
+
 	for {
-		if index >= len(serializedCmd) {
-			return errors.Err{Type: errTypes.IncompleteCommand}
+		if *index >= len(cmd) {
+			return -1, errors.Err{Type: errType.IncompleteCommand}
 		}
 
-		ch := serializedCmd[index]
+		ch := cmd[*index]
 		if ch == '\r' {
-			if !checkCRLF(serializedCmd, index) {
-				return errors.Err{Type: errTypes.MissingCRLF}
+			if !checkCRLF(cmd, *index) {
+				return -1, errors.Err{Type: errType.MissingCRLF}
 			}
-			index += 2 // Move past '\r\n'
+			*index += 2 // Move past '\r\n'
 			break
 		}
 		if !(ch >= '0' && ch <= '9') {
-			return errors.Err{Type: errTypes.UnexpectedCharacter}
+			return -1, errors.Err{Type: errType.UnexpectedCharacter}
 		}
 		numCmdSegments = 10*numCmdSegments + int(ch-48)
-		index++
+		*index++
+	}
+	return numCmdSegments, nil
+}
+
+func getSegment(cmd string, index *int) (string, error) {
+	if cmd[*index] != '$' {
+		return "", errors.Err{Type: errType.UnexpectedCharacter}
+	}
+	size, err := parseNumber(cmd, index)
+	if err != nil {
+		return "", err
+	}
+	if !checkCRLF(cmd, *index+size) {
+		return "", errors.Err{Type: errType.MissingCRLF}
+	}
+	seg := cmd[*index : *index+size]
+	*index += (size + 2)
+	return seg, nil
+}
+
+func ValidateSerializedCmd(serializedCmd string) error {
+	index := 0
+	var cmdSegments []string
+	if len(serializedCmd) == 0 || serializedCmd[index] != '*' {
+		return errors.Err{Type: errType.UnexpectedCharacter}
 	}
 
-	size := 0
+	numCmdSegments, err := parseNumber(serializedCmd, &index)
+	if err != nil {
+		return err
+	}
+
 	for numCmdSegments != 0 {
-		size = 0
-		if serializedCmd[index] != '$' {
-			return errors.Err{Type: errTypes.UnexpectedCharacter}
+		s, err1 := getSegment(serializedCmd, &index)
+		if err1 != nil {
+			return err1
 		}
-		index++
-		for {
-			if index >= len(serializedCmd) {
-				return errors.Err{Type: errTypes.IncompleteCommand}
-			}
-
-			ch := serializedCmd[index]
-			if ch == '\r' {
-				if !checkCRLF(serializedCmd, index) {
-					return errors.Err{Type: errTypes.MissingCRLF}
-				}
-				index += 2
-				break
-			}
-			if !(ch >= '0' && ch <= '9') {
-				return errors.Err{Type: errTypes.InvalidBulkStringFormat}
-			}
-
-			size = 10*size + int(ch-48)
-			index++
-		}
-		cmdSegments = append(cmdSegments, serializedCmd[index:index+size])
-
-		if !checkCRLF(serializedCmd, index+size) {
-			return errors.Err{Type: errTypes.MissingCRLF}
-		}
-		index += size + 2
+		cmdSegments = append(cmdSegments, s)
 		numCmdSegments--
 	}
 
 	if index != len(serializedCmd) {
-		return errors.Err{Type: errTypes.SyntaxError}
+		return errors.Err{Type: errType.SyntaxError}
 	}
 	if numCmdSegments != 0 {
-		return errors.Err{Type: errTypes.IncompleteCommand}
+		return errors.Err{Type: errType.IncompleteCommand}
 	}
 
 	return validateCmdArgs(cmdSegments)
