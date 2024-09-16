@@ -1,4 +1,6 @@
-package utils
+package test
+
+import "github.com/nahK994/TinyCache/pkg/errors"
 
 var malformedRawCmds []string = []string{
 	"SET",
@@ -18,51 +20,130 @@ var malformedRawCmds []string = []string{
 	"DEL key1 key2 key3",
 }
 
-var malformedSerializedCmds []string = []string{
-	// Missing CRLF after array size
-	"*2$3SET$3foo\r\n",
-	// Explanation: The command declares an array with 2 segments, but it lacks the proper CRLF after the array size.
-
-	// Incomplete bulk string (missing the string value)
-	"*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$-1\r\n",
-	// Explanation: Declares a bulk string, but it indicates a length of `-1` which is invalid.
-
-	// Array count mismatch
-	"*2\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar\r\n",
-	// Explanation: The array count specifies 2, but the command provides 3 elements.
-
-	// Unexpected character in array count
-	"*x\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar\r\n",
-	// Explanation: The array count has an invalid character `x`.
-
-	// Missing CRLF after a bulk string
-	"*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar",
-	// Explanation: The final bulk string "bar" is missing a CRLF.
-
-	// Command length mismatch
-	"*2\r\n$3\r\nSET\r\n$5\r\nkeyvalue\r\n",
-	// Explanation: The bulk string indicates a length of 5, but the actual string is longer.
-
-	// Invalid array format (extra CRLF at the end)
-	"*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar\r\n\r\n",
-	// Explanation: There’s an extra CRLF at the end, which causes a mismatch in the length.
-
-	// Missing bulk string length specifier
-	"*3\r\n$3\r\nSET\r\nfoo\r\n$3\r\nbar\r\n",
-	// Explanation: The length for the second bulk string "foo" is missing.
-
-	// Invalid bulk string format (missing $ sign)
-	"*3\r\n$3\r\nSET\r\n3\r\nfoo\r\n$3\r\nbar\r\n",
-	// Explanation: The bulk string length for "foo" is missing the `$` sign.
-
-	// Incomplete command (missing arguments)
-	"*1\r\n$3\r\nSET\r\n",
-	// Explanation: The array says 1 element, but `SET` requires at least 2 arguments.
-
-	"-3\r\n$3\r\nSET\r\n$3\r\nage\r\n$3\r\n123\r\n",
-	"*3\r\n-3\r\nSET\r\n$3\r\nage\r\n$3\r\n123\r\n",
-	"*3\r\n$3\r\nSET\r\n-3\r\nage\r\n$3\r\n123\r\n",
-	"*3\r\n$3\r\nSET\r\n$3\r\nage\r\n-3\r\n123\r\n",
-	"*3\r\n$3\r\nSET\r\n$3\r\nage\r\n$3\r\a123\r\n",
-	"*3\r\n$3\r\nGET\r\n$3\r\nage\r\n$3\r\n123\r\n",
+var errType = errors.GetErrorTypes()
+var testSerializedCmds = []struct {
+	name      string
+	input     string
+	expectErr error
+}{
+	{
+		name:      "Valid Command",
+		input:     "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n",
+		expectErr: nil,
+	},
+	{
+		name:      "Empty Command",
+		input:     "",
+		expectErr: errors.Err{Type: errType.IncompleteCommand},
+	},
+	{
+		name:      "Incorrect Starting Character",
+		input:     "3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n",
+		expectErr: errors.Err{Type: errType.UnexpectedCharacter},
+	},
+	{
+		name:      "Malformed Length Specification",
+		input:     "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue",
+		expectErr: errors.Err{Type: errType.MissingCRLF},
+	},
+	{
+		name:      "Unexpected Characters",
+		input:     "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\nextra",
+		expectErr: errors.Err{Type: errType.CommandLengthMismatch},
+	},
+	{
+		name:      "Incorrect CRLF Placement",
+		input:     "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\n",
+		expectErr: errors.Err{Type: errType.MissingCRLF},
+	},
+	{
+		name:      "Command Length Mismatch",
+		input:     "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n\r\n",
+		expectErr: errors.Err{Type: errType.CommandLengthMismatch},
+	},
+	{
+		name:      "Missing value",
+		input:     "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n",
+		expectErr: errors.Err{Type: errType.WrongNumberOfArguments},
+	},
+	{
+		name:      "Unexpected character in parsing number",
+		input:     "*2$3SET$3foo\r\n",
+		expectErr: errors.Err{Type: errType.UnexpectedCharacter},
+	},
+	{
+		name:      "Unexpected character in parsing number 2",
+		input:     "*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$-1\r\n",
+		expectErr: errors.Err{Type: errType.UnexpectedCharacter},
+	},
+	{
+		name:      "Array count mismatch",
+		input:     "*2\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar\r\n",
+		expectErr: errors.Err{Type: errType.CommandLengthMismatch},
+	},
+	{
+		name:      "Unexpected character in array count",
+		input:     "*x\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar\r\n",
+		expectErr: errors.Err{Type: errType.UnexpectedCharacter},
+	},
+	{
+		name:      "Missing CRLF after a bulk string",
+		input:     "*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar",
+		expectErr: errors.Err{Type: errType.MissingCRLF},
+	},
+	{
+		name:      "Missing CRLF in position",
+		input:     "*2\r\n$3\r\nSET\r\n$5\r\nkeyvalue\r\n",
+		expectErr: errors.Err{Type: errType.MissingCRLF},
+	},
+	{
+		name:      "Invalid array format (extra CRLF at the end)",
+		input:     "*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar\r\n\r\n",
+		expectErr: errors.Err{Type: errType.CommandLengthMismatch},
+	},
+	{
+		name:      "Missing bulk string length specifier",
+		input:     "*3\r\n$3\r\nSET\r\nfoo\r\n$3\r\nbar\r\n",
+		expectErr: errors.Err{Type: errType.UnexpectedCharacter},
+	},
+	{
+		name:      "Invalid bulk string format (missing $ sign)",
+		input:     "*3\r\n$3\r\nSET\r\n3\r\nfoo\r\n$3\r\nbar\r\n",
+		expectErr: errors.Err{Type: errType.UnexpectedCharacter},
+	},
+	{
+		name:      "Incomplete command (missing arguments)",
+		input:     "*1\r\n$3\r\nSET\r\n",
+		expectErr: errors.Err{Type: errType.WrongNumberOfArguments},
+	},
+	{
+		name:      "Negative bulk string length (Invalid)",
+		input:     "-3\r\n$3\r\nSET\r\n$3\r\nage\r\n$3\r\n123\r\n",
+		expectErr: errors.Err{Type: errType.UnexpectedCharacter},
+	},
+	{
+		name:      "Invalid bulk string length in the middle",
+		input:     "*3\r\n-3\r\nSET\r\n$3\r\nage\r\n$3\r\n123\r\n",
+		expectErr: errors.Err{Type: errType.UnexpectedCharacter},
+	},
+	{
+		name:      "Invalid bulk string length with negative number",
+		input:     "*3\r\n$3\r\nSET\r\n-3\r\nage\r\n$3\r\n123\r\n",
+		expectErr: errors.Err{Type: errType.UnexpectedCharacter},
+	},
+	{
+		name:      "Invalid bulk string length with invalid number in the middle",
+		input:     "*3\r\n$3\r\nSET\r\n$3\r\nage\r\n-3\r\n123\r\n",
+		expectErr: errors.Err{Type: errType.UnexpectedCharacter},
+	},
+	{
+		name:      "Invalid bulk string format with incorrect character",
+		input:     "*3\r\n$3\r\nSET\r\n$3\r\nage\r\n$3\r\a123\r\n",
+		expectErr: errors.Err{Type: errType.UnexpectedCharacter},
+	},
+	{
+		name:      "Valid command with extra characters",
+		input:     "*3\r\n$3\r\nGET\r\n$3\r\nage\r\n$3\r\n123\r\n",
+		expectErr: errors.Err{Type: errType.WrongNumberOfArguments},
+	},
 }

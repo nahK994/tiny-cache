@@ -12,7 +12,7 @@ func validateCmdArgs(words []string) error {
 	errType := errors.GetErrorTypes()
 	switch strings.ToUpper(words[0]) {
 	case respCommands.SET:
-		if len(words) < 3 {
+		if len(words) != 3 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}
 	case respCommands.GET:
@@ -62,34 +62,26 @@ func checkCRLF(serializedCmd string, index int) bool {
 
 func parseNumber(cmd string, index *int) (int, error) {
 	numCmdSegments := 0
-	*index++
-
-	for {
-		if *index >= len(cmd) {
-			return -1, errors.Err{Type: errType.IncompleteCommand}
-		}
-
+	for ; *index < len(cmd); *index++ {
 		ch := cmd[*index]
-		if ch == '\r' {
-			if !checkCRLF(cmd, *index) {
-				return -1, errors.Err{Type: errType.MissingCRLF}
-			}
+		if *index+1 < len(cmd) && ch == '\r' && cmd[*index+1] == '\n' {
 			*index += 2 // Move past '\r\n'
-			break
+			return numCmdSegments, nil
 		}
+
 		if !(ch >= '0' && ch <= '9') {
 			return -1, errors.Err{Type: errType.UnexpectedCharacter}
 		}
 		numCmdSegments = 10*numCmdSegments + int(ch-48)
-		*index++
 	}
-	return numCmdSegments, nil
+	return -1, errors.Err{Type: errType.IncompleteCommand}
 }
 
 func getSegment(cmd string, index *int) (string, error) {
 	if cmd[*index] != '$' {
 		return "", errors.Err{Type: errType.UnexpectedCharacter}
 	}
+	*index++
 	size, err := parseNumber(cmd, index)
 	if err != nil {
 		return "", err
@@ -103,32 +95,33 @@ func getSegment(cmd string, index *int) (string, error) {
 }
 
 func ValidateSerializedCmd(serializedCmd string) error {
-	index := 0
 	var cmdSegments []string
-	if len(serializedCmd) == 0 || serializedCmd[index] != '*' {
-		return errors.Err{Type: errType.UnexpectedCharacter}
+	if len(serializedCmd) == 0 {
+		return errors.Err{Type: errType.IncompleteCommand}
 	}
 
+	index := 0
+	if serializedCmd[index] != '*' {
+		return errors.Err{Type: errType.UnexpectedCharacter}
+	}
+	index++
 	numCmdSegments, err := parseNumber(serializedCmd, &index)
 	if err != nil {
 		return err
 	}
 
-	for numCmdSegments != 0 {
+	for index < len(serializedCmd) {
+		if len(cmdSegments) == numCmdSegments {
+			return errors.Err{Type: errType.CommandLengthMismatch}
+		}
+
 		s, err1 := getSegment(serializedCmd, &index)
 		if err1 != nil {
 			return err1
 		}
 		cmdSegments = append(cmdSegments, s)
-		numCmdSegments--
 	}
 
-	if index != len(serializedCmd) {
-		return errors.Err{Type: errType.SyntaxError}
-	}
-	if numCmdSegments != 0 {
-		return errors.Err{Type: errType.IncompleteCommand}
-	}
-
-	return validateCmdArgs(cmdSegments)
+	err2 := validateCmdArgs(cmdSegments)
+	return err2
 }
