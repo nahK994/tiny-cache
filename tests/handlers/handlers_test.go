@@ -25,7 +25,7 @@ func TestHandleCommand(t *testing.T) {
 		t.Errorf("expected +OK\r\n, got %v", output)
 	}
 
-	// Test GET after SET
+	// Test GET after SET (string)
 	output, err = handlers.HandleCommand("*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n")
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -43,22 +43,13 @@ func TestHandleCommand(t *testing.T) {
 		t.Errorf("expected :1\r\n, got %v", output)
 	}
 
-	// Test DEL Command
-	output, err = handlers.HandleCommand("*2\r\n$3\r\nDEL\r\n$3\r\nfoo\r\n")
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
-	}
-	if output != ":1\r\n" {
-		t.Errorf("expected :1\r\n, got %v", output)
-	}
-
-	// Test DEL on non-existing key
-	output, err = handlers.HandleCommand("*2\r\n$3\r\nDEL\r\n$3\r\nfoo\r\n")
+	// Test EXISTS Command
+	output, err = handlers.HandleCommand("*2\r\n$6\r\nEXISTS\r\n$3\r\nbar\r\n")
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
 	if output != ":0\r\n" {
-		t.Errorf("expected :0\r\n, got %v", output)
+		t.Errorf("expected :1\r\n, got %v", output)
 	}
 
 	// Test INCR Command on a new key
@@ -79,6 +70,12 @@ func TestHandleCommand(t *testing.T) {
 		t.Errorf("expected :2\r\n, got %v", output)
 	}
 
+	// Test INCR Command on non-int data
+	_, err = handlers.HandleCommand("*2\r\n$4\r\nINCR\r\n$3\r\nfoo\r\n")
+	if err == nil {
+		t.Errorf("expected error, got %v", err)
+	}
+
 	// Test DECR Command on existing key
 	output, err = handlers.HandleCommand("*2\r\n$4\r\nDECR\r\n$3\r\nnum\r\n")
 	if err != nil {
@@ -86,6 +83,39 @@ func TestHandleCommand(t *testing.T) {
 	}
 	if output != ":1\r\n" {
 		t.Errorf("expected :1\r\n, got %v", output)
+	}
+
+	// Test DECR Command on non-int data
+	_, err = handlers.HandleCommand("*2\r\n$4\r\nDECR\r\n$3\r\nfoo\r\n")
+	if err == nil {
+		t.Errorf("expected error, got %v", err)
+	}
+
+	// Test DEL Command
+	output, err = handlers.HandleCommand("*2\r\n$3\r\nDEL\r\n$3\r\nfoo\r\n")
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+	if output != ":1\r\n" {
+		t.Errorf("expected :1\r\n, got %v", output)
+	}
+
+	// Test DEL on non-existing key
+	output, err = handlers.HandleCommand("*2\r\n$3\r\nDEL\r\n$3\r\nfoo\r\n")
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+	if output != ":0\r\n" {
+		t.Errorf("expected :0\r\n, got %v", output)
+	}
+
+	// Test GET after SET (int)
+	output, err = handlers.HandleCommand("*2\r\n$3\r\nGET\r\n$3\r\nnum\r\n")
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+	if output != "$1\r\n1\r\n" {
+		t.Errorf("expected $1\r\n1\r\n, got %v", output)
 	}
 
 	// Test PING Command
