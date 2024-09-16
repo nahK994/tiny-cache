@@ -25,18 +25,18 @@
 
 This project is organized into several directories to maintain a clean and modular structure. Below is a breakdown of each folder and its purpose:
 
-#### `cmd` Contains the entry points for running different components of the project.
+**`cmd`** Contains the entry points for running different components of the project.
 
 - **server**: The main server application.
 - **client**: The client application to communicate with the server.
 - **playground**: A playground for testing and experimenting with features.
 
-#### `connection` Handles server and client connections.
+**`connection`** Handles server and client connections.
 
 - **server**: Manages server-side connections.
 - **client**: Manages client-side connections.
 
-#### `pkg` Contains core logic and utilities used across the project.
+**`pkg`** Contains core logic and utilities used across the project.
 
 - **utils**: General utility functions used across the project.
 - **resp**: Handles RESP serializing and deserializing logic.
@@ -44,7 +44,7 @@ This project is organized into several directories to maintain a clean and modul
 - **errors**: Contains custom error definations.
 - **handlers**: Contains the request handlers.
 
-#### `tests` Includes unit tests for different components.
+**`tests`** Includes unit tests for different components.
 
 - **resp**: Tests for RESP command handling.
 - **cache**: Tests for caching functionality.
