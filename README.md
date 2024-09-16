@@ -10,36 +10,33 @@
 - [x] **In-memory cache storage**: Implement some commands(like PING, SET, GET etc.) to create a basic caching system.
 - [x] **Thread-safe operations**: Ensure that the cache works correctly in programs with multiple tasks running at the same time.
 - [ ] **TTL (Time-to-Live)**: Add a feature that automatically removes cached data after a set time.
-- [ ] **Unit tests**: Write tests to make sure all parts of the cache work as expected.
+- [x] **Unit tests**: Write tests to make sure all parts of the cache work as expected.
 
 ### Milestone 2: Feature Expansion (Planned)
 - [ ] **LRU (Least Recently Used) eviction policy**: Automatically remove the least used items when the cache gets full.
-- [ ] **Pluggable storage backends**: Allow users to store cache data in different places (e.g., in a file or a database like Redis).
-- [ ] **Persistent storage**: Ensure that cached data remains available even after the program restarts.
+- [ ] **LFU (Least Frequently Used) eviction policy**: Add an LFU eviction policy to remove the least frequently used items when the cache is full, providing an alternative to LRU.
 
 ### Milestone 3: Advanced Features (Planned)
-- [ ] **LFU (Least Frequently Used) eviction policy**: Add an LFU eviction policy to remove the least frequently used items when the cache is full, providing an alternative to LRU.
+- [ ] **Pluggable storage backends**: Allow users to store cache data in different places (e.g., in a file or a database like Redis).
+- [ ] **Persistent storage**: Ensure that cached data remains available even after the program restarts.
 
 
 ##  📦 Project Structure Overview
 
 This project is organized into several directories to maintain a clean and modular structure. Below is a breakdown of each folder and its purpose:
 
-### `cmd`
-Contains the entry points for running different components of the project.
+#### `cmd` Contains the entry points for running different components of the project.
 
 - **server**: The main server application.
 - **client**: The client application to communicate with the server.
 - **playground**: A playground for testing and experimenting with features.
 
-### `connection`
-Handles server and client connections.
+#### `connection` Handles server and client connections.
 
 - **server**: Manages server-side connections.
 - **client**: Manages client-side connections.
 
-### `pkg`
-Contains core logic and utilities used across the project.
+#### `pkg` Contains core logic and utilities used across the project.
 
 - **utils**: General utility functions used across the project.
 - **resp**: Handles RESP serializing and deserializing logic.
@@ -47,8 +44,7 @@ Contains core logic and utilities used across the project.
 - **errors**: Contains custom error definations.
 - **handlers**: Contains the request handlers.
 
-### `tests`
-Includes unit tests for different components.
+#### `tests` Includes unit tests for different components.
 
 - **resp**: Tests for RESP command handling.
 - **cache**: Tests for caching functionality.
