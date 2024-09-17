@@ -95,6 +95,16 @@ func handleLRANGE(key string, startIdx, endIdx int) string {
 	return response
 }
 
+func handleLPOP(key string) string {
+	val := c.LRANGE(key, 1, 1)
+	if len(val) > 0 {
+		c.LPOP(key)
+		return fmt.Sprintf("%c%d\r\n%c%s\r\n", replytype.Array, len(val), replytype.Bulk, val[0])
+	} else {
+		return fmt.Sprintf("%c0\r\n", replytype.Array)
+	}
+}
+
 func HandleCommand(serializedRawCmd string) (string, error) {
 	cmdSegments := resp.Deserializer(serializedRawCmd)
 	respCmd := utils.GetRESPCommands()
@@ -119,6 +129,8 @@ func HandleCommand(serializedRawCmd string) (string, error) {
 		strIdx, _ := strconv.Atoi(args[1])
 		endIdx, _ := strconv.Atoi(args[2])
 		return handleLRANGE(args[0], strIdx, endIdx), nil
+	case respCmd.LPOP:
+		return handleLPOP(args[0]), nil
 	case respCmd.INCR:
 		return handleINCR(args[0])
 	case respCmd.DECR:

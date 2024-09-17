@@ -40,7 +40,8 @@ func (c *Client) handleConn() error {
 	userReader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Printf("(%s) client-cli> ", c.conn.LocalAddr())
+		// fmt.Printf("(%s) client-cli> ", c.conn.LocalAddr())
+		fmt.Printf("tinycache-cli> ")
 		str, _ := userReader.ReadString('\n')
 
 		str = str[:len(str)-1] // skip last \n

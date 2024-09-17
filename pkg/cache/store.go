@@ -59,12 +59,17 @@ func (c *Cache) DECRCache(key string) string {
 func (c *Cache) LPUSH(key string, value interface{}) {
 	c.mu.Lock()         // Acquire write lock
 	defer c.mu.Unlock() // Release write lock
-	c.info[key] = value
+	data, _ := value.([]string)
+	var vals []string
+	for i := len(data) - 1; i >= 0; i-- {
+		vals = append(vals, data[i])
+	}
+	c.info[key] = vals
 }
 
 func (c *Cache) LRANGE(key string, startIdx, endIdx int) []string {
-	c.mu.Lock()         // Acquire write lock
-	defer c.mu.Unlock() // Release write lock
+	c.mu.RLock()         // Acquire write lock
+	defer c.mu.RUnlock() // Release write lock
 
 	vals, _ := c.info[key].([]string)
 	if startIdx < 0 {
@@ -86,8 +91,16 @@ func (c *Cache) LRANGE(key string, startIdx, endIdx int) []string {
 	}
 
 	var ans []string
-	for i := endIdx; i >= startIdx; i-- {
+	for i := startIdx; i <= endIdx; i++ {
 		ans = append(ans, vals[i])
 	}
 	return ans
+}
+
+func (c *Cache) LPOP(key string) {
+	c.mu.Lock()         // Acquire write lock
+	defer c.mu.Unlock() // Release write lock
+
+	vals, _ := c.info[key].([]string)
+	c.info[key] = vals[1:]
 }
