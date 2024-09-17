@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/nahK994/TinyCache/pkg/cache"
@@ -10,70 +11,72 @@ func TestCache(t *testing.T) {
 	// Initialize a new cache
 	c := cache.InitCache()
 
-	// Test SET and GET for string value
-	t.Run("TestWriteAndReadCache", func(t *testing.T) {
+	t.Run("TestSETAndGET", func(t *testing.T) {
+		// Test string value
 		c.SET("name", "Shomi")
-
 		val := c.GET("name")
 		if val != "Shomi" {
 			t.Errorf("Expected 'Shomi', got %v", val)
 		}
-	})
 
-	// Test SET and GET for int value
-	t.Run("TestWriteAndReadIntCache", func(t *testing.T) {
+		// Test integer value
 		c.SET("age", 25)
-
-		val := c.GET("age")
+		val = c.GET("age")
 		if val != 25 {
 			t.Errorf("Expected 25, got %v", val)
 		}
 	})
 
-	// Test EXIST for existing and non-existing keys
-	t.Run("TestIsKeyExist", func(t *testing.T) {
-		if !c.EXIST("age") {
-			t.Errorf("Expected key 'age' to exist")
+	t.Run("TestINCRAndDECR", func(t *testing.T) {
+		// Test INCR
+		c.SET("counter", 10)
+		val := c.INCR("counter")
+		if val != 11 {
+			t.Errorf("Expected 11, got %v", val)
 		}
 
-		if c.EXIST("nonexistent") {
-			t.Errorf("Expected key 'nonexistent' to not exist")
-		}
-	})
-
-	// Test INCR for an existing int key
-	t.Run("TestINCRCache", func(t *testing.T) {
-		result := c.INCR("age")
-		expectedResult := 26
-		if result != expectedResult {
-			t.Errorf("Expected '%d', got %d", expectedResult, result)
-		}
-
-		// Check if the incremented value is correct
-		if c.GET("age") != 26 {
-			t.Errorf("Expected 'age' to be 26, got %v", c.GET("age"))
+		// Test DECR
+		val = c.DECR("counter")
+		if val != 10 {
+			t.Errorf("Expected 10, got %v", val)
 		}
 	})
 
-	// Test DECR for an existing int key
-	t.Run("TestDECRCache", func(t *testing.T) {
-		result := c.DECR("age")
-		expectedResult := 25
-		if result != expectedResult {
-			t.Errorf("Expected '%d', got %d", expectedResult, result)
+	t.Run("TestEXIST", func(t *testing.T) {
+		c.SET("language", "Go")
+		if !c.EXIST("language") {
+			t.Errorf("Expected key 'language' to exist")
 		}
-
-		// Check if the decremented value is correct
-		if c.GET("age") != 25 {
-			t.Errorf("Expected 'age' to be 25, got %v", c.GET("age"))
+		if c.EXIST("non-existent") {
+			t.Errorf("Expected 'non-existent' key to not exist")
 		}
 	})
 
-	// Test DEL for removing a key
-	t.Run("TestDeleteCache", func(t *testing.T) {
-		c.DEL("name")
-		if c.EXIST("name") {
-			t.Errorf("Expected key 'name' to be deleted")
+	t.Run("TestDEL", func(t *testing.T) {
+		c.SET("delete-me", "test")
+		c.DEL("delete-me")
+		if c.EXIST("delete-me") {
+			t.Errorf("Expected key 'delete-me' to be deleted")
+		}
+	})
+
+	t.Run("TestLPUSHAndLRANGE", func(t *testing.T) {
+		// Test LPUSH
+		c.LPUSH("numbers", []string{"one", "two", "three"})
+		val := c.LRANGE("numbers", 1, -1)
+		expected := []string{"three", "two", "one"}
+		if !reflect.DeepEqual(val, expected) {
+			t.Errorf("Expected %v, got %v", expected, val)
+		}
+	})
+
+	t.Run("TestLPOP", func(t *testing.T) {
+		c.LPUSH("items", []string{"item1", "item2", "item3"})
+		c.LPOP("items")
+		val := c.LRANGE("items", 1, -1)
+		expected := []string{"item2", "item1"}
+		if !reflect.DeepEqual(val, expected) {
+			t.Errorf("Expected %v, got %v", expected, val)
 		}
 	})
 }

@@ -1,5 +1,9 @@
 package cache
 
+import (
+	"strconv"
+)
+
 func InitCache() *Cache {
 	return &Cache{
 		info: make(map[string]interface{}),
@@ -15,7 +19,17 @@ func (c *Cache) GET(key string) interface{} {
 func (c *Cache) SET(key string, value interface{}) {
 	c.mu.Lock()         // Acquire write lock
 	defer c.mu.Unlock() // Release write lock
-	c.info[key] = value
+	str, ok_str := value.(string)
+	if ok_str {
+		num, err := strconv.Atoi(str)
+		if err == nil {
+			c.info[key] = num
+		} else {
+			c.info[key] = str
+		}
+	} else {
+		c.info[key] = value
+	}
 }
 
 func (c *Cache) EXIST(key string) bool {
@@ -47,7 +61,6 @@ func (c *Cache) DECR(key string) int {
 	defer c.mu.Unlock()
 
 	val, _ := c.info[key].(int)
-
 	c.info[key] = val - 1
 	return val - 1
 }

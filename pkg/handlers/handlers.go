@@ -66,7 +66,7 @@ func handleDECR(key string) (string, error) {
 		if !ok {
 			return "", errors.Err{Type: errType.TypeError}
 		}
-		return fmt.Sprintf("%c%d\r\n", replytype.Int, c.INCR(key)), nil
+		return fmt.Sprintf("%c%d\r\n", replytype.Int, c.DECR(key)), nil
 	}
 }
 
@@ -90,7 +90,7 @@ func handleLRANGE(key string, startIdx, endIdx int) string {
 	var response string
 	response += fmt.Sprintf("%c%d\r\n", replytype.Array, len(vals))
 	for i := 0; i < len(vals); i++ {
-		response += fmt.Sprintf("%c%s\r\n", replytype.Bulk, vals[i])
+		response += fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(vals[i]), vals[i])
 	}
 	return response
 }
@@ -99,7 +99,7 @@ func handleLPOP(key string) string {
 	val := c.LRANGE(key, 1, 1)
 	if len(val) > 0 {
 		c.LPOP(key)
-		return fmt.Sprintf("%c%d\r\n%c%s\r\n", replytype.Array, len(val), replytype.Bulk, val[0])
+		return fmt.Sprintf("%c1\r\n%c%d\r\n%s\r\n", replytype.Array, replytype.Bulk, len(val), val[0])
 	} else {
 		return fmt.Sprintf("%c0\r\n", replytype.Array)
 	}
