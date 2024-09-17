@@ -1,9 +1,5 @@
 package cache
 
-import (
-	"fmt"
-)
-
 func InitCache() *Cache {
 	return &Cache{
 		info: make(map[string]interface{}),
@@ -37,23 +33,23 @@ func (c *Cache) DEL(key string) {
 	delete(c.info, key)
 }
 
-func (c *Cache) INCR(key string) string {
+func (c *Cache) INCR(key string) int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	val, _ := c.info[key].(int)
 	c.info[key] = val + 1
-	return fmt.Sprintf(":%d\r\n", c.info[key])
+	return val + 1
 }
 
-func (c *Cache) DECR(key string) string {
+func (c *Cache) DECR(key string) int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	val, _ := c.info[key].(int)
 
 	c.info[key] = val - 1
-	return fmt.Sprintf(":%d\r\n", c.info[key])
+	return val - 1
 }
 
 func (c *Cache) LPUSH(key string, value interface{}) {

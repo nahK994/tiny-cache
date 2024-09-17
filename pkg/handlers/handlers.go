@@ -53,7 +53,7 @@ func handleINCR(key string) (string, error) {
 		if !ok {
 			return "", errors.Err{Type: errType.TypeError}
 		}
-		return c.INCR(key), nil
+		return fmt.Sprintf("%c%d\r\n", replytype.Int, c.INCR(key)), nil
 	}
 }
 
@@ -66,7 +66,7 @@ func handleDECR(key string) (string, error) {
 		if !ok {
 			return "", errors.Err{Type: errType.TypeError}
 		}
-		return c.DECR(key), nil
+		return fmt.Sprintf("%c%d\r\n", replytype.Int, c.INCR(key)), nil
 	}
 }
 

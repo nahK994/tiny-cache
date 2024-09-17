@@ -44,9 +44,9 @@ func TestCache(t *testing.T) {
 	// Test INCR for an existing int key
 	t.Run("TestINCRCache", func(t *testing.T) {
 		result := c.INCR("age")
-		expectedResult := ":26\r\n"
+		expectedResult := 26
 		if result != expectedResult {
-			t.Errorf("Expected '%s', got %s", expectedResult, result)
+			t.Errorf("Expected '%d', got %d", expectedResult, result)
 		}
 
 		// Check if the incremented value is correct
@@ -58,9 +58,9 @@ func TestCache(t *testing.T) {
 	// Test DECR for an existing int key
 	t.Run("TestDECRCache", func(t *testing.T) {
 		result := c.DECR("age")
-		expectedResult := ":25\r\n"
+		expectedResult := 25
 		if result != expectedResult {
-			t.Errorf("Expected '%s', got %s", expectedResult, result)
+			t.Errorf("Expected '%d', got %d", expectedResult, result)
 		}
 
 		// Check if the decremented value is correct
