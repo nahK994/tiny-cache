@@ -16,15 +16,15 @@ var replytype = utils.GetReplyTypes()
 var errType = errors.GetErrorTypes()
 
 func handleGET(key string) string {
-	if !c.IsKeyExist(key) {
+	if !c.EXIST(key) {
 		return fmt.Sprintf("%c-1\r\n", replytype.Int)
 	}
 
-	if val_int, ok_int := c.ReadCache(key).(int); ok_int {
+	if val_int, ok_int := c.GET(key).(int); ok_int {
 		str := strconv.Itoa(val_int)
 		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(str), str)
 	} else {
-		val_str, _ := c.ReadCache(key).(string)
+		val_str, _ := c.GET(key).(string)
 		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(val_str), val_str)
 	}
 }
@@ -32,12 +32,12 @@ func handleGET(key string) string {
 func handleSET(arguments []string) string {
 	key := arguments[0]
 	value := arguments[1]
-	c.WriteCache(key, value)
+	c.SET(key, value)
 	return "+OK\r\n"
 }
 
 func handleKeyExist(key string) string {
-	if c.IsKeyExist(key) {
+	if c.EXIST(key) {
 		return fmt.Sprintf("%c1\r\n", replytype.Int)
 	} else {
 		return fmt.Sprintf("%c0\r\n", replytype.Int)
@@ -45,34 +45,34 @@ func handleKeyExist(key string) string {
 }
 
 func handleINCR(key string) (string, error) {
-	if !c.IsKeyExist(key) {
-		c.WriteCache(key, 1)
+	if !c.EXIST(key) {
+		c.SET(key, 1)
 		return fmt.Sprintf("%c1\r\n", replytype.Int), nil
 	} else {
-		_, ok := c.ReadCache(key).(int)
+		_, ok := c.GET(key).(int)
 		if !ok {
 			return "", errors.Err{Type: errType.TypeError}
 		}
-		return c.INCRCache(key), nil
+		return c.INCR(key), nil
 	}
 }
 
 func handleDECR(key string) (string, error) {
-	if !c.IsKeyExist(key) {
-		c.WriteCache(key, -1)
+	if !c.EXIST(key) {
+		c.SET(key, -1)
 		return fmt.Sprintf("%c-1\r\n", replytype.Int), nil
 	} else {
-		_, ok := c.ReadCache(key).(int)
+		_, ok := c.GET(key).(int)
 		if !ok {
 			return "", errors.Err{Type: errType.TypeError}
 		}
-		return c.DECRCache(key), nil
+		return c.DECR(key), nil
 	}
 }
 
 func handleDEL(key string) string {
-	if c.IsKeyExist(key) {
-		c.DeleteCache(key)
+	if c.EXIST(key) {
+		c.DEL(key)
 		return fmt.Sprintf("%c1\r\n", replytype.Int)
 	} else {
 		return fmt.Sprintf("%c0\r\n", replytype.Int)

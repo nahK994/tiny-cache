@@ -10,69 +10,69 @@ func TestCache(t *testing.T) {
 	// Initialize a new cache
 	c := cache.InitCache()
 
-	// Test WriteCache and ReadCache for string value
+	// Test SET and GET for string value
 	t.Run("TestWriteAndReadCache", func(t *testing.T) {
-		c.WriteCache("name", "Shomi")
+		c.SET("name", "Shomi")
 
-		val := c.ReadCache("name")
+		val := c.GET("name")
 		if val != "Shomi" {
 			t.Errorf("Expected 'Shomi', got %v", val)
 		}
 	})
 
-	// Test WriteCache and ReadCache for int value
+	// Test SET and GET for int value
 	t.Run("TestWriteAndReadIntCache", func(t *testing.T) {
-		c.WriteCache("age", 25)
+		c.SET("age", 25)
 
-		val := c.ReadCache("age")
+		val := c.GET("age")
 		if val != 25 {
 			t.Errorf("Expected 25, got %v", val)
 		}
 	})
 
-	// Test IsKeyExist for existing and non-existing keys
+	// Test EXIST for existing and non-existing keys
 	t.Run("TestIsKeyExist", func(t *testing.T) {
-		if !c.IsKeyExist("age") {
+		if !c.EXIST("age") {
 			t.Errorf("Expected key 'age' to exist")
 		}
 
-		if c.IsKeyExist("nonexistent") {
+		if c.EXIST("nonexistent") {
 			t.Errorf("Expected key 'nonexistent' to not exist")
 		}
 	})
 
-	// Test INCRCache for an existing int key
+	// Test INCR for an existing int key
 	t.Run("TestINCRCache", func(t *testing.T) {
-		result := c.INCRCache("age")
+		result := c.INCR("age")
 		expectedResult := ":26\r\n"
 		if result != expectedResult {
 			t.Errorf("Expected '%s', got %s", expectedResult, result)
 		}
 
 		// Check if the incremented value is correct
-		if c.ReadCache("age") != 26 {
-			t.Errorf("Expected 'age' to be 26, got %v", c.ReadCache("age"))
+		if c.GET("age") != 26 {
+			t.Errorf("Expected 'age' to be 26, got %v", c.GET("age"))
 		}
 	})
 
-	// Test DECRCache for an existing int key
+	// Test DECR for an existing int key
 	t.Run("TestDECRCache", func(t *testing.T) {
-		result := c.DECRCache("age")
+		result := c.DECR("age")
 		expectedResult := ":25\r\n"
 		if result != expectedResult {
 			t.Errorf("Expected '%s', got %s", expectedResult, result)
 		}
 
 		// Check if the decremented value is correct
-		if c.ReadCache("age") != 25 {
-			t.Errorf("Expected 'age' to be 25, got %v", c.ReadCache("age"))
+		if c.GET("age") != 25 {
+			t.Errorf("Expected 'age' to be 25, got %v", c.GET("age"))
 		}
 	})
 
-	// Test DeleteCache for removing a key
+	// Test DEL for removing a key
 	t.Run("TestDeleteCache", func(t *testing.T) {
-		c.DeleteCache("name")
-		if c.IsKeyExist("name") {
+		c.DEL("name")
+		if c.EXIST("name") {
 			t.Errorf("Expected key 'name' to be deleted")
 		}
 	})
