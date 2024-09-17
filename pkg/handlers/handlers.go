@@ -12,12 +12,12 @@ import (
 )
 
 var c *cache.Cache = cache.InitCache()
+var replytype = utils.GetReplyTypes()
 var errType = errors.GetErrorTypes()
 
 func handleGET(key string) string {
-	replytype := utils.GetReplyTypes()
 	if !c.IsKeyExist(key) {
-		return "$-1\r\n"
+		return fmt.Sprintf("%c-1\r\n", replytype.Int)
 	}
 
 	if val_int, ok_int := c.ReadCache(key).(int); ok_int {
@@ -38,16 +38,16 @@ func handleSET(arguments []string) string {
 
 func handleKeyExist(key string) string {
 	if c.IsKeyExist(key) {
-		return ":1\r\n"
+		return fmt.Sprintf("%c1\r\n", replytype.Int)
 	} else {
-		return ":0\r\n"
+		return fmt.Sprintf("%c0\r\n", replytype.Int)
 	}
 }
 
 func handleINCR(key string) (string, error) {
 	if !c.IsKeyExist(key) {
 		c.WriteCache(key, 1)
-		return ":1\r\n", nil
+		return fmt.Sprintf("%c1\r\n", replytype.Int), nil
 	} else {
 		_, ok := c.ReadCache(key).(int)
 		if !ok {
@@ -60,7 +60,7 @@ func handleINCR(key string) (string, error) {
 func handleDECR(key string) (string, error) {
 	if !c.IsKeyExist(key) {
 		c.WriteCache(key, -1)
-		return ":-1\r\n", nil
+		return fmt.Sprintf("%c-1\r\n", replytype.Int), nil
 	} else {
 		_, ok := c.ReadCache(key).(int)
 		if !ok {
@@ -73,10 +73,26 @@ func handleDECR(key string) (string, error) {
 func handleDEL(key string) string {
 	if c.IsKeyExist(key) {
 		c.DeleteCache(key)
-		return ":1\r\n"
+		return fmt.Sprintf("%c1\r\n", replytype.Int)
 	} else {
-		return ":0\r\n"
+		return fmt.Sprintf("%c0\r\n", replytype.Int)
 	}
+}
+
+func handleLPUSH(key string, args []string) string {
+	c.LPUSH(key, args)
+	vals := c.LRANGE(key, 1, -1)
+	return fmt.Sprintf("%c%d\r\n", replytype.Int, len(vals))
+}
+
+func handleLRANGE(key string, startIdx, endIdx int) string {
+	vals := c.LRANGE(key, startIdx, endIdx)
+	var response string
+	response += fmt.Sprintf("%c%d\r\n", replytype.Array, len(vals))
+	for i := 0; i < len(vals); i++ {
+		response += fmt.Sprintf("%c%s\r\n", replytype.Bulk, vals[i])
+	}
+	return response
 }
 
 func HandleCommand(serializedRawCmd string) (string, error) {
@@ -97,6 +113,12 @@ func HandleCommand(serializedRawCmd string) (string, error) {
 		return handleDEL(args[0]), nil
 	case respCmd.PING:
 		return "+PONG\r\n", nil
+	case respCmd.LPUSH:
+		return handleLPUSH(args[0], args[1:]), nil
+	case respCmd.LRANGE:
+		strIdx, _ := strconv.Atoi(args[1])
+		endIdx, _ := strconv.Atoi(args[2])
+		return handleLRANGE(args[0], strIdx, endIdx), nil
 	case respCmd.INCR:
 		return handleINCR(args[0])
 	case respCmd.DECR:

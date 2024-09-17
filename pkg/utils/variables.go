@@ -90,6 +90,7 @@ var replyType ReplyType = ReplyType{
 }
 
 var clientMessage string = fmt.Sprintf("Please use thses following commands:\n%s\n", strings.Join([]string{
-	respCommands.PING, respCommands.EXISTS, respCommands.DEL,
-	respCommands.SET, respCommands.GET, respCommands.INCR, respCommands.DECR,
+	respCommands.PING, respCommands.SET, respCommands.GET,
+	respCommands.EXISTS, respCommands.DEL, respCommands.INCR, respCommands.DECR,
+	respCommands.LPUSH, respCommands.LRANGE,
 }, ", "))

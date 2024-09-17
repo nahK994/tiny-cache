@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/nahK994/TinyCache/pkg/errors"
@@ -38,6 +39,19 @@ func validateCmdArgs(words []string) error {
 	case respCommands.PING:
 		if len(words) != 1 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
+		}
+	case respCommands.LPUSH:
+		if len(words) < 3 {
+			return errors.Err{Type: errType.WrongNumberOfArguments}
+		}
+	case respCommands.LRANGE:
+		if len(words) != 4 {
+			return errors.Err{Type: errType.WrongNumberOfArguments}
+		}
+		_, strIdx_ok := strconv.Atoi(words[2])
+		_, endIdx_ok := strconv.Atoi(words[3])
+		if strIdx_ok != nil || endIdx_ok != nil {
+			return errors.Err{Type: errType.TypeError}
 		}
 	default:
 		return errors.Err{Type: errType.UnknownCommand}

@@ -46,7 +46,7 @@ func processSET(cmd string) string {
 	return getRESPformat(words)
 }
 
-func processKeyBasedCommand(cmd string) string {
+func processGenericCommand(cmd string) string {
 	words := getCmdSegments(cmd)
 	return getRESPformat(words)
 }
@@ -58,15 +58,19 @@ func Serialize(rawCmd string) string {
 	case respCmd.SET:
 		return processSET(rawCmd)
 	case respCmd.GET:
-		return processKeyBasedCommand(rawCmd)
+		return processGenericCommand(rawCmd)
 	case respCmd.EXISTS:
-		return processKeyBasedCommand(rawCmd)
+		return processGenericCommand(rawCmd)
 	case respCmd.INCR:
-		return processKeyBasedCommand(rawCmd)
+		return processGenericCommand(rawCmd)
 	case respCmd.DECR:
-		return processKeyBasedCommand(rawCmd)
+		return processGenericCommand(rawCmd)
 	case respCmd.DEL:
-		return processKeyBasedCommand(rawCmd)
+		return processGenericCommand(rawCmd)
+	case respCmd.LPUSH:
+		return processGenericCommand(rawCmd)
+	case respCmd.LRANGE:
+		return processGenericCommand(rawCmd)
 	case respCmd.PING:
 		return "*1\r\n$4\r\nPING\r\n"
 	}
