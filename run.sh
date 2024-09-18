@@ -3,6 +3,7 @@ echo "2) Start client"
 echo "3) Start playground"
 echo "4) Kill running server and client"
 echo "5) Run test"
+echo "6) Run build"
 
 read -p "Type: " cmd
 if [[ $cmd == 1 ]]; then
@@ -18,4 +19,7 @@ elif [[ $cmd == 5 ]]; then
     go test -coverpkg=github.com/nahK994/TinyCache/pkg/handlers tests/handlers/* -v
     go test -coverpkg=github.com/nahK994/TinyCache/pkg/cache tests/cache/* -v
     go test -coverpkg=github.com/nahK994/TinyCache/pkg/utils tests/utils/* -v
+elif [[ $cmd == 6 ]]; then
+    go build -o ./bin/tinycache cmd/client/main.go
+    go build -o ./bin/tinycache-server cmd/server/main.go
 fi
