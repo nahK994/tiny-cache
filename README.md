@@ -21,6 +21,65 @@
 - [ ] **Persistent storage**: Ensure that cached data remains available even after the program restarts.
 
 
+## 🚀 How to Run the Project 🛠️
+
+### Prerequisites
+
+To run TinyCache, make sure you have the following installed on your machine:
+
+- **Go 1.22** or higher. You can download Go from [here](https://golang.org/dl/).
+
+Verify your Go version using:
+```bash
+go version
+```
+
+### Running the Project
+
+1. Clone the repository or download it manually:
+    ```bash
+    git clone https://github.com/nahK994/TinyCache.git
+    cd TinyCache
+    ```
+2. Use the `run.sh` script to manage the server and client. This script provides options to start the server, client, playground, and more.
+3. Run the following command to start the script:
+    ```bash
+    bash run.sh
+    ```
+
+4. You will be presented with the following options:
+    ```bash
+    1) Start server
+    2) Start client
+    3) Start playground
+    4) Kill running server and client
+    5) Run test
+    6) Run build
+    Type: 
+    ```
+
+5. Type 1 to start the server, or 2 to start the client.
+6. To stop any running process, select the Kill process option by typing 4.
+7. To run the tests, type 5 and press enter.
+8. Type 6 to build binaries for client and server.
+
+
+## 📥 Installation
+If you'd like to install TinyCache without cloning the repository, you can use the following command to install the server and client:
+```bash
+curl -fsSL https://raw.githubusercontent.com/nahK994/TinyCache/master/install.sh | bash
+```
+This will download the binaries, install them to the appropriate locations, and set up the server as a systemd service.
+
+
+## 🧹 Uninstallation
+To uninstall TinyCache, simply run the following command:
+```bash
+curl -fsSL https://raw.githubusercontent.com/nahK994/TinyCache/master/uninstall.sh | bash
+```
+This will stop the service, remove the binaries, and clean up all installed files.
+
+
 ##  📦 Project Structure Overview
 
 This project is organized into several directories to maintain a clean and modular structure. Below is a breakdown of each folder and its purpose:
@@ -49,35 +108,7 @@ This project is organized into several directories to maintain a clean and modul
 - **resp**: Tests for RESP command handling.
 - **cache**: Tests for caching functionality.
 
----
 
-This structure ensures that the project is organized, modular, and easy to maintain. Each directory has a specific purpose, promoting clean separation of concerns.
-
-
-## 🚀 How to Run the Project 🛠️
-
-To start the project, use the `run.sh` script. This script provides several options for running different components of the project. 
-
-### Steps:
-
-1. Run the following command to start the script:
-    ```bash
-    bash run.sh
-    ```
-2. You will be presented with the following options:
-   ```bash
-   1) Start server
-   2) Start client
-   3) Start playground
-   4) Kill running server and client
-   5) Run test
-   Type: 
-    ```
-3. Type 1 to start the server, or type 2 to start the client.
-
-4. To stop any running process, select the Kill process option by typing 4.
-
-5. To run the tests, type 5 and press enter.
 
 
 ## 🤝 Contributing
