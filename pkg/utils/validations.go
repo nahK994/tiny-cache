@@ -13,7 +13,7 @@ func validateCmdArgs(words []string) error {
 	errType := errors.GetErrorTypes()
 	switch strings.ToUpper(words[0]) {
 	case respCommands.SET:
-		if len(words) != 3 {
+		if len(words) < 3 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}
 	case respCommands.GET:
