@@ -65,7 +65,7 @@ go version
 
 
 ## 📥 Installation
-If you'd like to install TinyCache without cloning the repository, you can use the following command to install the server and client:
+If you'd like to install TinyCache on Linux without cloning the repository, use the following command to install both the server and client:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nahK994/TinyCache/master/install.sh | bash
 ```
@@ -73,7 +73,7 @@ This will download the binaries, install them to the appropriate locations, and 
 
 
 ## 🧹 Uninstallation
-To uninstall TinyCache, simply run the following command:
+To uninstall from linex TinyCache, simply run the following command:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nahK994/TinyCache/master/uninstall.sh | bash
 ```
