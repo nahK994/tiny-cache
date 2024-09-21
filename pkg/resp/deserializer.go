@@ -1,5 +1,7 @@
 package resp
 
+import "github.com/nahK994/TinyCache/pkg/utils"
+
 func parseNumber(cmd string, index *int) int {
 	numSegments := 0
 	for {
@@ -15,16 +17,34 @@ func parseNumber(cmd string, index *int) int {
 	return numSegments
 }
 
-func Deserializer(rawCmd string) []string {
-	var segments []string
+func Deserializer(rawCmd string) interface{} {
 	index := 1
-	numSegments := parseNumber(rawCmd, &index)
+	types := utils.GetReplyTypes()
+	typ := rune(rawCmd[0])
 
-	for i := 0; i < numSegments; i++ {
-		index++
-		size := parseNumber(rawCmd, &index)
-		segments = append(segments, rawCmd[index:index+size])
-		index = index + size + 2
+	switch typ {
+	case types.Array:
+		var segments []string
+		numSegments := parseNumber(rawCmd, &index)
+		for i := 0; i < numSegments; i++ {
+			index++
+			size := parseNumber(rawCmd, &index)
+			segments = append(segments, rawCmd[index:index+size])
+			index = index + size + 2
+		}
+		return segments
+	case types.Bulk:
+		var segment string
+		length := parseNumber(rawCmd, &index)
+		segment = rawCmd[index : index+length]
+		return segment
+	case types.Int:
+		value := parseNumber(rawCmd, &index)
+		return value
+	case types.Status:
+		return rawCmd[1 : len(rawCmd)-2]
+	default:
+		return nil
 	}
-	return segments
+
 }

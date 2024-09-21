@@ -106,7 +106,7 @@ func handleLPOP(key string) string {
 }
 
 func HandleCommand(serializedRawCmd string) (string, error) {
-	cmdSegments := resp.Deserializer(serializedRawCmd)
+	cmdSegments, _ := resp.Deserializer(serializedRawCmd).([]string)
 	respCmd := utils.GetRESPCommands()
 
 	cmd := cmdSegments[0]

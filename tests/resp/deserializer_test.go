@@ -12,7 +12,7 @@ func TestDeserializer_Basic(t *testing.T) {
 		respCmd := item.input
 		expected := item.output
 
-		segments := resp.Deserializer(respCmd)
+		segments, _ := resp.Deserializer(respCmd).([]string)
 		if len(segments) != len(expected) {
 			t.Fatalf("expected %d segments, got %d", len(expected), len(segments))
 		}

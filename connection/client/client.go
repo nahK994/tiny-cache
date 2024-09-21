@@ -57,6 +57,8 @@ func (c *Client) handleConn() error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(string(buf[:n]))
+
+		deserializedResp := resp.Deserializer(string(buf[:n]))
+		fmt.Println(deserializedResp)
 	}
 }
