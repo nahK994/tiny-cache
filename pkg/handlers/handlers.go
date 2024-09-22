@@ -105,7 +105,7 @@ func handleLPOP(key string) string {
 	}
 }
 
-func HandleCommand(serializedRawCmd string) (string, error) {
+func HandleCommand(serializedRawCmd string) string {
 	cmdSegments, _ := resp.Deserializer(serializedRawCmd).([]string)
 	respCmd := utils.GetRESPCommands()
 
@@ -114,28 +114,36 @@ func HandleCommand(serializedRawCmd string) (string, error) {
 
 	switch strings.ToUpper(cmd) {
 	case respCmd.GET:
-		return handleGET(args[0]), nil
+		return handleGET(args[0])
 	case respCmd.SET:
-		return handleSET(args), nil
+		return handleSET(args)
 	case respCmd.EXISTS:
-		return handleKeyExist(args[0]), nil
+		return handleKeyExist(args[0])
 	case respCmd.DEL:
-		return handleDEL(args[0]), nil
+		return handleDEL(args[0])
 	case respCmd.PING:
-		return "+PONG\r\n", nil
+		return "+PONG\r\n"
 	case respCmd.LPUSH:
-		return handleLPUSH(args[0], args[1:]), nil
+		return handleLPUSH(args[0], args[1:])
 	case respCmd.LRANGE:
 		strIdx, _ := strconv.Atoi(args[1])
 		endIdx, _ := strconv.Atoi(args[2])
-		return handleLRANGE(args[0], strIdx, endIdx), nil
+		return handleLRANGE(args[0], strIdx, endIdx)
 	case respCmd.LPOP:
-		return handleLPOP(args[0]), nil
+		return handleLPOP(args[0])
 	case respCmd.INCR:
-		return handleINCR(args[0])
+		val, err := handleINCR(args[0])
+		if err != nil {
+			return err.Error()
+		}
+		return val
 	case respCmd.DECR:
-		return handleDECR(args[0])
+		val, err := handleDECR(args[0])
+		if err != nil {
+			return err.Error()
+		}
+		return val
 	default:
-		return "", nil
+		return ""
 	}
 }
