@@ -7,6 +7,6 @@ import (
 )
 
 func main() {
-	srv := server.InitiateServer("127.0.0.1:8000")
+	srv := server.InitiateServer()
 	log.Fatal(srv.Start())
 }

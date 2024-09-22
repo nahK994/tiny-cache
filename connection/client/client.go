@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 
+	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/resp"
 	"github.com/nahK994/TinyCache/pkg/utils"
 )
@@ -15,9 +16,9 @@ type Client struct {
 	conn        net.Conn
 }
 
-func InitClient(addr string) *Client {
+func InitClient() *Client {
 	return &Client{
-		dialingAddr: addr,
+		dialingAddr: fmt.Sprintf("%s:%d", config.App.Host, config.App.Port),
 	}
 }
 

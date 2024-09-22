@@ -1,8 +1,11 @@
 package server
 
 import (
+	"fmt"
 	"log/slog"
 	"net"
+
+	"github.com/nahK994/TinyCache/pkg/config"
 )
 
 type Server struct {
@@ -10,9 +13,9 @@ type Server struct {
 	ln            net.Listener
 }
 
-func InitiateServer(listenAddress string) *Server {
+func InitiateServer() *Server {
 	return &Server{
-		listenAddress: listenAddress,
+		listenAddress: fmt.Sprintf("%s:%d", config.App.Host, config.App.Port),
 	}
 }
 

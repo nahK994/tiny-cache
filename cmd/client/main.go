@@ -7,6 +7,6 @@ import (
 )
 
 func main() {
-	client := client.InitClient("127.0.0.1:8000")
+	client := client.InitClient()
 	log.Fatal(client.Start())
 }
