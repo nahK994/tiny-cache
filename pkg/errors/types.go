@@ -13,6 +13,8 @@ type ErrTypes struct {
 	TypeError               string
 	CommandNotSupported     string
 	InvalidCommandFormat    string
+	EmptyList               string
+	UndefinedKey            string
 }
 
 var errType ErrTypes = ErrTypes{
@@ -28,6 +30,8 @@ var errType ErrTypes = ErrTypes{
 	TypeError:               "TypeError",
 	CommandNotSupported:     "CommandNotSupported",
 	InvalidCommandFormat:    "InvalidCommandFormat",
+	EmptyList:               "EmptyList",
+	UndefinedKey:            "UndefinedKey",
 }
 
 func GetErrorTypes() ErrTypes {

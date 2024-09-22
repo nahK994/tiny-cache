@@ -63,7 +63,7 @@ func TestCache(t *testing.T) {
 	t.Run("TestLPUSHAndLRANGE", func(t *testing.T) {
 		// Test LPUSH
 		c.LPUSH("numbers", []string{"one", "two", "three"})
-		val := c.LRANGE("numbers", 1, -1)
+		val := c.LRANGE("numbers", 0, 2)
 		expected := []string{"three", "two", "one"}
 		if !reflect.DeepEqual(val, expected) {
 			t.Errorf("Expected %v, got %v", expected, val)
@@ -73,7 +73,7 @@ func TestCache(t *testing.T) {
 	t.Run("TestLPOP", func(t *testing.T) {
 		c.LPUSH("items", []string{"item1", "item2", "item3"})
 		c.LPOP("items")
-		val := c.LRANGE("items", 1, -1)
+		val := c.LRANGE("items", 0, 1)
 		expected := []string{"item2", "item1"}
 		if !reflect.DeepEqual(val, expected) {
 			t.Errorf("Expected %v, got %v", expected, val)

@@ -7,7 +7,17 @@ import (
 	"github.com/nahK994/TinyCache/pkg/handlers"
 )
 
+var errType = errors.GetErrorTypes()
+
 func TestHandler(t *testing.T) {
+	t.Run("TestHandleNonExistingGET", func(t *testing.T) {
+		response := handlers.HandleCommand("*2\r\n$3\r\nGET\r\n$4\r\nname\r\n")
+		expected := errors.Err{Type: errType.UndefinedKey}
+		if response != expected.Error() {
+			t.Errorf("Expected '%s', got '%s'", expected, response)
+		}
+	})
+
 	t.Run("TestHandleGET", func(t *testing.T) {
 		handlers.HandleCommand("*3\r\n$3\r\nSET\r\n$4\r\nname\r\n$5\r\nShomi\r\n")
 		response := handlers.HandleCommand("*2\r\n$3\r\nGET\r\n$4\r\nname\r\n")
@@ -68,10 +78,18 @@ func TestHandler(t *testing.T) {
 		}
 	})
 
+	t.Run("TestHandleNonExistingDEL", func(t *testing.T) {
+		response := handlers.HandleCommand("*2\r\n$3\r\nDEL\r\n$7\r\ntempKey\r\n")
+		expected := ":0\r\n"
+		if response != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, response)
+		}
+	})
+
 	t.Run("TestHandleLPUSHAndLRANGE", func(t *testing.T) {
 		handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$6\r\nmyList\r\n$3\r\none\r\n$3\r\ntwo\r\n$5\r\nthree\r\n")
 		response := handlers.HandleCommand("*4\r\n$6\r\nLRANGE\r\n$6\r\nmyList\r\n$1\r\n1\r\n$2\r\n-1\r\n")
-		expected := "*3\r\n$5\r\nthree\r\n$3\r\ntwo\r\n$3\r\none\r\n"
+		expected := "*2\r\n$3\r\ntwo\r\n$3\r\none\r\n"
 		if response != expected {
 			t.Errorf("Expected '%s', got '%s'", expected, response)
 		}
@@ -99,20 +117,17 @@ func TestHandler(t *testing.T) {
 
 	t.Run("TestHandleInvalidDECR", func(t *testing.T) {
 		response := handlers.HandleCommand("*2\r\n$4\r\nDECR\r\n$4\r\nname\r\n")
-		err := errors.Err{
-			Type: errors.GetErrorTypes().TypeError,
-		}
-		expected := err.Error()
-		if response != expected {
-			t.Errorf("Expected '%s', got '%s'", expected, response)
+		expected := errors.Err{Type: errType.TypeError}
+		if response != expected.Error() {
+			t.Errorf("Expected '%s', got '%s'", expected.Error(), response)
 		}
 	})
 
 	t.Run("TestHandleEmptyListLPOP", func(t *testing.T) {
 		response := handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$4\r\nname\r\n")
-		expected := "*0\r\n"
-		if response != expected {
-			t.Errorf("Expected '%s', got '%s'", expected, response)
+		expected := errors.Err{Type: errType.TypeError}
+		if response != expected.Error() {
+			t.Errorf("Expected '%s', got '%s'", expected.Error(), response)
 		}
 	})
 }

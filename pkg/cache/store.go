@@ -76,29 +76,27 @@ func (c *Cache) LPUSH(key string, value interface{}) {
 	c.info[key] = vals
 }
 
+func processIdx(vals []string, idx int) int {
+	if idx > len(vals) {
+		idx = len(vals) - 1
+	} else if idx < 0 {
+		if -1*len(vals) > idx {
+			idx = 0
+		} else {
+			idx = len(vals) + idx
+		}
+	}
+
+	return idx
+}
+
 func (c *Cache) LRANGE(key string, startIdx, endIdx int) []string {
 	c.mu.RLock()         // Acquire write lock
 	defer c.mu.RUnlock() // Release write lock
 
 	vals, _ := c.info[key].([]string)
-	if startIdx < 0 {
-		startIdx = len(vals) + startIdx
-	} else {
-		startIdx--
-	}
-	if startIdx < 0 {
-		startIdx = 0
-	}
-
-	if endIdx < 0 {
-		endIdx = len(vals) + endIdx
-	} else {
-		endIdx--
-	}
-	if endIdx >= len(vals) {
-		endIdx = len(vals) - 1
-	}
-
+	startIdx = processIdx(vals, startIdx)
+	endIdx = processIdx(vals, endIdx)
 	var ans []string
 	for i := startIdx; i <= endIdx; i++ {
 		ans = append(ans, vals[i])

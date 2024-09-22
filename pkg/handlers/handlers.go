@@ -15,17 +15,18 @@ var c *cache.Cache = cache.InitCache()
 var replytype = utils.GetReplyTypes()
 var errType = errors.GetErrorTypes()
 
-func handleGET(key string) string {
+func handleGET(key string) (string, error) {
 	if !c.EXISTS(key) {
-		return fmt.Sprintf("%c-1\r\n", replytype.Int)
+		return "", errors.Err{Type: errType.UndefinedKey}
 	}
 
 	if val_int, ok_int := c.GET(key).(int); ok_int {
 		str := strconv.Itoa(val_int)
-		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(str), str)
+		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(str), str), nil
+	} else if val_str, ok_str := c.GET(key).(string); ok_str {
+		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(val_str), val_str), nil
 	} else {
-		val_str, _ := c.GET(key).(string)
-		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(val_str), val_str)
+		return "", errors.Err{Type: errType.TypeError}
 	}
 }
 
@@ -46,28 +47,26 @@ func handleKeyExist(key string) string {
 
 func handleINCR(key string) (string, error) {
 	if !c.EXISTS(key) {
-		c.SET(key, 1)
-		return fmt.Sprintf("%c1\r\n", replytype.Int), nil
+		c.SET(key, 0)
 	} else {
 		_, ok := c.GET(key).(int)
 		if !ok {
 			return "", errors.Err{Type: errType.TypeError}
 		}
-		return fmt.Sprintf("%c%d\r\n", replytype.Int, c.INCR(key)), nil
 	}
+	return fmt.Sprintf("%c%d\r\n", replytype.Int, c.INCR(key)), nil
 }
 
 func handleDECR(key string) (string, error) {
 	if !c.EXISTS(key) {
-		c.SET(key, -1)
-		return fmt.Sprintf("%c-1\r\n", replytype.Int), nil
+		c.SET(key, 0)
 	} else {
 		_, ok := c.GET(key).(int)
 		if !ok {
 			return "", errors.Err{Type: errType.TypeError}
 		}
-		return fmt.Sprintf("%c%d\r\n", replytype.Int, c.DECR(key)), nil
 	}
+	return fmt.Sprintf("%c%d\r\n", replytype.Int, c.DECR(key)), nil
 }
 
 func handleDEL(key string) string {
@@ -95,13 +94,21 @@ func handleLRANGE(key string, startIdx, endIdx int) string {
 	return response
 }
 
-func handleLPOP(key string) string {
-	val := c.LRANGE(key, 1, 1)
+func handleLPOP(key string) (string, error) {
+	if !c.EXISTS(key) {
+		return "", errors.Err{Type: errType.EmptyList}
+	}
+	_, err := handleGET(key)
+	if err == nil {
+		return "", errors.Err{Type: errType.TypeError}
+	}
+
+	val := c.LRANGE(key, 0, 0)
 	if len(val) > 0 {
 		c.LPOP(key)
-		return fmt.Sprintf("%c1\r\n%c%d\r\n%s\r\n", replytype.Array, replytype.Bulk, len(val), val[0])
+		return fmt.Sprintf("%c1\r\n%c%d\r\n%s\r\n", replytype.Array, replytype.Bulk, len(val), val[0]), nil
 	} else {
-		return fmt.Sprintf("%c0\r\n", replytype.Array)
+		return fmt.Sprintf("%c0\r\n", replytype.Array), nil
 	}
 }
 
@@ -114,7 +121,11 @@ func HandleCommand(serializedRawCmd string) string {
 
 	switch strings.ToUpper(cmd) {
 	case respCmd.GET:
-		return handleGET(args[0])
+		val, err := handleGET(args[0])
+		if err != nil {
+			return err.Error()
+		}
+		return val
 	case respCmd.SET:
 		return handleSET(args)
 	case respCmd.EXISTS:
@@ -130,7 +141,11 @@ func HandleCommand(serializedRawCmd string) string {
 		endIdx, _ := strconv.Atoi(args[2])
 		return handleLRANGE(args[0], strIdx, endIdx)
 	case respCmd.LPOP:
-		return handleLPOP(args[0])
+		val, err := handleLPOP(args[0])
+		if err != nil {
+			return err.Error()
+		}
+		return val
 	case respCmd.INCR:
 		val, err := handleINCR(args[0])
 		if err != nil {

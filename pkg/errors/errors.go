@@ -44,6 +44,12 @@ func (e Err) Error() string {
 	case errTypes.InvalidCommandFormat:
 		return "-ERR invalid command format"
 
+	case errTypes.EmptyList:
+		return "-ERR empty list or set"
+
+	case errTypes.UndefinedKey:
+		return "-ERR key not defined"
+
 	default:
 		return "-ERR unknown command error"
 	}
