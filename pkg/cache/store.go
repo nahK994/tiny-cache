@@ -113,3 +113,12 @@ func (c *Cache) LPOP(key string) {
 	vals, _ := c.info[key].([]string)
 	c.info[key] = vals[1:]
 }
+
+func (c *Cache) FLUSHALL() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	for k := range c.info {
+		delete(c.info, k)
+	}
+}

@@ -73,6 +73,8 @@ func Serialize(rawCmd string) string {
 		return processGenericCommand(rawCmd)
 	case respCmd.LPOP:
 		return processGenericCommand(rawCmd)
+	case respCmd.FLUSHALL:
+		return "*1\r\n$8\r\nFLUSHALL\r\n"
 	case respCmd.PING:
 		return "*1\r\n$4\r\nPING\r\n"
 	}

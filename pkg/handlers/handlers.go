@@ -6,12 +6,13 @@ import (
 	"strings"
 
 	"github.com/nahK994/TinyCache/pkg/cache"
+	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/errors"
 	"github.com/nahK994/TinyCache/pkg/resp"
 	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
-var c *cache.Cache = cache.InitCache()
+var c *cache.Cache = config.App.Cache
 var replytype = utils.GetReplyTypes()
 var errType = errors.GetErrorTypes()
 
@@ -34,6 +35,15 @@ func handleSET(arguments []string) string {
 	key := arguments[0]
 	value := arguments[1]
 	c.SET(key, value)
+	return "+OK\r\n"
+}
+
+func handleFLUSHALL() string {
+	if config.App.IsAsyncFlush {
+		config.App.FlushCh <- 1
+	} else {
+		c.FLUSHALL()
+	}
 	return "+OK\r\n"
 }
 
@@ -158,6 +168,8 @@ func HandleCommand(serializedRawCmd string) string {
 			return err.Error()
 		}
 		return val
+	case respCmd.FLUSHALL:
+		return handleFLUSHALL()
 	default:
 		return ""
 	}

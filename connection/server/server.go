@@ -19,6 +19,16 @@ func InitiateServer() *Server {
 	}
 }
 
+func processAsyncTasks() {
+	c := config.App.Cache
+	for {
+		select {
+		case <-config.App.FlushCh:
+			c.FLUSHALL()
+		}
+	}
+}
+
 func (s *Server) acceptConn() error {
 	for {
 		conn, err := s.ln.Accept()
@@ -27,6 +37,8 @@ func (s *Server) acceptConn() error {
 		}
 
 		peer := newPeer(conn.RemoteAddr().String(), conn)
+
+		go processAsyncTasks()
 		go peer.handleConn()
 	}
 }

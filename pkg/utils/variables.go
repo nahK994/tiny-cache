@@ -37,6 +37,7 @@ type RESPCommands struct {
 	MGET     string
 	LRANGE   string
 	EXISTS   string
+	FLUSHALL string
 }
 
 var respCommands = RESPCommands{
@@ -71,6 +72,7 @@ var respCommands = RESPCommands{
 	MGET:     "MGET",
 	LRANGE:   "LRANGE",
 	EXISTS:   "EXISTS",
+	FLUSHALL: "FLUSHALL",
 }
 
 type ReplyType struct {
@@ -92,5 +94,5 @@ var replyType ReplyType = ReplyType{
 var clientMessage string = fmt.Sprintf("Please use thses following commands:\n%s\n", strings.Join([]string{
 	respCommands.PING, respCommands.SET, respCommands.GET,
 	respCommands.EXISTS, respCommands.DEL, respCommands.INCR, respCommands.DECR,
-	respCommands.LPUSH, respCommands.LPOP, respCommands.LRANGE,
+	respCommands.LPUSH, respCommands.LPOP, respCommands.LRANGE, respCommands.FLUSHALL,
 }, ", "))
