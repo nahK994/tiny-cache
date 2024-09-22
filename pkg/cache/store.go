@@ -98,8 +98,10 @@ func (c *Cache) LRANGE(key string, startIdx, endIdx int) []string {
 	startIdx = processIdx(vals, startIdx)
 	endIdx = processIdx(vals, endIdx)
 	var ans []string
-	for i := startIdx; i <= endIdx; i++ {
-		ans = append(ans, vals[i])
+	if len(vals) > 0 {
+		for i := startIdx; i <= endIdx; i++ {
+			ans = append(ans, vals[i])
+		}
 	}
 	return ans
 }

@@ -106,9 +106,9 @@ func handleLPOP(key string) (string, error) {
 	val := c.LRANGE(key, 0, 0)
 	if len(val) > 0 {
 		c.LPOP(key)
-		return fmt.Sprintf("%c1\r\n%c%d\r\n%s\r\n", replytype.Array, replytype.Bulk, len(val), val[0]), nil
+		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(val[0]), val[0]), nil
 	} else {
-		return fmt.Sprintf("%c0\r\n", replytype.Array), nil
+		return fmt.Sprintf("%c0\r\n", replytype.Bulk), nil
 	}
 }
 

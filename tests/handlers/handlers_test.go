@@ -122,9 +122,9 @@ func TestHandler(t *testing.T) {
 	})
 
 	t.Run("TestHandleLPOP", func(t *testing.T) {
-		handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$5\r\nitems\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
+		handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$5\r\nitems\r\n$3\r\naab\r\n$3\r\nbbc\r\n$3\r\nccd\r\n")
 		response := handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$5\r\nitems\r\n")
-		expected := "*1\r\n$1\r\nc\r\n"
+		expected := "$3\r\nccd\r\n"
 		if response != expected {
 			t.Errorf("Expected '%s', got '%s'", expected, response)
 		}

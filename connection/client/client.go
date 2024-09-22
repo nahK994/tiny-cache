@@ -69,12 +69,15 @@ func processResp(res interface{}) string {
 	case int:
 		return fmt.Sprintln("(integer)", v)
 	case string:
-		return fmt.Sprintln(v)
+		if len(v) == 0 {
+			return fmt.Sprintln("(nil)")
+		} else {
+			return fmt.Sprintln(v)
+		}
 	case []string:
-		// return fmt.Sprintln("(list)", v)
 		var res string
 		for i, item := range v {
-			res += fmt.Sprintf("%d) %s\n", i, item)
+			res += fmt.Sprintf("%d) %s\n", i+1, item)
 		}
 		return res
 	case error:
