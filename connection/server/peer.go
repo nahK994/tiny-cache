@@ -45,11 +45,12 @@ func (p *Peer) handleConn() {
 		}
 		fmt.Printf("%s> %s\n", p.clientAddr, formattedCmd)
 
+		var res string
 		if err := utils.ValidateSerializedCmd(rawCmd); err != nil {
-			p.conn.Write([]byte(err.Error()))
+			res = err.Error()
 		} else {
-			res := handlers.HandleCommand(rawCmd)
-			p.conn.Write([]byte(res))
+			res = handlers.HandleCommand(rawCmd)
 		}
+		p.conn.Write([]byte(res))
 	}
 }
