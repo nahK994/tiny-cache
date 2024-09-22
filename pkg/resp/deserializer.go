@@ -1,6 +1,10 @@
 package resp
 
-import "github.com/nahK994/TinyCache/pkg/utils"
+import (
+	"errors"
+
+	"github.com/nahK994/TinyCache/pkg/utils"
+)
 
 func parseNumber(cmd string, index *int) int {
 	numSegments := 0
@@ -43,6 +47,8 @@ func Deserializer(rawCmd string) interface{} {
 		return value
 	case types.Status:
 		return rawCmd[1 : len(rawCmd)-2]
+	case types.Error:
+		return errors.New(rawCmd[1:])
 	default:
 		return nil
 	}

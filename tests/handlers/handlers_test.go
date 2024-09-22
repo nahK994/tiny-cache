@@ -86,24 +86,6 @@ func TestHandler(t *testing.T) {
 		}
 	})
 
-	t.Run("TestHandleLPUSHAndLRANGE", func(t *testing.T) {
-		handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$6\r\nmyList\r\n$3\r\none\r\n$3\r\ntwo\r\n$5\r\nthree\r\n")
-		response := handlers.HandleCommand("*4\r\n$6\r\nLRANGE\r\n$6\r\nmyList\r\n$1\r\n1\r\n$2\r\n-1\r\n")
-		expected := "*2\r\n$3\r\ntwo\r\n$3\r\none\r\n"
-		if response != expected {
-			t.Errorf("Expected '%s', got '%s'", expected, response)
-		}
-	})
-
-	t.Run("TestHandleLPOP", func(t *testing.T) {
-		handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$5\r\nitems\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
-		response := handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$5\r\nitems\r\n")
-		expected := "*1\r\n$1\r\nc\r\n"
-		if response != expected {
-			t.Errorf("Expected '%s', got '%s'", expected, response)
-		}
-	})
-
 	t.Run("TestHandleInvalidINCR", func(t *testing.T) {
 		response := handlers.HandleCommand("*2\r\n$4\r\nINCR\r\n$4\r\nname\r\n")
 		err := errors.Err{
@@ -120,6 +102,31 @@ func TestHandler(t *testing.T) {
 		expected := errors.Err{Type: errType.TypeError}
 		if response != expected.Error() {
 			t.Errorf("Expected '%s', got '%s'", expected.Error(), response)
+		}
+	})
+
+	t.Run("TestHandleLPUSH", func(t *testing.T) {
+		response := handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$6\r\nmyList\r\n$3\r\none\r\n$3\r\ntwo\r\n$5\r\nthree\r\n")
+		expected := ":3\r\n"
+		if response != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, response)
+		}
+	})
+
+	t.Run("TestHandleLPUSHAndLRANGE", func(t *testing.T) {
+		response := handlers.HandleCommand("*4\r\n$6\r\nLRANGE\r\n$6\r\nmyList\r\n$1\r\n1\r\n$2\r\n-1\r\n")
+		expected := "*2\r\n$3\r\ntwo\r\n$3\r\none\r\n"
+		if response != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, response)
+		}
+	})
+
+	t.Run("TestHandleLPOP", func(t *testing.T) {
+		handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$5\r\nitems\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
+		response := handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$5\r\nitems\r\n")
+		expected := "*1\r\n$1\r\nc\r\n"
+		if response != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, response)
 		}
 	})
 

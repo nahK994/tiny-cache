@@ -59,6 +59,27 @@ func (c *Client) handleConn() error {
 		}
 
 		deserializedResp := resp.Deserializer(string(buf[:n]))
-		fmt.Println(deserializedResp)
+		res := processResp(deserializedResp)
+		fmt.Println(res)
+	}
+}
+
+func processResp(res interface{}) string {
+	switch v := res.(type) {
+	case int:
+		return fmt.Sprintln("(integer)", v)
+	case string:
+		return fmt.Sprintln(v)
+	case []string:
+		// return fmt.Sprintln("(list)", v)
+		var res string
+		for i, item := range v {
+			res += fmt.Sprintf("%d) %s\n", i, item)
+		}
+		return res
+	case error:
+		return fmt.Sprintln("(error)", v.Error())
+	default:
+		return ""
 	}
 }

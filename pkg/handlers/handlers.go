@@ -80,7 +80,7 @@ func handleDEL(key string) string {
 
 func handleLPUSH(key string, args []string) string {
 	c.LPUSH(key, args)
-	vals := c.LRANGE(key, 1, -1)
+	vals := c.LRANGE(key, 0, len(args)-1)
 	return fmt.Sprintf("%c%d\r\n", replytype.Int, len(vals))
 }
 
