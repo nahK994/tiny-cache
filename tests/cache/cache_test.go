@@ -44,10 +44,10 @@ func TestCache(t *testing.T) {
 
 	t.Run("TestEXIST", func(t *testing.T) {
 		c.SET("language", "Go")
-		if !c.EXIST("language") {
+		if !c.EXISTS("language") {
 			t.Errorf("Expected key 'language' to exist")
 		}
-		if c.EXIST("non-existent") {
+		if c.EXISTS("non-existent") {
 			t.Errorf("Expected 'non-existent' key to not exist")
 		}
 	})
@@ -55,7 +55,7 @@ func TestCache(t *testing.T) {
 	t.Run("TestDEL", func(t *testing.T) {
 		c.SET("delete-me", "test")
 		c.DEL("delete-me")
-		if c.EXIST("delete-me") {
+		if c.EXISTS("delete-me") {
 			t.Errorf("Expected key 'delete-me' to be deleted")
 		}
 	})

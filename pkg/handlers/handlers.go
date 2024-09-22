@@ -16,7 +16,7 @@ var replytype = utils.GetReplyTypes()
 var errType = errors.GetErrorTypes()
 
 func handleGET(key string) string {
-	if !c.EXIST(key) {
+	if !c.EXISTS(key) {
 		return fmt.Sprintf("%c-1\r\n", replytype.Int)
 	}
 
@@ -37,7 +37,7 @@ func handleSET(arguments []string) string {
 }
 
 func handleKeyExist(key string) string {
-	if c.EXIST(key) {
+	if c.EXISTS(key) {
 		return fmt.Sprintf("%c1\r\n", replytype.Int)
 	} else {
 		return fmt.Sprintf("%c0\r\n", replytype.Int)
@@ -45,7 +45,7 @@ func handleKeyExist(key string) string {
 }
 
 func handleINCR(key string) (string, error) {
-	if !c.EXIST(key) {
+	if !c.EXISTS(key) {
 		c.SET(key, 1)
 		return fmt.Sprintf("%c1\r\n", replytype.Int), nil
 	} else {
@@ -58,7 +58,7 @@ func handleINCR(key string) (string, error) {
 }
 
 func handleDECR(key string) (string, error) {
-	if !c.EXIST(key) {
+	if !c.EXISTS(key) {
 		c.SET(key, -1)
 		return fmt.Sprintf("%c-1\r\n", replytype.Int), nil
 	} else {
@@ -71,7 +71,7 @@ func handleDECR(key string) (string, error) {
 }
 
 func handleDEL(key string) string {
-	if c.EXIST(key) {
+	if c.EXISTS(key) {
 		c.DEL(key)
 		return fmt.Sprintf("%c1\r\n", replytype.Int)
 	} else {

@@ -32,7 +32,7 @@ func (c *Cache) SET(key string, value interface{}) {
 	}
 }
 
-func (c *Cache) EXIST(key string) bool {
+func (c *Cache) EXISTS(key string) bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
