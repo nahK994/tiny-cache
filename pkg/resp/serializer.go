@@ -25,18 +25,34 @@ var commandProcessors = map[string]CommandProcessor{
 }
 
 func getCommandName(cmd string) string {
-	seg := strings.Split(cmd, " ")[0]
+	seg := ""
+	for _, ch := range cmd {
+		if ch == ' ' {
+			break
+		}
+		seg += string(ch)
+	}
 	return strings.ToUpper(seg)
 }
 
 func getCmdSegments(cmd string) []string {
-	return strings.Fields(cmd)
+	var words []string
+	temp := strings.Split(cmd, " ")
+	for _, ch := range temp {
+		if len(ch) == 0 {
+			continue
+		}
+		words = append(words, ch)
+	}
+	return words
 }
 
 func getRESPformat(segments []string) string {
 	serializedCmd := fmt.Sprintf("*%d\r\n", len(segments))
-	for _, seg := range segments {
-		serializedCmd += fmt.Sprintf("$%d\r\n%s\r\n", len(seg), seg)
+
+	serializedCmd += fmt.Sprintf("$%d\r\n%s\r\n", len(segments[0]), strings.ToUpper(segments[0]))
+	for i := 1; i < len(segments); i++ {
+		serializedCmd += fmt.Sprintf("$%d\r\n%s\r\n", len(segments[i]), segments[i])
 	}
 	return serializedCmd
 }
