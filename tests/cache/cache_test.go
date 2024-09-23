@@ -70,13 +70,31 @@ func TestCache(t *testing.T) {
 		}
 	})
 
-	t.Run("TestLPOP", func(t *testing.T) {
-		c.LPUSH("items", []string{"item1", "item2", "item3"})
-		c.LPOP("items")
-		val := c.LRANGE("items", 0, 1)
+	t.Run("TestLPUSH_LPOP", func(t *testing.T) {
+		c.LPUSH("items1", []string{"item1", "item2", "item3"})
+		c.LPOP("items1")
+		val := c.LRANGE("items1", 0, 1)
 		expected := []string{"item2", "item1"}
 		if !reflect.DeepEqual(val, expected) {
 			t.Errorf("Expected %v, got %v", expected, val)
+		}
+	})
+
+	t.Run("TestRPUSH_RPOP", func(t *testing.T) {
+		c.RPUSH("items2", []string{"item1", "item2", "item3"})
+		c.RPOP("items2")
+		val := c.LRANGE("items2", 0, -1)
+		expected := []string{"item1", "item2"}
+		if !reflect.DeepEqual(val, expected) {
+			t.Errorf("Expected %v, got %v", expected, val)
+		}
+	})
+
+	t.Run("TestFLUSHALL", func(t *testing.T) {
+		c.SET("key", "value")
+		c.FLUSHALL()
+		if c.EXISTS("key") {
+			t.Errorf("'key' exists after FLUSHALL")
 		}
 	})
 }

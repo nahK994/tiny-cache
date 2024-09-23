@@ -112,13 +112,10 @@ func (c *Cache) LRANGE(key string, startIdx, endIdx int) []string {
 	vals, _ := c.info[key].([]string)
 	startIdx = processIdx(vals, startIdx)
 	endIdx = processIdx(vals, endIdx)
-	var ans []string
-	if len(vals) > 0 {
-		for i := startIdx; i <= endIdx; i++ {
-			ans = append(ans, vals[i])
-		}
+	if len(vals) > 0 && startIdx <= endIdx {
+		return vals[startIdx : endIdx+1]
 	}
-	return ans
+	return nil
 }
 
 func (c *Cache) LPOP(key string) {

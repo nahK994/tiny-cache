@@ -142,8 +142,53 @@ var testSerializedCmds = []struct {
 		expectErr: errors.Err{Type: errType.UnexpectedCharacter},
 	},
 	{
-		name:      "Valid command with extra characters",
+		name:      "Valid command with extra characters for GET",
 		input:     "*3\r\n$3\r\nGET\r\n$3\r\nage\r\n$3\r\n123\r\n",
+		expectErr: errors.Err{Type: errType.WrongNumberOfArguments},
+	},
+	{
+		name:      "Valid command with extra characters for LPOP",
+		input:     "*3\r\n$4\r\nLPOP\r\n$3\r\narr\r\n$3\r\n123\r\n",
+		expectErr: errors.Err{Type: errType.WrongNumberOfArguments},
+	},
+	{
+		name:      "Valid command with extra characters for RPOP",
+		input:     "*3\r\n$4\r\nRPOP\r\n$3\r\narr\r\n$3\r\n123\r\n",
+		expectErr: errors.Err{Type: errType.WrongNumberOfArguments},
+	},
+	{
+		name:      "Valid command with extra characters for LPUSH",
+		input:     "*2\r\n$5\r\nLPUSH\r\n$3\r\narr\r\n",
+		expectErr: errors.Err{Type: errType.WrongNumberOfArguments},
+	},
+	{
+		name:      "Valid command with extra characters for RPUSH",
+		input:     "*2\r\n$5\r\nRPUSH\r\n$3\r\narr\r\n",
+		expectErr: errors.Err{Type: errType.WrongNumberOfArguments},
+	},
+	{
+		name:      "Valid command with extra characters for LRANGE",
+		input:     "*2\r\n$6\r\nLRANGE\r\n$1\r\n1\r\n",
+		expectErr: errors.Err{Type: errType.WrongNumberOfArguments},
+	},
+	{
+		name:      "Type error for LRANGE",
+		input:     "*3\r\n$6\r\nLRANGE\r\n$2\r\na1\r\n$2\r\n11\r\n",
+		expectErr: errors.Err{Type: errType.WrongNumberOfArguments},
+	},
+	{
+		name:      "Valid command with extra characters for PING",
+		input:     "*2\r\n$4\r\nPING\r\n$2\r\na1\r\n",
+		expectErr: errors.Err{Type: errType.WrongNumberOfArguments},
+	},
+	{
+		name:      "Valid command with extra characters for FLUSHALL",
+		input:     "*2\r\n$8\r\nFLUSHALL\r\n$2\r\na1\r\n",
+		expectErr: errors.Err{Type: errType.WrongNumberOfArguments},
+	},
+	{
+		name:      "Valid command with extra characters for DEL",
+		input:     "*3\r\n$3\r\nDEL\r\n$2\r\na1\r\n$3\r\n132\r\n",
 		expectErr: errors.Err{Type: errType.WrongNumberOfArguments},
 	},
 }

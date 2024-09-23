@@ -121,8 +121,9 @@ func handleLPOP(key string) (string, error) {
 
 	val := c.LRANGE(key, 0, 0)
 	if len(val) > 0 {
+		data := val[0]
 		c.LPOP(key)
-		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(val[0]), val[0]), nil
+		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(data), data), nil
 	} else {
 		return fmt.Sprintf("%c0\r\n", replytype.Bulk), nil
 	}
@@ -137,10 +138,10 @@ func handleRPOP(key string) (string, error) {
 		return "", errors.Err{Type: errType.TypeError}
 	}
 
-	val := c.LRANGE(key, 0, 0)
+	val := c.LRANGE(key, 0, -1)
 	if len(val) > 0 {
-		c.RPOP(key)
 		data := val[len(val)-1]
+		c.RPOP(key)
 		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(data), data), nil
 	} else {
 		return fmt.Sprintf("%c0\r\n", replytype.Bulk), nil
