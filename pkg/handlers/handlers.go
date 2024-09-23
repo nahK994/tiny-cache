@@ -47,7 +47,7 @@ func handleFLUSHALL() string {
 	return "+OK\r\n"
 }
 
-func handleKeyExist(key string) string {
+func handleEXISTS(key string) string {
 	if c.EXISTS(key) {
 		return fmt.Sprintf("%c1\r\n", replytype.Int)
 	} else {
@@ -90,7 +90,7 @@ func handleDEL(key string) string {
 
 func handleLPUSH(key string, args []string) string {
 	c.LPUSH(key, args)
-	vals := c.LRANGE(key, 0, len(args)-1)
+	vals := c.LRANGE(key, 0, -1)
 	return fmt.Sprintf("%c%d\r\n", replytype.Int, len(vals))
 }
 
@@ -139,7 +139,7 @@ func HandleCommand(serializedRawCmd string) string {
 	case respCmd.SET:
 		return handleSET(args)
 	case respCmd.EXISTS:
-		return handleKeyExist(args[0])
+		return handleEXISTS(args[0])
 	case respCmd.DEL:
 		return handleDEL(args[0])
 	case respCmd.PING:

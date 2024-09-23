@@ -65,14 +65,17 @@ func (c *Cache) DECR(key string) int {
 	return val - 1
 }
 
-func (c *Cache) LPUSH(key string, value interface{}) {
+func (c *Cache) LPUSH(key string, values []string) {
 	c.mu.Lock()         // Acquire write lock
 	defer c.mu.Unlock() // Release write lock
-	data, _ := value.([]string)
-	var vals []string
-	for i := len(data) - 1; i >= 0; i-- {
-		vals = append(vals, data[i])
+
+	oldData, _ := c.info[key].([]string)
+	vals := make([]string, len(values)+len(oldData))
+	for i := 0; i < len(values); i++ {
+		vals[i] = values[len(values)-1-i]
 	}
+	copy(vals[len(values):], oldData)
+	oldData = nil
 	c.info[key] = vals
 }
 

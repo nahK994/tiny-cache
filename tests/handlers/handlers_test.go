@@ -137,4 +137,51 @@ func TestHandler(t *testing.T) {
 			t.Errorf("Expected '%s', got '%s'", expected.Error(), response)
 		}
 	})
+
+	t.Run("TestHandleMultipleLPUSHAndLPOP", func(t *testing.T) {
+		handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$3\r\narr\r\n$3\r\none\r\n$3\r\ntwo\r\n$5\r\nthree\r\n")
+		handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$3\r\narr\r\n$1\r\n1\r\n$1\r\n2\r\n$1\r\n3\r\n")
+
+		response := handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$3\r\narr\r\n")
+		expected := "$1\r\n3\r\n"
+		if response != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, response)
+		}
+
+		response = handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$3\r\narr\r\n")
+		expected = "$1\r\n2\r\n"
+		if response != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, response)
+		}
+
+		response = handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$3\r\narr\r\n")
+		expected = "$1\r\n1\r\n"
+		if response != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, response)
+		}
+
+		response = handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$3\r\narr\r\n")
+		expected = "$5\r\nthree\r\n"
+		if response != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, response)
+		}
+
+		response = handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$3\r\narr\r\n")
+		expected = "$3\r\ntwo\r\n"
+		if response != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, response)
+		}
+
+		response = handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$3\r\narr\r\n")
+		expected = "$3\r\none\r\n"
+		if response != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, response)
+		}
+
+		response = handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$3\r\narr\r\n")
+		expected = "$0\r\n"
+		if response != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, response)
+		}
+	})
 }
