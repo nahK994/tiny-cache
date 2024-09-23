@@ -12,32 +12,16 @@ type RESPCommands struct {
 	RPUSH    string
 	LPOP     string
 	RPOP     string
-	EXPIRE   string
 	DEL      string
 	INCR     string
 	DECR     string
-	HSET     string
-	HGET     string
-	HMSET    string
-	HMGET    string
-	SMEMBERS string
-	SADD     string
-	SREM     string
-	ZADD     string
-	ZREM     string
-	ZRANGE   string
 	PING     string
-	AUTH     string
-	MULTI    string
-	EXEC     string
-	DISCARD  string
-	WATCH    string
-	UNWATCH  string
-	MSET     string
-	MGET     string
 	LRANGE   string
 	EXISTS   string
 	FLUSHALL string
+	EXPIRE   string
+	TTL      string
+	PERSIST  string
 }
 
 var respCommands = RESPCommands{
@@ -47,32 +31,16 @@ var respCommands = RESPCommands{
 	RPUSH:    "RPUSH",
 	LPOP:     "LPOP",
 	RPOP:     "RPOP",
-	EXPIRE:   "EXPIRE",
 	DEL:      "DEL",
 	INCR:     "INCR",
 	DECR:     "DECR",
-	HSET:     "HSET",
-	HGET:     "HGET",
-	HMSET:    "HMSET",
-	HMGET:    "HMGET",
-	SMEMBERS: "SMEMBERS",
-	SADD:     "SADD",
-	SREM:     "SREM",
-	ZADD:     "ZADD",
-	ZREM:     "ZREM",
-	ZRANGE:   "ZRANGE",
 	PING:     "PING",
-	AUTH:     "AUTH",
-	MULTI:    "MULTI",
-	EXEC:     "EXEC",
-	DISCARD:  "DISCARD",
-	WATCH:    "WATCH",
-	UNWATCH:  "UNWATCH",
-	MSET:     "MSET",
-	MGET:     "MGET",
 	LRANGE:   "LRANGE",
 	EXISTS:   "EXISTS",
 	FLUSHALL: "FLUSHALL",
+	EXPIRE:   "EXPIRE",
+	TTL:      "TTL",
+	PERSIST:  "PERSIST",
 }
 
 type ReplyType struct {
