@@ -12,47 +12,55 @@ var errType errors.ErrTypes = errors.GetErrorTypes()
 func validateCmdArgs(words []string) error {
 	errType := errors.GetErrorTypes()
 	switch strings.ToUpper(words[0]) {
-	case respCommands.SET:
+	case respCmds.SET:
 		if len(words) < 3 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}
-	case respCommands.GET:
+	case respCmds.GET:
 		if len(words) != 2 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}
-	case respCommands.EXISTS:
+	case respCmds.EXISTS:
 		if len(words) != 2 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}
-	case respCommands.DEL:
+	case respCmds.DEL:
 		if len(words) != 2 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}
-	case respCommands.INCR:
+	case respCmds.INCR:
 		if len(words) != 2 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}
-	case respCommands.DECR:
+	case respCmds.DECR:
 		if len(words) != 2 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}
-	case respCommands.PING:
+	case respCmds.PING:
 		if len(words) != 1 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}
-	case respCommands.FLUSHALL:
+	case respCmds.FLUSHALL:
 		if len(words) != 1 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}
-	case respCommands.LPUSH:
+	case respCmds.LPUSH:
 		if len(words) < 3 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}
-	case respCommands.LPOP:
+	case respCmds.LPOP:
 		if len(words) != 2 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}
-	case respCommands.LRANGE:
+	case respCmds.RPUSH:
+		if len(words) < 3 {
+			return errors.Err{Type: errType.WrongNumberOfArguments}
+		}
+	case respCmds.RPOP:
+		if len(words) != 2 {
+			return errors.Err{Type: errType.WrongNumberOfArguments}
+		}
+	case respCmds.LRANGE:
 		if len(words) != 4 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}

@@ -18,8 +18,10 @@ var commandProcessors = map[string]CommandProcessor{
 	respCmd.DECR:     processGenericCommand,
 	respCmd.DEL:      processGenericCommand,
 	respCmd.LPUSH:    processGenericCommand,
-	respCmd.LRANGE:   processGenericCommand,
 	respCmd.LPOP:     processGenericCommand,
+	respCmd.RPUSH:    processGenericCommand,
+	respCmd.RPOP:     processGenericCommand,
+	respCmd.LRANGE:   processGenericCommand,
 	respCmd.FLUSHALL: processFlushAll,
 	respCmd.PING:     processPing,
 }

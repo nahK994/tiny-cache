@@ -24,7 +24,7 @@ type RESPCommands struct {
 	PERSIST  string
 }
 
-var respCommands = RESPCommands{
+var respCmds = RESPCommands{
 	SET:      "SET",
 	GET:      "GET",
 	LPUSH:    "LPUSH",
@@ -59,8 +59,15 @@ var replyType ReplyType = ReplyType{
 	Status: '+',
 }
 
-var clientMessage string = fmt.Sprintf("Please use thses following commands:\n%s\n", strings.Join([]string{
-	respCommands.PING, respCommands.SET, respCommands.GET,
-	respCommands.EXISTS, respCommands.DEL, respCommands.INCR, respCommands.DECR,
-	respCommands.LPUSH, respCommands.LPOP, respCommands.LRANGE, respCommands.FLUSHALL,
-}, ", "))
+var clientMessage string = fmt.Sprintf(
+	"Please use these following commands:\n%s\n%s\n%s\n",
+	strings.Join([]string{
+		respCmds.PING, respCmds.SET, respCmds.GET, respCmds.EXISTS,
+	}, ", "),
+	strings.Join([]string{
+		respCmds.FLUSHALL, respCmds.DEL, respCmds.INCR, respCmds.DECR,
+	}, ", "),
+	strings.Join([]string{
+		respCmds.LPUSH, respCmds.LPOP, respCmds.LRANGE, respCmds.RPUSH, respCmds.RPOP,
+	}, ", "),
+)

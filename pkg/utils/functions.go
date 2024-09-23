@@ -3,7 +3,7 @@ package utils
 import "strings"
 
 func GetRESPCommands() RESPCommands {
-	return respCommands
+	return respCmds
 }
 
 func GetReplyTypes() ReplyType {

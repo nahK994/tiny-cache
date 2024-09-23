@@ -79,6 +79,18 @@ func (c *Cache) LPUSH(key string, values []string) {
 	c.info[key] = vals
 }
 
+func (c *Cache) RPUSH(key string, values []string) {
+	c.mu.Lock()         // Acquire write lock
+	defer c.mu.Unlock() // Release write lock
+
+	oldData, _ := c.info[key].([]string)
+	vals := make([]string, len(values)+len(oldData))
+	copy(vals[0:], oldData)
+	copy(vals[len(oldData):], values)
+	oldData = nil
+	c.info[key] = vals
+}
+
 func processIdx(vals []string, idx int) int {
 	if idx > len(vals) {
 		idx = len(vals) - 1
@@ -114,7 +126,25 @@ func (c *Cache) LPOP(key string) {
 	defer c.mu.Unlock() // Release write lock
 
 	vals, _ := c.info[key].([]string)
-	c.info[key] = vals[1:]
+
+	newVals := make([]string, len(vals)-1)
+	copy(newVals, vals[1:])
+
+	c.info[key] = newVals
+	vals = nil
+}
+
+func (c *Cache) RPOP(key string) {
+	c.mu.Lock()         // Acquire write lock
+	defer c.mu.Unlock() // Release write lock
+
+	vals, _ := c.info[key].([]string)
+
+	newVals := make([]string, len(vals)-1)
+	copy(newVals, vals[0:len(vals)-1])
+
+	c.info[key] = newVals
+	vals = nil
 }
 
 func (c *Cache) FLUSHALL() {

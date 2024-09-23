@@ -94,6 +94,12 @@ func handleLPUSH(key string, args []string) string {
 	return fmt.Sprintf("%c%d\r\n", replytype.Int, len(vals))
 }
 
+func handleRPUSH(key string, args []string) string {
+	c.RPUSH(key, args)
+	vals := c.LRANGE(key, 0, -1)
+	return fmt.Sprintf("%c%d\r\n", replytype.Int, len(vals))
+}
+
 func handleLRANGE(key string, startIdx, endIdx int) string {
 	vals := c.LRANGE(key, startIdx, endIdx)
 	var response string
@@ -117,6 +123,25 @@ func handleLPOP(key string) (string, error) {
 	if len(val) > 0 {
 		c.LPOP(key)
 		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(val[0]), val[0]), nil
+	} else {
+		return fmt.Sprintf("%c0\r\n", replytype.Bulk), nil
+	}
+}
+
+func handleRPOP(key string) (string, error) {
+	if !c.EXISTS(key) {
+		return "", errors.Err{Type: errType.EmptyList}
+	}
+	_, err := handleGET(key)
+	if err == nil {
+		return "", errors.Err{Type: errType.TypeError}
+	}
+
+	val := c.LRANGE(key, 0, 0)
+	if len(val) > 0 {
+		c.RPOP(key)
+		data := val[len(val)-1]
+		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(data), data), nil
 	} else {
 		return fmt.Sprintf("%c0\r\n", replytype.Bulk), nil
 	}
@@ -146,12 +171,20 @@ func HandleCommand(serializedRawCmd string) string {
 		return "+PONG\r\n"
 	case respCmd.LPUSH:
 		return handleLPUSH(args[0], args[1:])
+	case respCmd.RPUSH:
+		return handleRPUSH(args[0], args[1:])
 	case respCmd.LRANGE:
 		strIdx, _ := strconv.Atoi(args[1])
 		endIdx, _ := strconv.Atoi(args[2])
 		return handleLRANGE(args[0], strIdx, endIdx)
 	case respCmd.LPOP:
 		val, err := handleLPOP(args[0])
+		if err != nil {
+			return err.Error()
+		}
+		return val
+	case respCmd.RPOP:
+		val, err := handleRPOP(args[0])
 		if err != nil {
 			return err.Error()
 		}
