@@ -10,10 +10,6 @@ func GetReplyTypes() ReplyType {
 	return replyType
 }
 
-func GetClientMessage() string {
-	return clientMessage
-}
-
 func GetCmdSegments(rawCmd string) []string {
 	var words []string
 	temp := strings.Split(rawCmd, " ")

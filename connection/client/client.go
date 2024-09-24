@@ -1,11 +1,12 @@
 package client
 
 import (
-	"bufio"
 	"fmt"
 	"net"
 	"os"
+	"strings"
 
+	"github.com/chzyer/readline"
 	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/resp"
 	"github.com/nahK994/TinyCache/pkg/utils"
@@ -14,11 +15,24 @@ import (
 type Client struct {
 	dialingAddr string
 	conn        net.Conn
+	rl          *readline.Instance // To handle arrow keys and line history
 }
 
 func InitClient() *Client {
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:            "tinycache-cli> ",
+		HistoryFile:       "/tmp/readline.tmp", // For persistent history
+		InterruptPrompt:   "^C",
+		HistorySearchFold: true,
+	})
+	if err != nil {
+		fmt.Println("Failed to initialize readline:", err)
+		os.Exit(1)
+	}
+
 	return &Client{
 		dialingAddr: fmt.Sprintf("%s:%d", config.App.Host, config.App.Port),
+		rl:          rl,
 	}
 }
 
@@ -32,20 +46,38 @@ func (c *Client) Start() error {
 
 	// slog.Info("Paired with", "server", c.dialingAddr)
 	fmt.Printf("Paired with server %s\n", c.dialingAddr)
-	fmt.Printf("%s\n\n", utils.GetClientMessage())
+
+	cmds := utils.GetRESPCommands()
+	var clientMessage string = fmt.Sprintf(
+		"\nPlease use these following commands:\n%s\n%s\n%s\n\nType ^C to exit...\n",
+		strings.Join([]string{
+			cmds.PING, cmds.SET, cmds.GET, cmds.EXISTS,
+		}, ", "),
+		strings.Join([]string{
+			cmds.FLUSHALL, cmds.DEL, cmds.INCR, cmds.DECR,
+		}, ", "),
+		strings.Join([]string{
+			cmds.LPUSH, cmds.LPOP, cmds.LRANGE, cmds.RPUSH, cmds.RPOP,
+		}, ", "),
+	)
+	fmt.Printf("%s\n\n", clientMessage)
 	return c.handleConn()
 }
 
 func (c *Client) handleConn() error {
 	buf := make([]byte, 1024)
-	userReader := bufio.NewReader(os.Stdin)
 
 	for {
-		// fmt.Printf("(%s) client-cli> ", c.conn.LocalAddr())
-		fmt.Printf("tinycache-cli> ")
-		str, _ := userReader.ReadString('\n')
+		// Read the command input, arrow keys are handled by readline
+		str, err := c.rl.Readline()
+		if err == readline.ErrInterrupt {
+			if len(str) == 0 {
+				break // Exit on Ctrl+C
+			} else {
+				continue
+			}
+		}
 
-		str = str[:len(str)-1] // skip last \n
 		var response string
 		if err := utils.ValidateRawCommand(str); err != nil {
 			response = err.Error()
@@ -63,6 +95,8 @@ func (c *Client) handleConn() error {
 		res := processResp(deserializedResp)
 		fmt.Println(res)
 	}
+
+	return nil
 }
 
 func processResp(res interface{}) string {
