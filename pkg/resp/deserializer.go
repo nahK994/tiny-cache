@@ -28,12 +28,12 @@ func Deserializer(rawCmd string) interface{} {
 
 	switch typ {
 	case types.Array:
-		var segments []string
 		numSegments := parseNumber(rawCmd, &index)
+		segments := make([]string, numSegments)
 		for i := 0; i < numSegments; i++ {
 			index++
 			size := parseNumber(rawCmd, &index)
-			segments = append(segments, rawCmd[index:index+size])
+			segments[i] = rawCmd[index : index+size]
 			index = index + size + 2
 		}
 		return segments

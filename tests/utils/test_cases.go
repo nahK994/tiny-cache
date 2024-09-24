@@ -64,7 +64,7 @@ var testSerializedCmds = []struct {
 	{
 		name:      "Missing value",
 		input:     "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n",
-		expectErr: errors.Err{Type: errType.WrongNumberOfArguments},
+		expectErr: errors.Err{Type: errType.CommandLengthMismatch},
 	},
 	{
 		name:      "Unexpected character in parsing number",

@@ -37,18 +37,6 @@ func getCommandName(cmd string) string {
 	return strings.ToUpper(seg)
 }
 
-func getCmdSegments(cmd string) []string {
-	var words []string
-	temp := strings.Split(cmd, " ")
-	for _, ch := range temp {
-		if len(ch) == 0 {
-			continue
-		}
-		words = append(words, ch)
-	}
-	return words
-}
-
 func getRESPformat(segments []string) string {
 	serializedCmd := fmt.Sprintf("*%d\r\n", len(segments))
 
@@ -77,7 +65,7 @@ func processPing([]string) string {
 }
 
 func Serialize(rawCmd string) string {
-	words := getCmdSegments(rawCmd)
+	words := utils.GetCmdSegments(rawCmd)
 	commandName := getCommandName(rawCmd)
 
 	if processor, exists := commandProcessors[commandName]; exists {

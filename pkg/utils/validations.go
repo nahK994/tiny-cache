@@ -125,7 +125,6 @@ func getSegment(cmd string, index *int) (string, error) {
 }
 
 func ValidateSerializedCmd(serializedCmd string) error {
-	var cmdSegments []string
 	if len(serializedCmd) == 0 {
 		return errors.Err{Type: errType.IncompleteCommand}
 	}
@@ -139,9 +138,10 @@ func ValidateSerializedCmd(serializedCmd string) error {
 	if err != nil {
 		return err
 	}
+	cmdSegments := make([]string, numCmdSegments)
 
 	for index < len(serializedCmd) {
-		if len(cmdSegments) == numCmdSegments {
+		if numCmdSegments == 0 {
 			return errors.Err{Type: errType.CommandLengthMismatch}
 		}
 
@@ -149,9 +149,12 @@ func ValidateSerializedCmd(serializedCmd string) error {
 		if err1 != nil {
 			return err1
 		}
-		cmdSegments = append(cmdSegments, s)
+		cmdSegments[len(cmdSegments)-numCmdSegments] = s
+		numCmdSegments--
+	}
+	if numCmdSegments != 0 {
+		return errors.Err{Type: errType.CommandLengthMismatch}
 	}
 
-	err2 := validateCmdArgs(cmdSegments)
-	return err2
+	return validateCmdArgs(cmdSegments)
 }
