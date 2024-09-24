@@ -2,12 +2,15 @@ package cache
 
 import (
 	"strconv"
+	"time"
 )
 
 func InitCache() *Cache {
-	return &Cache{
-		info: make(map[string]data),
+	cache := &Cache{
+		info: make(map[string]Data),
 	}
+	go cache.activeExpiration()
+	return cache
 }
 
 func (c *Cache) GET(key string) interface{} {
@@ -23,16 +26,16 @@ func (c *Cache) SET(key string, value interface{}) {
 	if ok_str {
 		num, err := strconv.Atoi(str)
 		if err == nil {
-			c.info[key] = data{
+			c.info[key] = Data{
 				val: num,
 			}
 		} else {
-			c.info[key] = data{
+			c.info[key] = Data{
 				val: str,
 			}
 		}
 	} else {
-		c.info[key] = data{
+		c.info[key] = Data{
 			val: value,
 		}
 	}
@@ -42,8 +45,8 @@ func (c *Cache) EXISTS(key string) bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	_, isKeyExists := c.info[key]
-	return isKeyExists
+	_, exists := c.info[key]
+	return exists
 }
 
 func (c *Cache) DEL(key string) {
@@ -58,7 +61,7 @@ func (c *Cache) INCR(key string) int {
 	defer c.mu.Unlock()
 
 	val, _ := c.info[key].val.(int)
-	c.info[key] = data{
+	c.info[key] = Data{
 		val: val + 1,
 	}
 	return val + 1
@@ -69,7 +72,7 @@ func (c *Cache) DECR(key string) int {
 	defer c.mu.Unlock()
 
 	val, _ := c.info[key].val.(int)
-	c.info[key] = data{
+	c.info[key] = Data{
 		val: val - 1,
 	}
 	return val - 1
@@ -86,7 +89,7 @@ func (c *Cache) LPUSH(key string, values []string) {
 	}
 	copy(vals[len(values):], oldData)
 	oldData = nil
-	c.info[key] = data{
+	c.info[key] = Data{
 		val: vals,
 	}
 }
@@ -100,7 +103,7 @@ func (c *Cache) RPUSH(key string, values []string) {
 	copy(vals[0:], oldData)
 	copy(vals[len(oldData):], values)
 	oldData = nil
-	c.info[key] = data{
+	c.info[key] = Data{
 		val: vals,
 	}
 }
@@ -141,7 +144,7 @@ func (c *Cache) LPOP(key string) {
 	newVals := make([]string, len(vals)-1)
 	copy(newVals, vals[1:])
 
-	c.info[key] = data{
+	c.info[key] = Data{
 		val: newVals,
 	}
 	vals = nil
@@ -156,7 +159,7 @@ func (c *Cache) RPOP(key string) {
 	newVals := make([]string, len(vals)-1)
 	copy(newVals, vals[0:len(vals)-1])
 
-	c.info[key] = data{
+	c.info[key] = Data{
 		val: newVals,
 	}
 	vals = nil
@@ -168,5 +171,28 @@ func (c *Cache) FLUSHALL() {
 
 	for k := range c.info {
 		delete(c.info, k)
+	}
+}
+
+func (c *Cache) EXPIRE(key string, ttl int) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	val := c.info[key]
+
+	val.expiryTime = time.Now().Add(time.Second * time.Duration(ttl))
+	c.info[key] = val
+}
+
+func (c *Cache) activeExpiration() {
+	for {
+		time.Sleep(60 * time.Second) // Check every second
+		c.mu.Lock()
+		for key, item := range c.info {
+			if time.Now().After(item.expiryTime) {
+				delete(c.info, key)
+			}
+		}
+		c.mu.Unlock()
 	}
 }
