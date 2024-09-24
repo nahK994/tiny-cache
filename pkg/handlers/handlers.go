@@ -21,10 +21,11 @@ func handleGET(key string) (string, error) {
 		return "", errors.Err{Type: errType.UndefinedKey}
 	}
 
-	if val_int, ok_int := c.GET(key).(int); ok_int {
+	item := c.GET(key)
+	if val_int, ok_int := item.Val.(int); ok_int {
 		str := strconv.Itoa(val_int)
 		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(str), str), nil
-	} else if val_str, ok_str := c.GET(key).(string); ok_str {
+	} else if val_str, ok_str := item.Val.(string); ok_str {
 		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(val_str), val_str), nil
 	} else {
 		return "", errors.Err{Type: errType.TypeError}
@@ -59,7 +60,8 @@ func handleINCR(key string) (string, error) {
 	if !c.EXISTS(key) {
 		c.SET(key, 0)
 	} else {
-		_, ok := c.GET(key).(int)
+		item := c.GET(key)
+		_, ok := item.Val.(int)
 		if !ok {
 			return "", errors.Err{Type: errType.TypeError}
 		}
@@ -71,7 +73,8 @@ func handleDECR(key string) (string, error) {
 	if !c.EXISTS(key) {
 		c.SET(key, 0)
 	} else {
-		_, ok := c.GET(key).(int)
+		item := c.GET(key)
+		_, ok := item.Val.(int)
 		if !ok {
 			return "", errors.Err{Type: errType.TypeError}
 		}

@@ -6,11 +6,11 @@ import (
 )
 
 type Data struct {
-	val        interface{}
-	expiryTime time.Time
+	Val        interface{}
+	ExpiryTime time.Time
 }
 
 type Cache struct {
-	info map[string]Data
+	Info map[string]Data
 	mu   sync.RWMutex
 }

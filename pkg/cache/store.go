@@ -7,16 +7,16 @@ import (
 
 func InitCache() *Cache {
 	cache := &Cache{
-		info: make(map[string]Data),
+		Info: make(map[string]Data),
 	}
 	go cache.activeExpiration()
 	return cache
 }
 
-func (c *Cache) GET(key string) interface{} {
+func (c *Cache) GET(key string) Data {
 	c.mu.RLock()         // Acquire read lock
 	defer c.mu.RUnlock() // Release read lock
-	return c.info[key].val
+	return c.Info[key]
 }
 
 func (c *Cache) SET(key string, value interface{}) {
@@ -26,17 +26,17 @@ func (c *Cache) SET(key string, value interface{}) {
 	if ok_str {
 		num, err := strconv.Atoi(str)
 		if err == nil {
-			c.info[key] = Data{
-				val: num,
+			c.Info[key] = Data{
+				Val: num,
 			}
 		} else {
-			c.info[key] = Data{
-				val: str,
+			c.Info[key] = Data{
+				Val: str,
 			}
 		}
 	} else {
-		c.info[key] = Data{
-			val: value,
+		c.Info[key] = Data{
+			Val: value,
 		}
 	}
 }
@@ -45,7 +45,7 @@ func (c *Cache) EXISTS(key string) bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	_, exists := c.info[key]
+	_, exists := c.Info[key]
 	return exists
 }
 
@@ -53,16 +53,16 @@ func (c *Cache) DEL(key string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	delete(c.info, key)
+	delete(c.Info, key)
 }
 
 func (c *Cache) INCR(key string) int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	val, _ := c.info[key].val.(int)
-	c.info[key] = Data{
-		val: val + 1,
+	val, _ := c.Info[key].Val.(int)
+	c.Info[key] = Data{
+		Val: val + 1,
 	}
 	return val + 1
 }
@@ -71,9 +71,9 @@ func (c *Cache) DECR(key string) int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	val, _ := c.info[key].val.(int)
-	c.info[key] = Data{
-		val: val - 1,
+	val, _ := c.Info[key].Val.(int)
+	c.Info[key] = Data{
+		Val: val - 1,
 	}
 	return val - 1
 }
@@ -82,15 +82,15 @@ func (c *Cache) LPUSH(key string, values []string) {
 	c.mu.Lock()         // Acquire write lock
 	defer c.mu.Unlock() // Release write lock
 
-	oldData, _ := c.info[key].val.([]string)
+	oldData, _ := c.Info[key].Val.([]string)
 	vals := make([]string, len(values)+len(oldData))
 	for i := 0; i < len(values); i++ {
 		vals[i] = values[len(values)-1-i]
 	}
 	copy(vals[len(values):], oldData)
 	oldData = nil
-	c.info[key] = Data{
-		val: vals,
+	c.Info[key] = Data{
+		Val: vals,
 	}
 }
 
@@ -98,13 +98,13 @@ func (c *Cache) RPUSH(key string, values []string) {
 	c.mu.Lock()         // Acquire write lock
 	defer c.mu.Unlock() // Release write lock
 
-	oldData, _ := c.info[key].val.([]string)
+	oldData, _ := c.Info[key].Val.([]string)
 	vals := make([]string, len(values)+len(oldData))
 	copy(vals[0:], oldData)
 	copy(vals[len(oldData):], values)
 	oldData = nil
-	c.info[key] = Data{
-		val: vals,
+	c.Info[key] = Data{
+		Val: vals,
 	}
 }
 
@@ -126,7 +126,7 @@ func (c *Cache) LRANGE(key string, startIdx, endIdx int) []string {
 	c.mu.RLock()         // Acquire write lock
 	defer c.mu.RUnlock() // Release write lock
 
-	vals, _ := c.info[key].val.([]string)
+	vals, _ := c.Info[key].Val.([]string)
 	startIdx = processIdx(vals, startIdx)
 	endIdx = processIdx(vals, endIdx)
 	if len(vals) > 0 && startIdx <= endIdx {
@@ -139,13 +139,13 @@ func (c *Cache) LPOP(key string) {
 	c.mu.Lock()         // Acquire write lock
 	defer c.mu.Unlock() // Release write lock
 
-	vals, _ := c.info[key].val.([]string)
+	vals, _ := c.Info[key].Val.([]string)
 
 	newVals := make([]string, len(vals)-1)
 	copy(newVals, vals[1:])
 
-	c.info[key] = Data{
-		val: newVals,
+	c.Info[key] = Data{
+		Val: newVals,
 	}
 	vals = nil
 }
@@ -154,13 +154,13 @@ func (c *Cache) RPOP(key string) {
 	c.mu.Lock()         // Acquire write lock
 	defer c.mu.Unlock() // Release write lock
 
-	vals, _ := c.info[key].val.([]string)
+	vals, _ := c.Info[key].Val.([]string)
 
 	newVals := make([]string, len(vals)-1)
 	copy(newVals, vals[0:len(vals)-1])
 
-	c.info[key] = Data{
-		val: newVals,
+	c.Info[key] = Data{
+		Val: newVals,
 	}
 	vals = nil
 }
@@ -169,8 +169,8 @@ func (c *Cache) FLUSHALL() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	for k := range c.info {
-		delete(c.info, k)
+	for k := range c.Info {
+		delete(c.Info, k)
 	}
 }
 
@@ -178,19 +178,19 @@ func (c *Cache) EXPIRE(key string, ttl int) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	val := c.info[key]
+	val := c.Info[key]
 
-	val.expiryTime = time.Now().Add(time.Second * time.Duration(ttl))
-	c.info[key] = val
+	val.ExpiryTime = time.Now().Add(time.Second * time.Duration(ttl))
+	c.Info[key] = val
 }
 
 func (c *Cache) activeExpiration() {
 	for {
 		time.Sleep(60 * time.Second) // Check every second
 		c.mu.Lock()
-		for key, item := range c.info {
-			if time.Now().After(item.expiryTime) {
-				delete(c.info, key)
+		for key, item := range c.Info {
+			if time.Now().After(item.ExpiryTime) {
+				delete(c.Info, key)
 			}
 		}
 		c.mu.Unlock()
