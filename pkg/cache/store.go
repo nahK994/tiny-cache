@@ -5,9 +5,10 @@ import (
 	"time"
 )
 
-func InitCache() *Cache {
+func InitCache(expirationSweepInterval int) *Cache {
 	cache := &Cache{
-		Info: make(map[string]Data),
+		Info:                    make(map[string]Data),
+		ExpirationSweepInterval: expirationSweepInterval,
 	}
 	go cache.activeExpiration()
 	return cache
@@ -186,7 +187,7 @@ func (c *Cache) EXPIRE(key string, ttl int) {
 
 func (c *Cache) activeExpiration() {
 	for {
-		time.Sleep(60 * time.Second) // Check every second
+		time.Sleep(time.Duration(c.ExpirationSweepInterval * int(time.Second)))
 		c.mu.Lock()
 		for key, item := range c.Info {
 			if time.Now().After(item.ExpiryTime) {

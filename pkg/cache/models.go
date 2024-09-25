@@ -11,6 +11,7 @@ type Data struct {
 }
 
 type Cache struct {
-	Info map[string]Data
-	mu   sync.RWMutex
+	Info                    map[string]Data
+	mu                      sync.RWMutex
+	ExpirationSweepInterval int
 }

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"testing"
+	"time"
 
 	"github.com/nahK994/TinyCache/pkg/errors"
 	"github.com/nahK994/TinyCache/pkg/handlers"
@@ -261,6 +262,30 @@ func TestHandler(t *testing.T) {
 		expected = "$0\r\n"
 		if response != expected {
 			t.Errorf("Expected '%s', got '%s'", expected, response)
+		}
+	})
+
+	t.Run("TestHandleEXPIRE", func(t *testing.T) {
+		handlers.HandleCommand("*3\r\n$3\r\nSET\r\n$3\r\nage\r\n$3\r\n121\r\n")
+		handlers.HandleCommand("*3\r\n$6\r\nEXPIRE\r\n$3\r\nage\r\n$2\r\n10\r\n")
+		response := handlers.HandleCommand("*2\r\n$6\r\nEXISTS\r\n$3\r\nage\r\n")
+		expected := ":1\r\n"
+		if response != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, response)
+		}
+		time.Sleep(5 * time.Second)
+
+		response = handlers.HandleCommand("*2\r\n$6\r\nEXISTS\r\n$3\r\nage\r\n")
+		expected = ":1\r\n"
+		if response != expected {
+			t.Errorf("Checking after 5s Expected '%s', got '%s'", expected, response)
+		}
+		time.Sleep(5 * time.Second)
+
+		response = handlers.HandleCommand("*2\r\n$6\r\nEXISTS\r\n$3\r\nage\r\n")
+		expected = ":0\r\n"
+		if response != expected {
+			t.Errorf("Checking after 10s Expected '%s', got '%s'", expected, response)
 		}
 	})
 }

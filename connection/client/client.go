@@ -49,7 +49,7 @@ func (c *Client) Start() error {
 
 	cmds := utils.GetRESPCommands()
 	var clientMessage string = fmt.Sprintf(
-		"\nPlease use these following commands:\n%s\n%s\n%s\n\nType ^C to exit...\n",
+		"\nPlease use these following commands:\n%s\n%s\n%s\n%s\n\nType ^C to exit...\n",
 		strings.Join([]string{
 			cmds.PING, cmds.SET, cmds.GET, cmds.EXISTS,
 		}, ", "),
@@ -58,6 +58,9 @@ func (c *Client) Start() error {
 		}, ", "),
 		strings.Join([]string{
 			cmds.LPUSH, cmds.LPOP, cmds.LRANGE, cmds.RPUSH, cmds.RPOP,
+		}, ", "),
+		strings.Join([]string{
+			cmds.EXPIRE,
 		}, ", "),
 	)
 	fmt.Printf("%s\n\n", clientMessage)
