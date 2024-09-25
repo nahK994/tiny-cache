@@ -60,7 +60,7 @@ func (c *Client) Start() error {
 			cmds.LPUSH, cmds.LPOP, cmds.LRANGE, cmds.RPUSH, cmds.RPOP,
 		}, ", "),
 		strings.Join([]string{
-			cmds.EXPIRE,
+			cmds.EXPIRE, cmds.TTL, cmds.PERSIST,
 		}, ", "),
 	)
 	fmt.Printf("%s\n\n", clientMessage)

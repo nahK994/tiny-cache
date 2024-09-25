@@ -23,6 +23,8 @@ var commandProcessors = map[string]CommandProcessor{
 	respCmd.RPOP:     processGenericCommand,
 	respCmd.LRANGE:   processGenericCommand,
 	respCmd.EXPIRE:   processGenericCommand,
+	respCmd.TTL:      processGenericCommand,
+	respCmd.PERSIST:  processGenericCommand,
 	respCmd.FLUSHALL: processFlushAll,
 	respCmd.PING:     processPing,
 }

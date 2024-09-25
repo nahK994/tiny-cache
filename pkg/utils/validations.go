@@ -64,6 +64,14 @@ func validateCmdArgs(words []string) error {
 		if len(words) != 2 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}
 		}
+	case respCmds.TTL:
+		if len(words) != 2 {
+			return errors.Err{Type: errType.WrongNumberOfArguments}
+		}
+	case respCmds.PERSIST:
+		if len(words) != 2 {
+			return errors.Err{Type: errType.WrongNumberOfArguments}
+		}
 	case respCmds.LRANGE:
 		if len(words) != 4 {
 			return errors.Err{Type: errType.WrongNumberOfArguments}

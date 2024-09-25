@@ -20,7 +20,7 @@ var respCmd = utils.GetRESPCommands()
 
 func checkExpirity(key string) (cache.Data, error) {
 	item := c.GET(key)
-	if !item.ExpiryTime.IsZero() && time.Now().After(item.ExpiryTime) {
+	if item.ExpiryTime != nil && time.Now().After(*item.ExpiryTime) {
 		c.DEL(key)
 		return cache.Data{}, errors.Err{Type: errType.UndefinedKey}
 	}
@@ -62,10 +62,13 @@ func handleFLUSHALL() string {
 	return "+OK\r\n"
 }
 
-func handleEXISTS(key string) string {
+func isKeyExists(key string) bool {
 	checkExpirity(key)
+	return c.EXISTS(key)
+}
 
-	if c.EXISTS(key) {
+func handleEXISTS(key string) string {
+	if isKeyExists(key) {
 		return fmt.Sprintf("%c1\r\n", replytype.Int)
 	} else {
 		return fmt.Sprintf("%c0\r\n", replytype.Int)
@@ -129,25 +132,32 @@ func handleRPUSH(key string, args []string) string {
 	return fmt.Sprintf("%c%d\r\n", replytype.Int, len(vals))
 }
 
-func handleLRANGE(key string, startIdx, endIdx int) string {
+func validateListKey(key string) error {
+	if !isKeyExists(key) {
+		return errors.Err{Type: errType.EmptyList}
+	}
+
+	if _, ok := c.GET(key).Val.([]string); !ok {
+		return errors.Err{Type: errType.TypeError}
+	}
+	return nil
+}
+
+func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
+	if err := validateListKey(key); err != nil {
+		return "", err
+	}
 	vals := c.LRANGE(key, startIdx, endIdx)
 	response := fmt.Sprintf("%c%d\r\n", replytype.Array, len(vals))
 	for i := 0; i < len(vals); i++ {
 		response += fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(vals[i]), vals[i])
 	}
-	return response
+	return response, nil
 }
 
 func handleListPop(key string, popType string) (string, error) {
-	checkExpirity(key)
-
-	if !c.EXISTS(key) {
-		return "", errors.Err{Type: errType.EmptyList}
-	}
-
-	_, err := handleGET(key)
-	if err == nil {
-		return "", errors.Err{Type: errType.TypeError}
+	if err := validateListKey(key); err != nil {
+		return "", err
 	}
 
 	var val []string
@@ -178,9 +188,43 @@ func handleRPOP(key string) (string, error) {
 	return handleListPop(key, respCmd.RPOP)
 }
 
-func handleEXPIRE(key string, ttl int) string {
+func handleEXPIRE(key string, ttl int) (string, error) {
+	if !isKeyExists(key) {
+		return "", errors.Err{Type: errType.UndefinedKey}
+	}
+
+	if ttl < 0 {
+		return "", errors.Err{Type: errType.InvalidCommandFormat}
+	}
 	c.EXPIRE(key, ttl)
-	return "+OK\r\n"
+	return "+OK\r\n", nil
+}
+
+func handleTTL(key string) (string, error) {
+	item, notExistErr := checkExpirity(key)
+	if notExistErr != nil {
+		return "", notExistErr
+	}
+
+	if item.ExpiryTime == nil {
+		return ":0\r\n", nil
+	}
+
+	remainingTTL := time.Until(*item.ExpiryTime)
+	if remainingTTL < 0 {
+		return ":-1\r\n", nil
+	}
+
+	return fmt.Sprintf("%c%d\r\n", replytype.Int, remainingTTL), nil
+}
+
+func handlePERSIST(key string) (string, error) {
+	if !isKeyExists(key) {
+		return "", errors.Err{Type: errType.UndefinedKey}
+	}
+
+	c.EXPIRE(key, 0)
+	return "+OK\r\n", nil
 }
 
 func HandleCommand(serializedRawCmd string) string {
@@ -211,11 +255,19 @@ func HandleCommand(serializedRawCmd string) string {
 	case respCmd.EXPIRE:
 		key := args[0]
 		ttl, _ := strconv.Atoi(args[1])
-		return handleEXPIRE(key, ttl)
+		val, err := handleEXPIRE(key, ttl)
+		if err != nil {
+			return err.Error()
+		}
+		return val
 	case respCmd.LRANGE:
 		strIdx, _ := strconv.Atoi(args[1])
 		endIdx, _ := strconv.Atoi(args[2])
-		return handleLRANGE(args[0], strIdx, endIdx)
+		val, err := handleLRANGE(args[0], strIdx, endIdx)
+		if err != nil {
+			return err.Error()
+		}
+		return val
 	case respCmd.LPOP:
 		val, err := handleLPOP(args[0])
 		if err != nil {
@@ -242,6 +294,18 @@ func HandleCommand(serializedRawCmd string) string {
 		return val
 	case respCmd.FLUSHALL:
 		return handleFLUSHALL()
+	case respCmd.TTL:
+		val, err := handleTTL(args[0])
+		if err != nil {
+			return err.Error()
+		}
+		return val
+	case respCmd.PERSIST:
+		val, err := handlePERSIST(args[0])
+		if err != nil {
+			return err.Error()
+		}
+		return val
 	default:
 		return ""
 	}

@@ -181,7 +181,12 @@ func (c *Cache) EXPIRE(key string, ttl int) {
 
 	val := c.Info[key]
 
-	val.ExpiryTime = time.Now().Add(time.Second * time.Duration(ttl))
+	if ttl != 0 {
+		tt := time.Now().Add(time.Duration(ttl) * time.Second)
+		val.ExpiryTime = &tt
+	} else {
+		val.ExpiryTime = nil
+	}
 	c.Info[key] = val
 }
 
@@ -190,7 +195,7 @@ func (c *Cache) activeExpiration() {
 		time.Sleep(time.Duration(c.ExpirationSweepInterval * int(time.Second)))
 		c.mu.Lock()
 		for key, item := range c.Info {
-			if time.Now().After(item.ExpiryTime) {
+			if item.ExpiryTime != nil && time.Now().After(*item.ExpiryTime) {
 				delete(c.Info, key)
 			}
 		}

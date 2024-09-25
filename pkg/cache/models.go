@@ -7,7 +7,7 @@ import (
 
 type Data struct {
 	Val        interface{}
-	ExpiryTime time.Time
+	ExpiryTime *time.Time
 }
 
 type Cache struct {
