@@ -138,42 +138,44 @@ func handleLRANGE(key string, startIdx, endIdx int) string {
 	return response
 }
 
-func handleLPOP(key string) (string, error) {
+func handleListPop(key string, popType string) (string, error) {
+	checkExpirity(key)
+
 	if !c.EXISTS(key) {
 		return "", errors.Err{Type: errType.EmptyList}
 	}
+
 	_, err := handleGET(key)
 	if err == nil {
 		return "", errors.Err{Type: errType.TypeError}
 	}
 
-	val := c.LRANGE(key, 0, 0)
-	if len(val) > 0 {
-		data := val[0]
-		c.LPOP(key)
-		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(data), data), nil
-	} else {
-		return fmt.Sprintf("%c0\r\n", replytype.Bulk), nil
+	var val []string
+	switch popType {
+	case respCmd.LPOP:
+		val = c.LRANGE(key, 0, 0)
+		if len(val) > 0 {
+			data := val[0]
+			c.LPOP(key)
+			return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(data), data), nil
+		}
+	case respCmd.RPOP:
+		val = c.LRANGE(key, 0, -1)
+		if len(val) > 0 {
+			data := val[len(val)-1]
+			c.RPOP(key)
+			return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(data), data), nil
+		}
 	}
+	return fmt.Sprintf("%c0\r\n", replytype.Bulk), nil
+}
+
+func handleLPOP(key string) (string, error) {
+	return handleListPop(key, respCmd.LPOP)
 }
 
 func handleRPOP(key string) (string, error) {
-	if !c.EXISTS(key) {
-		return "", errors.Err{Type: errType.EmptyList}
-	}
-	_, err := handleGET(key)
-	if err == nil {
-		return "", errors.Err{Type: errType.TypeError}
-	}
-
-	val := c.LRANGE(key, 0, -1)
-	if len(val) > 0 {
-		data := val[len(val)-1]
-		c.RPOP(key)
-		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(data), data), nil
-	} else {
-		return fmt.Sprintf("%c0\r\n", replytype.Bulk), nil
-	}
+	return handleListPop(key, respCmd.RPOP)
 }
 
 func handleEXPIRE(key string, ttl int) string {
