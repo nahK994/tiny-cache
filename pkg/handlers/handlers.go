@@ -120,16 +120,28 @@ func handleDEL(key string) string {
 	}
 }
 
-func handleLPUSH(key string, args []string) string {
+func handleLPUSH(key string, args []string) (string, error) {
+	typeErr := errors.Err{Type: errType.TypeError}
+	err := validateListKey(key)
+	if err.Error() == typeErr.Error() {
+		return "", err
+	}
+
 	c.LPUSH(key, args)
 	vals := c.LRANGE(key, 0, -1)
-	return fmt.Sprintf("%c%d\r\n", replytype.Int, len(vals))
+	return fmt.Sprintf("%c%d\r\n", replytype.Int, len(vals)), nil
 }
 
-func handleRPUSH(key string, args []string) string {
+func handleRPUSH(key string, args []string) (string, error) {
+	typeErr := errors.Err{Type: errType.TypeError}
+	err := validateListKey(key)
+	if err.Error() == typeErr.Error() {
+		return "", err
+	}
+
 	c.RPUSH(key, args)
 	vals := c.LRANGE(key, 0, -1)
-	return fmt.Sprintf("%c%d\r\n", replytype.Int, len(vals))
+	return fmt.Sprintf("%c%d\r\n", replytype.Int, len(vals)), nil
 }
 
 func validateListKey(key string) error {
@@ -210,7 +222,7 @@ func handleTTL(key string) (string, error) {
 		return ":0\r\n", nil
 	}
 
-	remainingTTL := time.Until(*item.ExpiryTime)
+	remainingTTL := int(time.Until(*item.ExpiryTime).Seconds())
 	if remainingTTL < 0 {
 		return ":-1\r\n", nil
 	}
@@ -227,7 +239,7 @@ func handlePERSIST(key string) (string, error) {
 	return "+OK\r\n", nil
 }
 
-func HandleCommand(serializedRawCmd string) string {
+func HandleCommand(serializedRawCmd string) (string, error) {
 	cmdSegments, _ := resp.Deserializer(serializedRawCmd).([]string)
 
 	cmd := cmdSegments[0]
@@ -235,19 +247,15 @@ func HandleCommand(serializedRawCmd string) string {
 
 	switch strings.ToUpper(cmd) {
 	case respCmd.GET:
-		val, err := handleGET(args[0])
-		if err != nil {
-			return err.Error()
-		}
-		return val
+		return handleGET(args[0])
 	case respCmd.SET:
-		return handleSET(args[0], args[1])
+		return handleSET(args[0], args[1]), nil
 	case respCmd.EXISTS:
-		return handleEXISTS(args[0])
+		return handleEXISTS(args[0]), nil
 	case respCmd.DEL:
-		return handleDEL(args[0])
+		return handleDEL(args[0]), nil
 	case respCmd.PING:
-		return "+PONG\r\n"
+		return "+PONG\r\n", nil
 	case respCmd.LPUSH:
 		return handleLPUSH(args[0], args[1:])
 	case respCmd.RPUSH:
@@ -255,58 +263,26 @@ func HandleCommand(serializedRawCmd string) string {
 	case respCmd.EXPIRE:
 		key := args[0]
 		ttl, _ := strconv.Atoi(args[1])
-		val, err := handleEXPIRE(key, ttl)
-		if err != nil {
-			return err.Error()
-		}
-		return val
+		return handleEXPIRE(key, ttl)
 	case respCmd.LRANGE:
 		strIdx, _ := strconv.Atoi(args[1])
 		endIdx, _ := strconv.Atoi(args[2])
-		val, err := handleLRANGE(args[0], strIdx, endIdx)
-		if err != nil {
-			return err.Error()
-		}
-		return val
+		return handleLRANGE(args[0], strIdx, endIdx)
 	case respCmd.LPOP:
-		val, err := handleLPOP(args[0])
-		if err != nil {
-			return err.Error()
-		}
-		return val
+		return handleLPOP(args[0])
 	case respCmd.RPOP:
-		val, err := handleRPOP(args[0])
-		if err != nil {
-			return err.Error()
-		}
-		return val
+		return handleRPOP(args[0])
 	case respCmd.INCR:
-		val, err := handleINCR(args[0])
-		if err != nil {
-			return err.Error()
-		}
-		return val
+		return handleINCR(args[0])
 	case respCmd.DECR:
-		val, err := handleDECR(args[0])
-		if err != nil {
-			return err.Error()
-		}
-		return val
+		return handleDECR(args[0])
 	case respCmd.FLUSHALL:
-		return handleFLUSHALL()
+		return handleFLUSHALL(), nil
 	case respCmd.TTL:
-		val, err := handleTTL(args[0])
-		if err != nil {
-			return err.Error()
-		}
-		return val
+		return handleTTL(args[0])
 	case respCmd.PERSIST:
-		val, err := handlePERSIST(args[0])
-		if err != nil {
-			return err.Error()
-		}
-		return val
+		return handlePERSIST(args[0])
 	default:
-		return ""
+		return "", nil
 	}
 }

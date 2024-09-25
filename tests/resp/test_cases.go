@@ -218,4 +218,45 @@ var serializeTestCases = []serializeTestCase{
 		input:  "DEL age",
 		output: "*2\r\n$3\r\nDEL\r\n$3\r\nage\r\n",
 	},
+	// EXPIRE command test cases
+	{
+		input:  "EXPIRE age",
+		output: "*2\r\n$6\r\nEXPIRE\r\n$3\r\nage\r\n",
+	},
+	// PERSIST command test cases
+	{
+		input:  "PERSIST age",
+		output: "*2\r\n$7\r\nPERSIST\r\n$3\r\nage\r\n",
+	},
+	// TTL command test cases
+	{
+		input:  "TTL age",
+		output: "*2\r\n$3\r\nTTL\r\n$3\r\nage\r\n",
+	},
+
+	// LPUSH command test cases
+	{
+		input:  "LPUSH arr 1 2 three",
+		output: "*5\r\n$5\r\nLPUSH\r\n$1\r\n1\r\n$1\r\n2\r\n$5\r\nthree\r\n",
+	},
+	// RPUSH command test cases
+	{
+		input:  "RPUSH arr 1 2 three",
+		output: "*5\r\n$5\r\nRPUSH\r\n$1\r\n1\r\n$1\r\n2\r\n$5\r\nthree\r\n",
+	},
+	// LPOP command test cases
+	{
+		input:  "LPOP arr",
+		output: "*2\r\n$4\r\nLPOP\r\n$3\r\narr\r\n",
+	},
+	// RPOP command test cases
+	{
+		input:  "RPOP arr",
+		output: "*2\r\n$4\r\nRPOP\r\n$3\r\narr\r\n",
+	},
+	// FLUSHALL command test cases
+	{
+		input:  "FLUSHALL",
+		output: "*1\r\n$8\r\nFLUSHALL\r\n",
+	},
 }

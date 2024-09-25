@@ -49,7 +49,11 @@ func (p *Peer) handleConn() {
 		if err := utils.ValidateSerializedCmd(rawCmd); err != nil {
 			res = err.Error()
 		} else {
-			res = handlers.HandleCommand(rawCmd)
+			if output, err := handlers.HandleCommand(rawCmd); err != nil {
+				res = err.Error()
+			} else {
+				res = output
+			}
 		}
 		p.conn.Write([]byte(res))
 	}
