@@ -18,25 +18,11 @@ var replytype = utils.GetReplyTypes()
 var errType = errors.GetErrorTypes()
 var respCmd = utils.GetRESPCommands()
 
-func checkExpirity(key string) (cache.Data, error) {
-	item := c.GET(key)
-	if item.ExpiryTime != nil && time.Now().After(*item.ExpiryTime) {
-		c.DEL(key)
-		return cache.Data{}, errors.Err{Type: errType.UndefinedKey}
-	}
-	return item, nil
-}
-
 func handleGET(key string) (string, error) {
-	if !c.EXISTS(key) {
-		return "", errors.Err{Type: errType.UndefinedKey}
-	}
-
-	item, err := checkExpirity(key)
-	if err != nil {
+	if err := utils.AssertKeyExists(key); err != nil {
 		return "", err
 	}
-
+	item := c.GET(key)
 	switch val := item.Val.(type) {
 	case int:
 		str := strconv.Itoa(val)
@@ -48,9 +34,9 @@ func handleGET(key string) (string, error) {
 	}
 }
 
-func handleSET(key, value string) string {
+func handleSET(key, value string) (string, error) {
 	c.SET(key, value)
-	return "+OK\r\n"
+	return "+OK\r\n", nil
 }
 
 func handleFLUSHALL() string {
@@ -62,13 +48,8 @@ func handleFLUSHALL() string {
 	return "+OK\r\n"
 }
 
-func isKeyExists(key string) bool {
-	checkExpirity(key)
-	return c.EXISTS(key)
-}
-
 func handleEXISTS(key string) string {
-	if isKeyExists(key) {
+	if utils.IsKeyExists(key) {
 		return fmt.Sprintf("%c1\r\n", replytype.Int)
 	} else {
 		return fmt.Sprintf("%c0\r\n", replytype.Int)
@@ -76,15 +57,11 @@ func handleEXISTS(key string) string {
 }
 
 func handleIncDec(key string, operation string) (string, error) {
-	checkExpirity(key)
-
-	if !c.EXISTS(key) {
+	if !utils.IsKeyExists(key) {
 		c.SET(key, 0)
 	} else {
-		item := c.GET(key)
-		_, ok := item.Val.(int)
-		if !ok {
-			return "", errors.Err{Type: errType.TypeError}
+		if err := utils.AssertIntType(key); err != nil {
+			return "", err
 		}
 	}
 
@@ -110,9 +87,7 @@ func handleDECR(key string) (string, error) {
 }
 
 func handleDEL(key string) string {
-	checkExpirity(key)
-
-	if c.EXISTS(key) {
+	if utils.IsKeyExists(key) {
 		c.DEL(key)
 		return fmt.Sprintf("%c1\r\n", replytype.Int)
 	} else {
@@ -121,10 +96,10 @@ func handleDEL(key string) string {
 }
 
 func handleLPUSH(key string, args []string) (string, error) {
-	typeErr := errors.Err{Type: errType.TypeError}
-	err := validateListKey(key)
-	if err.Error() == typeErr.Error() {
-		return "", err
+	if utils.IsKeyExists(key) {
+		if err := utils.AssertListType(key); err != nil {
+			return "", err
+		}
 	}
 
 	c.LPUSH(key, args)
@@ -133,10 +108,10 @@ func handleLPUSH(key string, args []string) (string, error) {
 }
 
 func handleRPUSH(key string, args []string) (string, error) {
-	typeErr := errors.Err{Type: errType.TypeError}
-	err := validateListKey(key)
-	if err.Error() == typeErr.Error() {
-		return "", err
+	if utils.IsKeyExists(key) {
+		if err := utils.AssertListType(key); err != nil {
+			return "", err
+		}
 	}
 
 	c.RPUSH(key, args)
@@ -144,19 +119,11 @@ func handleRPUSH(key string, args []string) (string, error) {
 	return fmt.Sprintf("%c%d\r\n", replytype.Int, len(vals)), nil
 }
 
-func validateListKey(key string) error {
-	if !isKeyExists(key) {
-		return errors.Err{Type: errType.EmptyList}
-	}
-
-	if _, ok := c.GET(key).Val.([]string); !ok {
-		return errors.Err{Type: errType.TypeError}
-	}
-	return nil
-}
-
 func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
-	if err := validateListKey(key); err != nil {
+	if err := utils.AssertKeyExists(key); err != nil {
+		return "", err
+	}
+	if err := utils.AssertListType(key); err != nil {
 		return "", err
 	}
 	vals := c.LRANGE(key, startIdx, endIdx)
@@ -168,7 +135,10 @@ func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
 }
 
 func handleListPop(key string, popType string) (string, error) {
-	if err := validateListKey(key); err != nil {
+	if err := utils.AssertKeyExists(key); err != nil {
+		return "", err
+	}
+	if err := utils.AssertListType(key); err != nil {
 		return "", err
 	}
 
@@ -193,16 +163,28 @@ func handleListPop(key string, popType string) (string, error) {
 }
 
 func handleLPOP(key string) (string, error) {
+	if err := utils.CheckEmptyList(key); err != nil {
+		return "", err
+	}
+	if err := utils.AssertListType(key); err != nil {
+		return "", err
+	}
 	return handleListPop(key, respCmd.LPOP)
 }
 
 func handleRPOP(key string) (string, error) {
+	if err := utils.CheckEmptyList(key); err != nil {
+		return "", err
+	}
+	if err := utils.AssertListType(key); err != nil {
+		return "", err
+	}
 	return handleListPop(key, respCmd.RPOP)
 }
 
 func handleEXPIRE(key string, ttl int) (string, error) {
-	if !isKeyExists(key) {
-		return "", errors.Err{Type: errType.UndefinedKey}
+	if err := utils.AssertKeyExists(key); err != nil {
+		return "", err
 	}
 
 	if ttl < 0 {
@@ -213,11 +195,11 @@ func handleEXPIRE(key string, ttl int) (string, error) {
 }
 
 func handleTTL(key string) (string, error) {
-	item, notExistErr := checkExpirity(key)
-	if notExistErr != nil {
-		return "", notExistErr
+	if err := utils.AssertKeyExists(key); err != nil {
+		return "", err
 	}
 
+	item := c.GET(key)
 	if item.ExpiryTime == nil {
 		return ":0\r\n", nil
 	}
@@ -231,8 +213,8 @@ func handleTTL(key string) (string, error) {
 }
 
 func handlePERSIST(key string) (string, error) {
-	if !isKeyExists(key) {
-		return "", errors.Err{Type: errType.UndefinedKey}
+	if err := utils.AssertKeyExists(key); err != nil {
+		return "", err
 	}
 
 	c.EXPIRE(key, 0)
@@ -249,7 +231,7 @@ func HandleCommand(serializedRawCmd string) (string, error) {
 	case respCmd.GET:
 		return handleGET(args[0])
 	case respCmd.SET:
-		return handleSET(args[0], args[1]), nil
+		return handleSET(args[0], args[1])
 	case respCmd.EXISTS:
 		return handleEXISTS(args[0]), nil
 	case respCmd.DEL:

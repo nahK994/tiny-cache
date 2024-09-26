@@ -50,6 +50,9 @@ func (e Err) Error() string {
 	case errTypes.UndefinedKey:
 		return "-ERR key not defined"
 
+	case errTypes.ExpiredKey:
+		return "-ERR key is expired"
+
 	default:
 		return "-ERR unknown command error"
 	}

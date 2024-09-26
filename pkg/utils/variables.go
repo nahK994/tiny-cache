@@ -1,5 +1,14 @@
 package utils
 
+import (
+	"github.com/nahK994/TinyCache/pkg/cache"
+	"github.com/nahK994/TinyCache/pkg/config"
+	"github.com/nahK994/TinyCache/pkg/errors"
+)
+
+var errType errors.ErrTypes = errors.GetErrorTypes()
+var c *cache.Cache = config.App.Cache
+
 type RESPCommands struct {
 	SET      string
 	GET      string

@@ -15,6 +15,7 @@ type ErrTypes struct {
 	InvalidCommandFormat    string
 	EmptyList               string
 	UndefinedKey            string
+	ExpiredKey              string
 }
 
 var errType ErrTypes = ErrTypes{
@@ -32,6 +33,7 @@ var errType ErrTypes = ErrTypes{
 	InvalidCommandFormat:    "InvalidCommandFormat",
 	EmptyList:               "EmptyList",
 	UndefinedKey:            "UndefinedKey",
+	ExpiredKey:              "ExpiredKey",
 }
 
 func GetErrorTypes() ErrTypes {

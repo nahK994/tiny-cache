@@ -30,14 +30,7 @@ var commandProcessors = map[string]CommandProcessor{
 }
 
 func getCommandName(cmd string) string {
-	seg := ""
-	for _, ch := range cmd {
-		if ch == ' ' {
-			break
-		}
-		seg += string(ch)
-	}
-	return strings.ToUpper(seg)
+	return strings.ToUpper(utils.GetCmdSegments(cmd)[0])
 }
 
 func getRESPformat(segments []string) string {

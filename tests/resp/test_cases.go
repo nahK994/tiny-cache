@@ -237,12 +237,12 @@ var serializeTestCases = []serializeTestCase{
 	// LPUSH command test cases
 	{
 		input:  "LPUSH arr 1 2 three",
-		output: "*5\r\n$5\r\nLPUSH\r\n$1\r\n1\r\n$1\r\n2\r\n$5\r\nthree\r\n",
+		output: "*5\r\n$5\r\nLPUSH\r\n$3\r\narr\r\n$1\r\n1\r\n$1\r\n2\r\n$5\r\nthree\r\n",
 	},
 	// RPUSH command test cases
 	{
 		input:  "RPUSH arr 1 2 three",
-		output: "*5\r\n$5\r\nRPUSH\r\n$1\r\n1\r\n$1\r\n2\r\n$5\r\nthree\r\n",
+		output: "*5\r\n$5\r\nRPUSH\r\n$3\r\narr\r\n$1\r\n1\r\n$1\r\n2\r\n$5\r\nthree\r\n",
 	},
 	// LPOP command test cases
 	{

@@ -134,8 +134,7 @@ func TestHandleINCR(t *testing.T) {
 	}
 }
 
-func TestHandleLPUSH(t *testing.T) {
-	// Push elements to a list
+func TestHandlePUSH(t *testing.T) {
 	resp, err := handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$6\r\nmylist\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
@@ -143,16 +142,34 @@ func TestHandleLPUSH(t *testing.T) {
 	if resp != ":3\r\n" {
 		t.Errorf("Expected ':3\\r\\n', got %s", resp)
 	}
+
+	resp, err = handlers.HandleCommand("*5\r\n$5\r\nRPUSH\r\n$6\r\nmylist\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if resp != ":6\r\n" {
+		t.Errorf("Expected ':6\\r\\n', got %s", resp)
+	}
+
+	_, err = handlers.HandleCommand("*3\r\n$3\r\nSET\r\n$6\r\nmylist\r\n$3\r\nval\r\n")
+	if err != nil {
+		t.Errorf("Expected type error, got %v", err)
+	}
+
+	_, err = handlers.HandleCommand("*5\r\n$5\r\nRPUSH\r\n$6\r\nmylist\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
+	if err == nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
 }
 
 func TestHandleLRANGE(t *testing.T) {
-	_, err := handlers.HandleCommand("*4\r\n$6\r\nLRANGE\r\n$6\r\nmylist1\r\n$1\r\n0\r\n$2\r\n-1\r\n")
+	_, err := handlers.HandleCommand("*4\r\n$6\r\nLRANGE\r\n$7\r\nmylist1\r\n$1\r\n0\r\n$2\r\n-1\r\n")
 	if err == nil {
 		t.Errorf("Expected empty list error, got %v", err)
 	}
 
-	handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$6\r\nmylist1\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
-	resp, err1 := handlers.HandleCommand("*4\r\n$6\r\nLRANGE\r\n$6\r\nmylist1\r\n$1\r\n0\r\n$2\r\n-1\r\n")
+	handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$7\r\nmylist1\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
+	resp, err1 := handlers.HandleCommand("*4\r\n$6\r\nLRANGE\r\n$7\r\nmylist1\r\n$1\r\n0\r\n$2\r\n-1\r\n")
 	if err1 != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -163,13 +180,17 @@ func TestHandleLRANGE(t *testing.T) {
 }
 
 func TestHandleEXPIRE(t *testing.T) {
-	// Set key with an expiration
-	resp, err := handlers.HandleCommand("*3\r\n$3\r\nSET\r\n$7\r\nexp_key\r\n$5\r\nvalue\r\n")
+	_, err := handlers.HandleCommand("*3\r\n$6\r\nEXPIRE\r\n$7\r\nexp_key\r\n$1\r\n5\r\n")
+	if err == nil {
+		t.Errorf("Expected type err, got %v", err)
+	}
+
+	_, err = handlers.HandleCommand("*3\r\n$3\r\nSET\r\n$7\r\nexp_key\r\n$5\r\nvalue\r\n")
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
 
-	resp, err = handlers.HandleCommand("*3\r\n$6\r\nEXPIRE\r\n$7\r\nexp_key\r\n$1\r\n5\r\n")
+	resp, err := handlers.HandleCommand("*3\r\n$6\r\nEXPIRE\r\n$7\r\nexp_key\r\n$1\r\n5\r\n")
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -200,6 +221,10 @@ func contains(resp, substr string) bool {
 }
 
 func TestHandleTTL(t *testing.T) {
+	_, err := handlers.HandleCommand("*2\r\n$3\r\nTTL\r\n$7\r\nttl_key\r\n")
+	if err == nil {
+		t.Errorf("Expected type error, got %v", err)
+	}
 	// Set key with expiration
 	handlers.HandleCommand("*3\r\n$3\r\nSET\r\n$7\r\nttl_key\r\n$5\r\nvalue\r\n")
 	handlers.HandleCommand("*3\r\n$6\r\nEXPIRE\r\n$7\r\nttl_key\r\n$2\r\n10\r\n")
@@ -232,4 +257,20 @@ func isPositiveInteger(resp string) bool {
 	}
 	num, err := strconv.Atoi(resp[1 : len(resp)-2]) // Remove ':', and CRLF
 	return err == nil && num > 0
+}
+
+func TestHandlePERSIST(t *testing.T) {
+	_, err := handlers.HandleCommand("*2\r\n$7\r\nPERSIST\r\n$11\r\npersist_key\r\n")
+	if err == nil {
+		t.Errorf("Expected type error, got %v", err)
+	}
+
+	handlers.HandleCommand("*3\r\n$3\r\nSET\r\n$11\r\npersist_key\r\n$3\r\nval\r\n")
+	resp, err := handlers.HandleCommand("*2\r\n$7\r\nPERSIST\r\n$11\r\npersist_key\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if resp != "+OK\r\n" {
+		t.Errorf("Expected +OK\r\n, got %s", resp)
+	}
 }
