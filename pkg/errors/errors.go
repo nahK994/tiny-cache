@@ -5,52 +5,50 @@ type Err struct {
 }
 
 func (e Err) Error() string {
-	errTypes := GetErrorTypes()
-
 	switch e.Type {
-	case errTypes.InvalidArrayFormat:
+	case InvalidArrayFormat:
 		return "-ERR Protocol error: invalid array format. Expected '*<count>\\r\\n'."
 
-	case errTypes.InvalidBulkStringFormat:
+	case InvalidBulkStringFormat:
 		return "-ERR Protocol error: invalid bulk string format. Expected '$<length>\\r\\n<string>\\r\\n'."
 
-	case errTypes.IncompleteCommand:
+	case IncompleteCommand:
 		return "-ERR Protocol error: incomplete command. Some parts of the serialized input are missing."
 
-	case errTypes.UnexpectedCharacter:
+	case UnexpectedCharacter:
 		return "-ERR Protocol error: unexpected character in command. Only valid characters are allowed."
 
-	case errTypes.MissingCRLF:
+	case MissingCRLF:
 		return "-ERR Protocol error: missing CRLF (\\r\\n) after command segment."
 
-	case errTypes.CommandLengthMismatch:
+	case CommandLengthMismatch:
 		return "-ERR Protocol error: command length mismatch. Specified length does not match the actual data length."
 
-	case errTypes.UnknownCommand:
+	case UnknownCommand:
 		return "-ERR unknown command"
 
-	case errTypes.WrongNumberOfArguments:
+	case WrongNumberOfArguments:
 		return "-ERR wrong number of arguments for command"
 
-	case errTypes.SyntaxError:
+	case SyntaxError:
 		return "-ERR syntax error"
 
-	case errTypes.TypeError:
+	case TypeError:
 		return "-ERR Operation against a key holding the wrong kind of value"
 
-	case errTypes.CommandNotSupported:
+	case CommandNotSupported:
 		return "-ERR command not supported"
 
-	case errTypes.InvalidCommandFormat:
+	case InvalidCommandFormat:
 		return "-ERR invalid command format"
 
-	case errTypes.EmptyList:
+	case EmptyList:
 		return "-ERR empty list or set"
 
-	case errTypes.UndefinedKey:
+	case UndefinedKey:
 		return "-ERR key not defined"
 
-	case errTypes.ExpiredKey:
+	case ExpiredKey:
 		return "-ERR key is expired"
 
 	default:

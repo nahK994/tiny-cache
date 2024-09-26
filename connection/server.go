@@ -1,17 +1,29 @@
-package server
+package connection
 
 import (
 	"fmt"
 	"log/slog"
 	"net"
 
+	conn_utils "github.com/nahK994/TinyCache/connection/utils"
+	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/handlers"
-	"github.com/nahK994/TinyCache/pkg/utils"
 )
+
+type Server struct {
+	listenAddress string
+	ln            net.Listener
+}
 
 type Peer struct {
 	clientAddr string
 	conn       net.Conn
+}
+
+func InitiateServer() *Server {
+	return &Server{
+		listenAddress: fmt.Sprintf("%s:%d", config.App.Host, config.App.Port),
+	}
 }
 
 func newPeer(addr string, conn net.Conn) *Peer {
@@ -19,6 +31,44 @@ func newPeer(addr string, conn net.Conn) *Peer {
 		clientAddr: addr,
 		conn:       conn,
 	}
+}
+
+func processAsyncTasks() {
+	c := config.App.Cache
+	for {
+		select {
+		case <-config.App.FlushCh:
+			c.FLUSHALL()
+		}
+	}
+}
+
+func (s *Server) acceptConn() error {
+	for {
+		conn, err := s.ln.Accept()
+		if err != nil {
+			return err
+		}
+
+		peer := newPeer(conn.RemoteAddr().String(), conn)
+
+		go processAsyncTasks()
+		go peer.handleConn()
+	}
+}
+
+func (s *Server) Start() error {
+	ln, err := net.Listen("tcp", s.listenAddress)
+	if err != nil {
+		return err
+	}
+
+	s.ln = ln
+	defer ln.Close()
+
+	slog.Info("server running", "listenAddr", s.listenAddress)
+
+	return s.acceptConn()
 }
 
 func (p *Peer) handleConn() {
@@ -46,7 +96,7 @@ func (p *Peer) handleConn() {
 		fmt.Printf("%s> %s\n", p.clientAddr, formattedCmd)
 
 		var res string
-		if err := utils.ValidateSerializedCmd(rawCmd); err != nil {
+		if err := conn_utils.ValidateSerializedCmd(rawCmd); err != nil {
 			res = err.Error()
 		} else {
 			if output, err := handlers.HandleCommand(rawCmd); err != nil {

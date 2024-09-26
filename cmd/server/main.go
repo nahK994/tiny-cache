@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 
-	"github.com/nahK994/TinyCache/connection/server"
+	"github.com/nahK994/TinyCache/connection"
 )
 
 func main() {
-	srv := server.InitiateServer()
+	srv := connection.InitiateServer()
 	log.Fatal(srv.Start())
 }

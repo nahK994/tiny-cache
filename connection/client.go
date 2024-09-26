@@ -1,4 +1,4 @@
-package client
+package connection
 
 import (
 	"fmt"
@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
+	conn_utils "github.com/nahK994/TinyCache/connection/utils"
 	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/resp"
-	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
 type Client struct {
@@ -47,20 +47,19 @@ func (c *Client) Start() error {
 	// slog.Info("Paired with", "server", c.dialingAddr)
 	fmt.Printf("Paired with server %s\n", c.dialingAddr)
 
-	cmds := utils.GetRESPCommands()
 	var clientMessage string = fmt.Sprintf(
 		"\nPlease use these following commands:\n%s\n%s\n%s\n%s\n\nType ^C to exit...\n",
 		strings.Join([]string{
-			cmds.PING, cmds.SET, cmds.GET, cmds.EXISTS,
+			resp.PING, resp.SET, resp.GET, resp.EXISTS,
 		}, ", "),
 		strings.Join([]string{
-			cmds.FLUSHALL, cmds.DEL, cmds.INCR, cmds.DECR,
+			resp.FLUSHALL, resp.DEL, resp.INCR, resp.DECR,
 		}, ", "),
 		strings.Join([]string{
-			cmds.LPUSH, cmds.LPOP, cmds.LRANGE, cmds.RPUSH, cmds.RPOP,
+			resp.LPUSH, resp.LPOP, resp.LRANGE, resp.RPUSH, resp.RPOP,
 		}, ", "),
 		strings.Join([]string{
-			cmds.EXPIRE, cmds.TTL, cmds.PERSIST,
+			resp.EXPIRE, resp.TTL, resp.PERSIST,
 		}, ", "),
 	)
 	fmt.Printf("%s\n\n", clientMessage)
@@ -82,7 +81,7 @@ func (c *Client) handleConn() error {
 		}
 
 		var response string
-		if err := utils.ValidateRawCommand(str); err != nil {
+		if err := conn_utils.ValidateRawCommand(str); err != nil {
 			response = err.Error()
 		} else {
 			response = resp.Serialize(str)

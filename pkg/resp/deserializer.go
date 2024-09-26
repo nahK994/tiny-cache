@@ -2,8 +2,6 @@ package resp
 
 import (
 	"errors"
-
-	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
 func parseNumber(cmd string, index *int) int {
@@ -23,11 +21,10 @@ func parseNumber(cmd string, index *int) int {
 
 func Deserializer(rawCmd string) interface{} {
 	index := 1
-	types := utils.GetReplyTypes()
 	typ := rune(rawCmd[0])
 
 	switch typ {
-	case types.Array:
+	case '*':
 		numSegments := parseNumber(rawCmd, &index)
 		segments := make([]string, numSegments)
 		for i := 0; i < numSegments; i++ {
@@ -37,17 +34,17 @@ func Deserializer(rawCmd string) interface{} {
 			index = index + size + 2
 		}
 		return segments
-	case types.Bulk:
+	case '$':
 		var segment string
 		length := parseNumber(rawCmd, &index)
 		segment = rawCmd[index : index+length]
 		return segment
-	case types.Int:
+	case ':':
 		value := parseNumber(rawCmd, &index)
 		return value
-	case types.Status:
+	case '+':
 		return rawCmd[1 : len(rawCmd)-2]
-	case types.Error:
+	case '-':
 		return errors.New(rawCmd[1:])
 	default:
 		return nil

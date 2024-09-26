@@ -9,24 +9,23 @@ import (
 
 type CommandProcessor func([]string) string
 
-var respCmd = utils.GetRESPCommands()
 var commandProcessors = map[string]CommandProcessor{
-	respCmd.SET:      processSET,
-	respCmd.GET:      processGenericCommand,
-	respCmd.EXISTS:   processGenericCommand,
-	respCmd.INCR:     processGenericCommand,
-	respCmd.DECR:     processGenericCommand,
-	respCmd.DEL:      processGenericCommand,
-	respCmd.LPUSH:    processGenericCommand,
-	respCmd.LPOP:     processGenericCommand,
-	respCmd.RPUSH:    processGenericCommand,
-	respCmd.RPOP:     processGenericCommand,
-	respCmd.LRANGE:   processGenericCommand,
-	respCmd.EXPIRE:   processGenericCommand,
-	respCmd.TTL:      processGenericCommand,
-	respCmd.PERSIST:  processGenericCommand,
-	respCmd.FLUSHALL: processFlushAll,
-	respCmd.PING:     processPing,
+	SET:      processSET,
+	GET:      processGenericCommand,
+	EXISTS:   processGenericCommand,
+	INCR:     processGenericCommand,
+	DECR:     processGenericCommand,
+	DEL:      processGenericCommand,
+	LPUSH:    processGenericCommand,
+	LPOP:     processGenericCommand,
+	RPUSH:    processGenericCommand,
+	RPOP:     processGenericCommand,
+	LRANGE:   processGenericCommand,
+	EXPIRE:   processGenericCommand,
+	TTL:      processGenericCommand,
+	PERSIST:  processGenericCommand,
+	FLUSHALL: processFlushAll,
+	PING:     processPing,
 }
 
 func getCommandName(cmd string) string {

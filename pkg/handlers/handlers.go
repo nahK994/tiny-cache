@@ -10,27 +10,25 @@ import (
 	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/errors"
 	"github.com/nahK994/TinyCache/pkg/resp"
-	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
 var c *cache.Cache = config.App.Cache
-var replytype = utils.GetReplyTypes()
-var errType = errors.GetErrorTypes()
-var respCmd = utils.GetRESPCommands()
+
+// var replytype = utils.GetReplyTypes()
 
 func handleGET(key string) (string, error) {
-	if err := utils.AssertKeyExists(key); err != nil {
+	if err := AssertKeyExists(key); err != nil {
 		return "", err
 	}
 	item := c.GET(key)
 	switch val := item.Val.(type) {
 	case int:
 		str := strconv.Itoa(val)
-		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(str), str), nil
+		return fmt.Sprintf("$%d\r\n%s\r\n", len(str), str), nil
 	case string:
-		return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(val), val), nil
+		return fmt.Sprintf("$%d\r\n%s\r\n", len(val), val), nil
 	default:
-		return "", errors.Err{Type: errType.TypeError}
+		return "", errors.Err{Type: errors.TypeError}
 	}
 }
 
@@ -49,153 +47,153 @@ func handleFLUSHALL() string {
 }
 
 func handleEXISTS(key string) string {
-	if utils.IsKeyExists(key) {
-		return fmt.Sprintf("%c1\r\n", replytype.Int)
+	if IsKeyExists(key) {
+		return ":1\r\n"
 	} else {
-		return fmt.Sprintf("%c0\r\n", replytype.Int)
+		return ":0\r\n"
 	}
 }
 
 func handleIncDec(key string, operation string) (string, error) {
-	if !utils.IsKeyExists(key) {
+	if !IsKeyExists(key) {
 		c.SET(key, 0)
 	} else {
-		if err := utils.AssertIntType(key); err != nil {
+		if err := AssertIntType(key); err != nil {
 			return "", err
 		}
 	}
 
 	var result int
 	switch operation {
-	case respCmd.INCR:
+	case resp.INCR:
 		result = c.INCR(key)
-	case respCmd.DECR:
+	case resp.DECR:
 		result = c.DECR(key)
 	default:
-		return "", errors.Err{Type: errType.UnknownCommand}
+		return "", errors.Err{Type: errors.UnknownCommand}
 	}
 
-	return fmt.Sprintf("%c%d\r\n", replytype.Int, result), nil
+	return fmt.Sprintf(":%d\r\n", result), nil
 }
 
 func handleINCR(key string) (string, error) {
-	return handleIncDec(key, respCmd.INCR)
+	return handleIncDec(key, resp.INCR)
 }
 
 func handleDECR(key string) (string, error) {
-	return handleIncDec(key, respCmd.DECR)
+	return handleIncDec(key, resp.DECR)
 }
 
 func handleDEL(key string) string {
-	if utils.IsKeyExists(key) {
+	if IsKeyExists(key) {
 		c.DEL(key)
-		return fmt.Sprintf("%c1\r\n", replytype.Int)
+		return ":1\r\n"
 	} else {
-		return fmt.Sprintf("%c0\r\n", replytype.Int)
+		return ":0\r\n"
 	}
 }
 
 func handleLPUSH(key string, args []string) (string, error) {
-	if utils.IsKeyExists(key) {
-		if err := utils.AssertListType(key); err != nil {
+	if IsKeyExists(key) {
+		if err := AssertListType(key); err != nil {
 			return "", err
 		}
 	}
 
 	c.LPUSH(key, args)
 	vals := c.LRANGE(key, 0, -1)
-	return fmt.Sprintf("%c%d\r\n", replytype.Int, len(vals)), nil
+	return fmt.Sprintf(":%d\r\n", len(vals)), nil
 }
 
 func handleRPUSH(key string, args []string) (string, error) {
-	if utils.IsKeyExists(key) {
-		if err := utils.AssertListType(key); err != nil {
+	if IsKeyExists(key) {
+		if err := AssertListType(key); err != nil {
 			return "", err
 		}
 	}
 
 	c.RPUSH(key, args)
 	vals := c.LRANGE(key, 0, -1)
-	return fmt.Sprintf("%c%d\r\n", replytype.Int, len(vals)), nil
+	return fmt.Sprintf(":%d\r\n", len(vals)), nil
 }
 
 func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
-	if err := utils.AssertKeyExists(key); err != nil {
+	if err := AssertKeyExists(key); err != nil {
 		return "", err
 	}
-	if err := utils.AssertListType(key); err != nil {
+	if err := AssertListType(key); err != nil {
 		return "", err
 	}
 	vals := c.LRANGE(key, startIdx, endIdx)
-	response := fmt.Sprintf("%c%d\r\n", replytype.Array, len(vals))
+	response := fmt.Sprintf("*%d\r\n", len(vals))
 	for i := 0; i < len(vals); i++ {
-		response += fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(vals[i]), vals[i])
+		response += fmt.Sprintf("$%d\r\n%s\r\n", len(vals[i]), vals[i])
 	}
 	return response, nil
 }
 
 func handleListPop(key string, popType string) (string, error) {
-	if err := utils.AssertKeyExists(key); err != nil {
+	if err := AssertKeyExists(key); err != nil {
 		return "", err
 	}
-	if err := utils.AssertListType(key); err != nil {
+	if err := AssertListType(key); err != nil {
 		return "", err
 	}
 
 	var val []string
 	switch popType {
-	case respCmd.LPOP:
+	case resp.LPOP:
 		val = c.LRANGE(key, 0, 0)
 		if len(val) > 0 {
 			data := val[0]
 			c.LPOP(key)
-			return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(data), data), nil
+			return fmt.Sprintf("$%d\r\n%s\r\n", len(data), data), nil
 		}
-	case respCmd.RPOP:
+	case resp.RPOP:
 		val = c.LRANGE(key, 0, -1)
 		if len(val) > 0 {
 			data := val[len(val)-1]
 			c.RPOP(key)
-			return fmt.Sprintf("%c%d\r\n%s\r\n", replytype.Bulk, len(data), data), nil
+			return fmt.Sprintf("$%d\r\n%s\r\n", len(data), data), nil
 		}
 	}
-	return fmt.Sprintf("%c0\r\n", replytype.Bulk), nil
+	return ":0\r\n", nil
 }
 
 func handleLPOP(key string) (string, error) {
-	if err := utils.CheckEmptyList(key); err != nil {
+	if err := CheckEmptyList(key); err != nil {
 		return "", err
 	}
-	if err := utils.AssertListType(key); err != nil {
+	if err := AssertListType(key); err != nil {
 		return "", err
 	}
-	return handleListPop(key, respCmd.LPOP)
+	return handleListPop(key, resp.LPOP)
 }
 
 func handleRPOP(key string) (string, error) {
-	if err := utils.CheckEmptyList(key); err != nil {
+	if err := CheckEmptyList(key); err != nil {
 		return "", err
 	}
-	if err := utils.AssertListType(key); err != nil {
+	if err := AssertListType(key); err != nil {
 		return "", err
 	}
-	return handleListPop(key, respCmd.RPOP)
+	return handleListPop(key, resp.RPOP)
 }
 
 func handleEXPIRE(key string, ttl int) (string, error) {
-	if err := utils.AssertKeyExists(key); err != nil {
+	if err := AssertKeyExists(key); err != nil {
 		return "", err
 	}
 
 	if ttl < 0 {
-		return "", errors.Err{Type: errType.InvalidCommandFormat}
+		return "", errors.Err{Type: errors.InvalidCommandFormat}
 	}
 	c.EXPIRE(key, ttl)
 	return "+OK\r\n", nil
 }
 
 func handleTTL(key string) (string, error) {
-	if err := utils.AssertKeyExists(key); err != nil {
+	if err := AssertKeyExists(key); err != nil {
 		return "", err
 	}
 
@@ -209,11 +207,11 @@ func handleTTL(key string) (string, error) {
 		return ":-1\r\n", nil
 	}
 
-	return fmt.Sprintf("%c%d\r\n", replytype.Int, remainingTTL), nil
+	return fmt.Sprintf(":%d\r\n", remainingTTL), nil
 }
 
 func handlePERSIST(key string) (string, error) {
-	if err := utils.AssertKeyExists(key); err != nil {
+	if err := AssertKeyExists(key); err != nil {
 		return "", err
 	}
 
@@ -228,41 +226,41 @@ func HandleCommand(serializedRawCmd string) (string, error) {
 	args := cmdSegments[1:]
 
 	switch strings.ToUpper(cmd) {
-	case respCmd.GET:
+	case resp.GET:
 		return handleGET(args[0])
-	case respCmd.SET:
+	case resp.SET:
 		return handleSET(args[0], args[1])
-	case respCmd.EXISTS:
+	case resp.EXISTS:
 		return handleEXISTS(args[0]), nil
-	case respCmd.DEL:
+	case resp.DEL:
 		return handleDEL(args[0]), nil
-	case respCmd.PING:
+	case resp.PING:
 		return "+PONG\r\n", nil
-	case respCmd.LPUSH:
+	case resp.LPUSH:
 		return handleLPUSH(args[0], args[1:])
-	case respCmd.RPUSH:
+	case resp.RPUSH:
 		return handleRPUSH(args[0], args[1:])
-	case respCmd.EXPIRE:
+	case resp.EXPIRE:
 		key := args[0]
 		ttl, _ := strconv.Atoi(args[1])
 		return handleEXPIRE(key, ttl)
-	case respCmd.LRANGE:
+	case resp.LRANGE:
 		strIdx, _ := strconv.Atoi(args[1])
 		endIdx, _ := strconv.Atoi(args[2])
 		return handleLRANGE(args[0], strIdx, endIdx)
-	case respCmd.LPOP:
+	case resp.LPOP:
 		return handleLPOP(args[0])
-	case respCmd.RPOP:
+	case resp.RPOP:
 		return handleRPOP(args[0])
-	case respCmd.INCR:
+	case resp.INCR:
 		return handleINCR(args[0])
-	case respCmd.DECR:
+	case resp.DECR:
 		return handleDECR(args[0])
-	case respCmd.FLUSHALL:
+	case resp.FLUSHALL:
 		return handleFLUSHALL(), nil
-	case respCmd.TTL:
+	case resp.TTL:
 		return handleTTL(args[0])
-	case respCmd.PERSIST:
+	case resp.PERSIST:
 		return handlePERSIST(args[0])
 	default:
 		return "", nil
