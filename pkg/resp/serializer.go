@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/nahK994/TinyCache/pkg/utils"
+	"github.com/nahK994/TinyCache/pkg/shared"
 )
 
 type CommandProcessor func([]string) string
@@ -29,7 +29,7 @@ var commandProcessors = map[string]CommandProcessor{
 }
 
 func getCommandName(cmd string) string {
-	return strings.ToUpper(utils.GetCmdSegments(cmd)[0])
+	return strings.ToUpper(shared.GetCmdSegments(cmd)[0])
 }
 
 func getRESPformat(segments []string) string {
@@ -60,8 +60,8 @@ func processPing([]string) string {
 }
 
 func Serialize(rawCmd string) string {
-	words := utils.GetCmdSegments(rawCmd)
-	commandName := getCommandName(rawCmd)
+	words := shared.GetCmdSegments(rawCmd)
+	commandName := strings.ToUpper(words[0])
 
 	if processor, exists := commandProcessors[commandName]; exists {
 		return processor(words)

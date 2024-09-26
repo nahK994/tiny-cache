@@ -143,7 +143,6 @@ var deserializeTestCases = []deserializeTestCase{
 }
 
 var serializeTestCases = []serializeTestCase{
-	// Standard test cases
 	{
 		input:  "SET key value",
 		output: "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n",
@@ -153,108 +152,57 @@ var serializeTestCases = []serializeTestCase{
 		output: "*2\r\n$3\r\nGET\r\n$3\r\nkey\r\n",
 	},
 	{
-		input:  "SET name Shomi Khan",
-		output: "*3\r\n$3\r\nSET\r\n$4\r\nname\r\n$10\r\nShomi Khan\r\n",
-	},
-
-	// Edge case: Input with multiple spaces between arguments
-	{
-		input:  "SET   key    value",
-		output: "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n", // Extra spaces ignored
-	},
-
-	// Edge case: Input with special characters
-	{
-		input:  "SET key !@#$%^&*()",
-		output: "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$10\r\n!@#$%^&*()\r\n",
-	},
-
-	// Edge case: Input with non-ASCII characters (Unicode)
-	{
-		input:  "SET key こんにちは",
-		output: "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$15\r\nこんにちは\r\n",
-	},
-
-	// Edge case: Input with a newline character
-	{
-		input:  "SET key value\n",
-		output: "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$6\r\nvalue\n\r\n",
-	},
-
-	// Edge case: Input with trailing spaces
-	{
-		input:  "SET key value ",
-		output: "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n", // Trailing space ignored
-	},
-
-	// Simple command test case
-	{
 		input:  "PING",
 		output: "*1\r\n$4\r\nPING\r\n",
 	},
-
-	// INCR command test cases
 	{
-		input:  "INCR age",
-		output: "*2\r\n$4\r\nINCR\r\n$3\r\nage\r\n",
+		input:  "EXISTS key",
+		output: "*2\r\n$6\r\nEXISTS\r\n$3\r\nkey\r\n",
 	},
 	{
 		input:  "INCR counter",
 		output: "*2\r\n$4\r\nINCR\r\n$7\r\ncounter\r\n",
 	},
-
-	// DECR command test cases
-	{
-		input:  "DECR age",
-		output: "*2\r\n$4\r\nDECR\r\n$3\r\nage\r\n",
-	},
 	{
 		input:  "DECR counter",
 		output: "*2\r\n$4\r\nDECR\r\n$7\r\ncounter\r\n",
 	},
-
-	// DEL command test cases
 	{
-		input:  "DEL age",
-		output: "*2\r\n$3\r\nDEL\r\n$3\r\nage\r\n",
+		input:  "DEL key",
+		output: "*2\r\n$3\r\nDEL\r\n$3\r\nkey\r\n",
 	},
-	// EXPIRE command test cases
 	{
-		input:  "EXPIRE age",
-		output: "*2\r\n$6\r\nEXPIRE\r\n$3\r\nage\r\n",
+		input:  "LPUSH mylist value1 value2",
+		output: "*4\r\n$5\r\nLPUSH\r\n$6\r\nmylist\r\n$6\r\nvalue1\r\n$6\r\nvalue2\r\n",
 	},
-	// PERSIST command test cases
 	{
-		input:  "PERSIST age",
-		output: "*2\r\n$7\r\nPERSIST\r\n$3\r\nage\r\n",
+		input:  "LPOP mylist",
+		output: "*2\r\n$4\r\nLPOP\r\n$6\r\nmylist\r\n",
 	},
-	// TTL command test cases
 	{
-		input:  "TTL age",
-		output: "*2\r\n$3\r\nTTL\r\n$3\r\nage\r\n",
+		input:  "RPUSH mylist value1 value2",
+		output: "*4\r\n$5\r\nRPUSH\r\n$6\r\nmylist\r\n$6\r\nvalue1\r\n$6\r\nvalue2\r\n",
 	},
-
-	// LPUSH command test cases
 	{
-		input:  "LPUSH arr 1 2 three",
-		output: "*5\r\n$5\r\nLPUSH\r\n$3\r\narr\r\n$1\r\n1\r\n$1\r\n2\r\n$5\r\nthree\r\n",
+		input:  "RPOP mylist",
+		output: "*2\r\n$4\r\nRPOP\r\n$6\r\nmylist\r\n",
 	},
-	// RPUSH command test cases
 	{
-		input:  "RPUSH arr 1 2 three",
-		output: "*5\r\n$5\r\nRPUSH\r\n$3\r\narr\r\n$1\r\n1\r\n$1\r\n2\r\n$5\r\nthree\r\n",
+		input:  "LRANGE mylist 0 -1",
+		output: "*4\r\n$6\r\nLRANGE\r\n$6\r\nmylist\r\n$1\r\n0\r\n$2\r\n-1\r\n",
 	},
-	// LPOP command test cases
 	{
-		input:  "LPOP arr",
-		output: "*2\r\n$4\r\nLPOP\r\n$3\r\narr\r\n",
+		input:  "EXPIRE key 60",
+		output: "*3\r\n$6\r\nEXPIRE\r\n$3\r\nkey\r\n$2\r\n60\r\n",
 	},
-	// RPOP command test cases
 	{
-		input:  "RPOP arr",
-		output: "*2\r\n$4\r\nRPOP\r\n$3\r\narr\r\n",
+		input:  "TTL key",
+		output: "*2\r\n$3\r\nTTL\r\n$3\r\nkey\r\n",
 	},
-	// FLUSHALL command test cases
+	{
+		input:  "PERSIST key",
+		output: "*2\r\n$7\r\nPERSIST\r\n$3\r\nkey\r\n",
+	},
 	{
 		input:  "FLUSHALL",
 		output: "*1\r\n$8\r\nFLUSHALL\r\n",

@@ -1,4 +1,4 @@
-package test
+package tools_test
 
 import "github.com/nahK994/TinyCache/pkg/errors"
 

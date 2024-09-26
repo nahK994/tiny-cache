@@ -157,7 +157,7 @@ func handleListPop(key string, popType string) (string, error) {
 			return fmt.Sprintf("$%d\r\n%s\r\n", len(data), data), nil
 		}
 	}
-	return ":0\r\n", nil
+	return "$0\r\n", nil
 }
 
 func handleLPOP(key string) (string, error) {

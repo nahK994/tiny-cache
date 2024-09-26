@@ -107,8 +107,7 @@ func TestHandleDEL(t *testing.T) {
 	}
 }
 
-func TestHandleINCR(t *testing.T) {
-	// Key does not exist, should initialize to 0 and increment
+func TestHandleINCR_DECR(t *testing.T) {
 	resp, err := handlers.HandleCommand("*2\r\n$4\r\nINCR\r\n$6\r\nnewkey\r\n")
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
@@ -117,7 +116,6 @@ func TestHandleINCR(t *testing.T) {
 		t.Errorf("Expected ':1\\r\\n', got %s", resp)
 	}
 
-	// Key exists, increment further
 	resp, err = handlers.HandleCommand("*2\r\n$4\r\nINCR\r\n$6\r\nnewkey\r\n")
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
@@ -126,11 +124,27 @@ func TestHandleINCR(t *testing.T) {
 		t.Errorf("Expected ':2\\r\\n', got %s", resp)
 	}
 
-	// Error on wrong type (set string)
 	handlers.HandleCommand("*3\r\n$3\r\nSET\r\n$5\r\nmykey\r\n$5\r\nhello\r\n")
 	_, err = handlers.HandleCommand("*2\r\n$4\r\nINCR\r\n$5\r\nmykey\r\n")
 	if err == nil {
 		t.Errorf("Expected error for INCR on non-integer key, got none")
+	}
+
+	resp, _ = handlers.HandleCommand("*2\r\n$4\r\nDECR\r\n$6\r\nnewkey\r\n")
+	if resp != ":1\r\n" {
+		t.Errorf("Expected ':1\\r\\n', got %s", resp)
+	}
+
+	handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$4\r\nlist\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
+	_, err = handlers.HandleCommand("*2\r\n$4\r\nINCR\r\n$4\r\nlist\r\n")
+	if err == nil {
+		t.Errorf("Expected type error, got %v", err)
+	}
+
+	handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$4\r\nlist\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
+	_, err = handlers.HandleCommand("*2\r\n$4\r\nDECR\r\n$4\r\nlist\r\n")
+	if err == nil {
+		t.Errorf("Expected type error, got %v", err)
 	}
 }
 
@@ -159,6 +173,73 @@ func TestHandlePUSH(t *testing.T) {
 	_, err = handlers.HandleCommand("*5\r\n$5\r\nRPUSH\r\n$6\r\nmylist\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
 	if err == nil {
 		t.Errorf("Expected no error, got %v", err)
+	}
+}
+
+func TestHandlePOP(t *testing.T) {
+	handlers.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$7\r\nmylist2\r\n$3\r\none\r\n$3\r\ntwo\r\n$5\r\nthree\r\n")
+	handlers.HandleCommand("*5\r\n$5\r\nRPUSH\r\n$7\r\nmylist2\r\n$1\r\n1\r\n$1\r\n2\r\n$1\r\n3\r\n")
+	response, err := handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$7\r\nmylist2\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	expected := "$5\r\nthree\r\n"
+	if response != expected {
+		t.Errorf("Expected %s, got %s", expected, response)
+	}
+
+	response, err = handlers.HandleCommand("*2\r\n$4\r\nRPOP\r\n$7\r\nmylist2\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	expected = "$1\r\n3\r\n"
+	if response != expected {
+		t.Errorf("Expected %s, got %s", expected, response)
+	}
+
+	response, err = handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$7\r\nmylist2\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	expected = "$3\r\ntwo\r\n"
+	if response != expected {
+		t.Errorf("Expected %s, got %s", expected, response)
+	}
+
+	response, err = handlers.HandleCommand("*2\r\n$4\r\nRPOP\r\n$7\r\nmylist2\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	expected = "$1\r\n2\r\n"
+	if response != expected {
+		t.Errorf("Expected %s, got %s", expected, response)
+	}
+
+	response, err = handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$7\r\nmylist2\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	expected = "$3\r\none\r\n"
+	if response != expected {
+		t.Errorf("Expected %s, got %s", expected, response)
+	}
+
+	response, err = handlers.HandleCommand("*2\r\n$4\r\nRPOP\r\n$7\r\nmylist2\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	expected = "$1\r\n1\r\n"
+	if response != expected {
+		t.Errorf("Expected %s, got %s", expected, response)
+	}
+
+	response, err = handlers.HandleCommand("*2\r\n$4\r\nLPOP\r\n$7\r\nmylist2\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	expected = "$0\r\n"
+	if response != expected {
+		t.Errorf("Expected %s, got %s", expected, response)
 	}
 }
 
@@ -225,8 +306,13 @@ func TestHandleTTL(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected type error, got %v", err)
 	}
-	// Set key with expiration
+
 	handlers.HandleCommand("*3\r\n$3\r\nSET\r\n$7\r\nttl_key\r\n$5\r\nvalue\r\n")
+	response, _ := handlers.HandleCommand("*2\r\n$3\r\nTTL\r\n$7\r\nttl_key\r\n")
+	expected := ":0\r\n"
+	if response != expected {
+		t.Errorf("Expected %s, got %s", expected, response)
+	}
 	handlers.HandleCommand("*3\r\n$6\r\nEXPIRE\r\n$7\r\nttl_key\r\n$2\r\n10\r\n")
 
 	// Check TTL value
@@ -240,7 +326,7 @@ func TestHandleTTL(t *testing.T) {
 	}
 
 	// Wait for the key to expire
-	time.Sleep(15 * time.Second)
+	time.Sleep(10 * time.Second)
 	_, err = handlers.HandleCommand("*2\r\n$3\r\nTTL\r\n$7\r\nttl_key\r\n")
 	if err == nil {
 		t.Errorf("Expected type error, got %v", err)
@@ -272,5 +358,13 @@ func TestHandlePERSIST(t *testing.T) {
 	}
 	if resp != "+OK\r\n" {
 		t.Errorf("Expected +OK\r\n, got %s", resp)
+	}
+
+	resp, err = handlers.HandleCommand("*2\r\n$3\r\nTTL\r\n$11\r\npersist_key\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if resp != ":0\r\n" {
+		t.Errorf("Expected :0\r\n, got %s", resp)
 	}
 }

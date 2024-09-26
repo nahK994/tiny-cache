@@ -1,4 +1,4 @@
-package conn_utils
+package tools
 
 import (
 	"strconv"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/nahK994/TinyCache/pkg/errors"
 	"github.com/nahK994/TinyCache/pkg/resp"
-	"github.com/nahK994/TinyCache/pkg/utils"
+	"github.com/nahK994/TinyCache/pkg/shared"
 )
 
 func validateCmdArgs(words []string) error {
@@ -87,7 +87,7 @@ func validateCmdArgs(words []string) error {
 }
 
 func ValidateRawCommand(rawCmd string) error {
-	words := utils.GetCmdSegments(rawCmd)
+	words := shared.GetCmdSegments(rawCmd)
 
 	if len(words) == 0 {
 		return errors.Err{Type: errors.UnknownCommand}

@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net"
 
-	conn_utils "github.com/nahK994/TinyCache/connection/utils"
+	"github.com/nahK994/TinyCache/connection/tools"
 	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/handlers"
 )
@@ -96,7 +96,7 @@ func (p *Peer) handleConn() {
 		fmt.Printf("%s> %s\n", p.clientAddr, formattedCmd)
 
 		var res string
-		if err := conn_utils.ValidateSerializedCmd(rawCmd); err != nil {
+		if err := tools.ValidateSerializedCmd(rawCmd); err != nil {
 			res = err.Error()
 		} else {
 			if output, err := handlers.HandleCommand(rawCmd); err != nil {

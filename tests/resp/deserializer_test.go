@@ -6,8 +6,7 @@ import (
 	"github.com/nahK994/TinyCache/pkg/resp"
 )
 
-// Test basic deserialization of a simple RESP command
-func TestDeserializer_Basic(t *testing.T) {
+func TestDeserializer(t *testing.T) {
 	for _, item := range deserializeTestCases {
 		respCmd := item.input
 		expected := item.output

@@ -7,7 +7,7 @@ import (
 )
 
 func CheckEmptyList(key string) error {
-	if IsKeyExists(key) {
+	if !IsKeyExists(key) {
 		return errors.Err{Type: errors.EmptyList}
 	}
 	return nil

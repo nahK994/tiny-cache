@@ -49,5 +49,4 @@ func Deserializer(rawCmd string) interface{} {
 	default:
 		return nil
 	}
-
 }

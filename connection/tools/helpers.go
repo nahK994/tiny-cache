@@ -1,4 +1,4 @@
-package conn_utils
+package tools
 
 import "github.com/nahK994/TinyCache/pkg/errors"
 

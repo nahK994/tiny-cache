@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
-	conn_utils "github.com/nahK994/TinyCache/connection/utils"
+	"github.com/nahK994/TinyCache/connection/tools"
 	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/resp"
 )
@@ -81,7 +81,7 @@ func (c *Client) handleConn() error {
 		}
 
 		var response string
-		if err := conn_utils.ValidateRawCommand(str); err != nil {
+		if err := tools.ValidateRawCommand(str); err != nil {
 			response = err.Error()
 		} else {
 			response = resp.Serialize(str)
