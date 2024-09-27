@@ -1,8 +1,12 @@
-package tools
+package resp
 
-import "github.com/nahK994/TinyCache/pkg/errors"
+import (
+	"strings"
 
-func parseNumber(cmd string, index *int) (int, error) {
+	"github.com/nahK994/TinyCache/pkg/errors"
+)
+
+func validateParseNumber(cmd string, index *int) (int, error) {
 	numCmdSegments := 0
 	for ; *index < len(cmd); *index++ {
 		ch := cmd[*index]
@@ -24,7 +28,7 @@ func getSegment(cmd string, index *int) (string, error) {
 		return "", errors.Err{Type: errors.UnexpectedCharacter}
 	}
 	*index++
-	size, err := parseNumber(cmd, index)
+	size, err := validateParseNumber(cmd, index)
 	if err != nil {
 		return "", err
 	}
@@ -38,4 +42,16 @@ func getSegment(cmd string, index *int) (string, error) {
 
 func checkCRLF(serializedCmd string, index int) bool {
 	return index+1 < len(serializedCmd) && serializedCmd[index] == '\r' && serializedCmd[index+1] == '\n'
+}
+
+func getCmdSegments(rawCmd string) []string {
+	var words []string
+	temp := strings.Split(rawCmd, " ")
+	for _, ch := range temp {
+		if len(ch) == 0 {
+			continue
+		}
+		words = append(words, ch)
+	}
+	return words
 }

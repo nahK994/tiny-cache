@@ -1,4 +1,4 @@
-package connection
+package client
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
-	"github.com/nahK994/TinyCache/connection/tools"
 	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/resp"
 )
@@ -18,7 +17,7 @@ type Client struct {
 	rl          *readline.Instance // To handle arrow keys and line history
 }
 
-func InitClient() *Client {
+func Init() *Client {
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:            "tinycache-cli> ",
 		HistoryFile:       "/tmp/readline.tmp", // For persistent history
@@ -81,7 +80,7 @@ func (c *Client) handleConn() error {
 		}
 
 		var response string
-		if err := tools.ValidateRawCommand(str); err != nil {
+		if err := resp.ValidateRawCommand(str); err != nil {
 			response = err.Error()
 		} else {
 			response = resp.Serialize(str)

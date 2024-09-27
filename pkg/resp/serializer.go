@@ -3,8 +3,6 @@ package resp
 import (
 	"fmt"
 	"strings"
-
-	"github.com/nahK994/TinyCache/pkg/shared"
 )
 
 type CommandProcessor func([]string) string
@@ -26,10 +24,6 @@ var commandProcessors = map[string]CommandProcessor{
 	PERSIST:  processGenericCommand,
 	FLUSHALL: processFlushAll,
 	PING:     processPing,
-}
-
-func getCommandName(cmd string) string {
-	return strings.ToUpper(shared.GetCmdSegments(cmd)[0])
 }
 
 func getRESPformat(segments []string) string {
@@ -60,7 +54,7 @@ func processPing([]string) string {
 }
 
 func Serialize(rawCmd string) string {
-	words := shared.GetCmdSegments(rawCmd)
+	words := getCmdSegments(rawCmd)
 	commandName := strings.ToUpper(words[0])
 
 	if processor, exists := commandProcessors[commandName]; exists {

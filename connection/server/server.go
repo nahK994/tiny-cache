@@ -1,13 +1,13 @@
-package connection
+package server
 
 import (
 	"fmt"
 	"log/slog"
 	"net"
 
-	"github.com/nahK994/TinyCache/connection/tools"
+	"github.com/nahK994/TinyCache/connection/server/handlers"
 	"github.com/nahK994/TinyCache/pkg/config"
-	"github.com/nahK994/TinyCache/pkg/handlers"
+	"github.com/nahK994/TinyCache/pkg/resp"
 )
 
 type Server struct {
@@ -20,7 +20,7 @@ type Peer struct {
 	conn       net.Conn
 }
 
-func InitiateServer() *Server {
+func Init() *Server {
 	return &Server{
 		listenAddress: fmt.Sprintf("%s:%d", config.App.Host, config.App.Port),
 	}
@@ -96,7 +96,7 @@ func (p *Peer) handleConn() {
 		fmt.Printf("%s> %s\n", p.clientAddr, formattedCmd)
 
 		var res string
-		if err := tools.ValidateSerializedCmd(rawCmd); err != nil {
+		if err := resp.ValidateSerializedCmd(rawCmd); err != nil {
 			res = err.Error()
 		} else {
 			if output, err := handlers.HandleCommand(rawCmd); err != nil {

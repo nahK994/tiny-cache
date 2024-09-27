@@ -1,77 +1,75 @@
-package tools
+package resp
 
 import (
 	"strconv"
 	"strings"
 
 	"github.com/nahK994/TinyCache/pkg/errors"
-	"github.com/nahK994/TinyCache/pkg/resp"
-	"github.com/nahK994/TinyCache/pkg/shared"
 )
 
 func validateCmdArgs(words []string) error {
 	switch strings.ToUpper(words[0]) {
-	case resp.SET:
+	case SET:
 		if len(words) < 3 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.GET:
+	case GET:
 		if len(words) != 2 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.EXISTS:
+	case EXISTS:
 		if len(words) != 2 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.DEL:
+	case DEL:
 		if len(words) != 2 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.INCR:
+	case INCR:
 		if len(words) != 2 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.DECR:
+	case DECR:
 		if len(words) != 2 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.PING:
+	case PING:
 		if len(words) != 1 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.FLUSHALL:
+	case FLUSHALL:
 		if len(words) != 1 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.LPUSH:
+	case LPUSH:
 		if len(words) < 3 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.LPOP:
+	case LPOP:
 		if len(words) != 2 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.EXPIRE:
+	case EXPIRE:
 		if len(words) != 3 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.RPUSH:
+	case RPUSH:
 		if len(words) < 3 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.RPOP:
+	case RPOP:
 		if len(words) != 2 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.TTL:
+	case TTL:
 		if len(words) != 2 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.PERSIST:
+	case PERSIST:
 		if len(words) != 2 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
-	case resp.LRANGE:
+	case LRANGE:
 		if len(words) != 4 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
@@ -87,7 +85,7 @@ func validateCmdArgs(words []string) error {
 }
 
 func ValidateRawCommand(rawCmd string) error {
-	words := shared.GetCmdSegments(rawCmd)
+	words := getCmdSegments(rawCmd)
 
 	if len(words) == 0 {
 		return errors.Err{Type: errors.UnknownCommand}
@@ -106,7 +104,7 @@ func ValidateSerializedCmd(serializedCmd string) error {
 		return errors.Err{Type: errors.UnexpectedCharacter}
 	}
 	index++
-	numCmdSegments, err := parseNumber(serializedCmd, &index)
+	numCmdSegments, err := validateParseNumber(serializedCmd, &index)
 	if err != nil {
 		return err
 	}
