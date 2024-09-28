@@ -6,13 +6,6 @@ import (
 	"github.com/nahK994/TinyCache/pkg/errors"
 )
 
-func CheckEmptyList(key string) error {
-	if !IsKeyExists(key) {
-		return errors.Err{Type: errors.EmptyList}
-	}
-	return nil
-}
-
 func validateExpiry(key string) error {
 	item := c.GET(key)
 	if item.ExpiryTime != nil && time.Now().After(*item.ExpiryTime) {

@@ -1,7 +1,6 @@
 package resp
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/nahK994/TinyCache/pkg/shared"
@@ -28,23 +27,13 @@ var commandProcessors = map[string]CommandProcessor{
 	PING:     processPing,
 }
 
-func getRESPformat(segments []string) string {
-	serializedCmd := fmt.Sprintf("*%d\r\n", len(segments))
-
-	serializedCmd += fmt.Sprintf("$%d\r\n%s\r\n", len(segments[0]), strings.ToUpper(segments[0]))
-	for i := 1; i < len(segments); i++ {
-		serializedCmd += fmt.Sprintf("$%d\r\n%s\r\n", len(segments[i]), segments[i])
-	}
-	return serializedCmd
-}
-
 func processSET(words []string) string {
 	words = []string{words[0], words[1], strings.Join(words[2:], " ")}
-	return getRESPformat(words)
+	return processArray(words)
 }
 
 func processGenericCommand(words []string) string {
-	return getRESPformat(words)
+	return processArray(words)
 }
 
 func processFlushAll([]string) string {

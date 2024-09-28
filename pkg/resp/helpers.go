@@ -1,4 +1,4 @@
-package server
+package resp
 
 import (
 	"fmt"
@@ -6,12 +6,23 @@ import (
 	"github.com/nahK994/TinyCache/pkg/cache"
 )
 
-func IsKeyExists(key string) bool {
-	_ = validateExpiry(key)
-	return c.EXISTS(key)
+func processArray(segments []string) string {
+	response := fmt.Sprintf("*%d\r\n", len(segments))
+	for _, v := range segments {
+		response += fmt.Sprintf("$%d\r\n%s\r\n", len(v), v)
+	}
+	return response
 }
 
-func processCacheItem(item cache.CacheData) string {
+func SerializeBool(arg bool) string {
+	if arg {
+		return ":1\r\n"
+	} else {
+		return ":0\r\n"
+	}
+}
+
+func SerializeCacheItem(item cache.CacheData) string {
 	switch item.DataType {
 	case cache.Int:
 		if item.IntData != nil {
@@ -27,7 +38,7 @@ func processCacheItem(item cache.CacheData) string {
 			for _, v := range item.StrList {
 				response += fmt.Sprintf("$%d\r\n%s\r\n", len(v), v)
 			}
-			return response
+			return processArray(item.StrList)
 		}
 	}
 	return "$-1\r\n"

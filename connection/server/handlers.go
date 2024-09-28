@@ -11,6 +11,11 @@ import (
 	"github.com/nahK994/TinyCache/pkg/resp"
 )
 
+func IsKeyExists(key string) bool {
+	_ = validateExpiry(key)
+	return c.EXISTS(key)
+}
+
 var c *cache.Cache = config.App.Cache
 
 func handleGET(key string) (string, error) {
@@ -18,7 +23,7 @@ func handleGET(key string) (string, error) {
 		return "", err
 	}
 	item := c.GET(key)
-	return processCacheItem(item.Value), nil
+	return resp.SerializeCacheItem(item.Value), nil
 }
 
 func handleSET(key string, value interface{}) (string, error) {
@@ -36,15 +41,7 @@ func handleFLUSHALL() string {
 }
 
 func handleEXISTS(key string) string {
-	item := cache.CacheData{DataType: cache.Int}
-	if IsKeyExists(key) {
-		val := 1
-		item.IntData = &val
-	} else {
-		val := 0
-		item.IntData = &val
-	}
-	return processCacheItem(item)
+	return resp.SerializeBool(IsKeyExists(key))
 }
 
 func handleIncDec(key, operation string) (string, error) {
@@ -54,11 +51,10 @@ func handleIncDec(key, operation string) (string, error) {
 		return "", errors.Err{Type: errors.TypeError}
 	}
 
-	var result cache.CacheData
-	result.DataType = cache.Int
-	val := 0
-	result.IntData = &val
-
+	result := cache.CacheData{
+		DataType: cache.Int,
+		IntData:  new(int),
+	}
 	switch operation {
 	case resp.INCR:
 		*result.IntData = c.INCR(key)
@@ -66,7 +62,7 @@ func handleIncDec(key, operation string) (string, error) {
 		*result.IntData = c.DECR(key)
 	}
 
-	return processCacheItem(result), nil
+	return resp.SerializeCacheItem(result), nil
 }
 
 func handleINCR(key string) (string, error) {
@@ -78,16 +74,11 @@ func handleDECR(key string) (string, error) {
 }
 
 func handleDEL(key string) string {
-	item := cache.CacheData{DataType: cache.Int}
-	if IsKeyExists(key) {
+	keyExists := IsKeyExists(key)
+	if keyExists {
 		c.DEL(key)
-		val := 1
-		item.IntData = &val
-	} else {
-		val := 0
-		item.IntData = &val
 	}
-	return processCacheItem(item)
+	return resp.SerializeBool(keyExists)
 }
 
 func handleLpushRpush(key string, args []string, operation string) (string, error) {
@@ -107,7 +98,7 @@ func handleLpushRpush(key string, args []string, operation string) (string, erro
 		IntData:  new(int),
 	}
 	*item.IntData = len(c.LRANGE(key, 0, -1))
-	return processCacheItem(item), nil
+	return resp.SerializeCacheItem(item), nil
 }
 
 func handleLPUSH(key string, args []string) (string, error) {
@@ -130,7 +121,7 @@ func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
 		DataType: cache.Array,
 		StrList:  vals,
 	}
-	return processCacheItem(item), nil
+	return resp.SerializeCacheItem(item), nil
 }
 
 func handleListPop(key, popType string) (string, error) {
@@ -158,7 +149,7 @@ func handleListPop(key, popType string) (string, error) {
 		c.RPOP(key)
 	}
 
-	return processCacheItem(cacheItem), nil
+	return resp.SerializeCacheItem(cacheItem), nil
 }
 
 func handleLPOP(key string) (string, error) {
@@ -202,7 +193,7 @@ func handleTTL(key string) (string, error) {
 			cacheItem.IntData = &ttlExpired
 		}
 	}
-	return processCacheItem(cacheItem), nil
+	return resp.SerializeCacheItem(cacheItem), nil
 }
 
 func handlePERSIST(key string) (string, error) {
