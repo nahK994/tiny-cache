@@ -5,9 +5,7 @@ import (
 	"log/slog"
 	"net"
 
-	"github.com/nahK994/TinyCache/connection/server/handlers"
 	"github.com/nahK994/TinyCache/pkg/config"
-	"github.com/nahK994/TinyCache/pkg/resp"
 )
 
 type Server struct {
@@ -96,14 +94,10 @@ func (p *Peer) handleConn() {
 		fmt.Printf("%s> %s\n", p.clientAddr, formattedCmd)
 
 		var res string
-		if err := resp.ValidateSerializedCmd(rawCmd); err != nil {
+		if output, err := HandleCommand(rawCmd); err != nil {
 			res = err.Error()
 		} else {
-			if output, err := handlers.HandleCommand(rawCmd); err != nil {
-				res = err.Error()
-			} else {
-				res = output
-			}
+			res = output
 		}
 		p.conn.Write([]byte(res))
 	}

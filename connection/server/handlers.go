@@ -1,7 +1,6 @@
-package handlers
+package server
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -14,23 +13,12 @@ import (
 
 var c *cache.Cache = config.App.Cache
 
-// var replytype = utils.GetReplyTypes()
-
 func handleGET(key string) (string, error) {
 	if err := AssertKeyExists(key); err != nil {
 		return "", err
 	}
 	item := c.GET(key)
-	val := item.Value
-	switch val.DataType {
-	case cache.Int:
-		str := strconv.Itoa(*val.IntData)
-		return fmt.Sprintf("$%d\r\n%s\r\n", len(str), str), nil
-	case cache.String:
-		return fmt.Sprintf("$%d\r\n%s\r\n", len(*val.StrData), *val.StrData), nil
-	default:
-		return "", errors.Err{Type: errors.TypeError}
-	}
+	return processCacheItem(item.Value), nil
 }
 
 func handleSET(key string, value interface{}) (string, error) {
@@ -48,31 +36,37 @@ func handleFLUSHALL() string {
 }
 
 func handleEXISTS(key string) string {
+	item := cache.CacheData{DataType: cache.Int}
 	if IsKeyExists(key) {
-		return ":1\r\n"
+		val := 1
+		item.IntData = &val
 	} else {
-		return ":0\r\n"
+		val := 0
+		item.IntData = &val
 	}
+	return processCacheItem(item)
 }
 
-func handleIncDec(key string, operation string) (string, error) {
+func handleIncDec(key, operation string) (string, error) {
 	if !IsKeyExists(key) {
 		c.SET(key, 0)
 	} else if c.GET(key).Value.DataType != cache.Int {
 		return "", errors.Err{Type: errors.TypeError}
 	}
 
-	var result int
+	var result cache.CacheData
+	result.DataType = cache.Int
+	val := 0
+	result.IntData = &val
+
 	switch operation {
 	case resp.INCR:
-		result = c.INCR(key)
+		*result.IntData = c.INCR(key)
 	case resp.DECR:
-		result = c.DECR(key)
-	default:
-		return "", errors.Err{Type: errors.UnknownCommand}
+		*result.IntData = c.DECR(key)
 	}
 
-	return fmt.Sprintf(":%d\r\n", result), nil
+	return processCacheItem(result), nil
 }
 
 func handleINCR(key string) (string, error) {
@@ -84,36 +78,44 @@ func handleDECR(key string) (string, error) {
 }
 
 func handleDEL(key string) string {
+	item := cache.CacheData{DataType: cache.Int}
 	if IsKeyExists(key) {
 		c.DEL(key)
-		return ":1\r\n"
+		val := 1
+		item.IntData = &val
 	} else {
-		return ":0\r\n"
+		val := 0
+		item.IntData = &val
 	}
+	return processCacheItem(item)
+}
+
+func handleLpushRpush(key string, args []string, operation string) (string, error) {
+	if IsKeyExists(key) && c.GET(key).Value.DataType != cache.Array {
+		return "", errors.Err{Type: errors.TypeError}
+	}
+
+	switch operation {
+	case resp.LPUSH:
+		c.LPUSH(key, args)
+	case resp.RPUSH:
+		c.RPUSH(key, args)
+	}
+
+	item := cache.CacheData{
+		DataType: cache.Int,
+		IntData:  new(int),
+	}
+	*item.IntData = len(c.LRANGE(key, 0, -1))
+	return processCacheItem(item), nil
 }
 
 func handleLPUSH(key string, args []string) (string, error) {
-	if IsKeyExists(key) {
-		if c.GET(key).Value.DataType != cache.Array {
-			return "", errors.Err{Type: errors.TypeError}
-		}
-	}
-
-	c.LPUSH(key, args)
-	vals := c.LRANGE(key, 0, -1)
-	return fmt.Sprintf(":%d\r\n", len(vals)), nil
+	return handleLpushRpush(key, args, resp.LPUSH)
 }
 
 func handleRPUSH(key string, args []string) (string, error) {
-	if IsKeyExists(key) {
-		if c.GET(key).Value.DataType != cache.Array {
-			return "", errors.Err{Type: errors.TypeError}
-		}
-	}
-
-	c.RPUSH(key, args)
-	vals := c.LRANGE(key, 0, -1)
-	return fmt.Sprintf(":%d\r\n", len(vals)), nil
+	return handleLpushRpush(key, args, resp.RPUSH)
 }
 
 func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
@@ -124,58 +126,46 @@ func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
 		return "", errors.Err{Type: errors.TypeError}
 	}
 	vals := c.LRANGE(key, startIdx, endIdx)
-	response := fmt.Sprintf("*%d\r\n", len(vals))
-	for i := 0; i < len(vals); i++ {
-		response += fmt.Sprintf("$%d\r\n%s\r\n", len(vals[i]), vals[i])
+	item := cache.CacheData{
+		DataType: cache.Array,
+		StrList:  vals,
 	}
-	return response, nil
+	return processCacheItem(item), nil
 }
 
-func handleListPop(key string, popType string) (string, error) {
+func handleListPop(key, popType string) (string, error) {
 	if err := AssertKeyExists(key); err != nil {
 		return "", err
 	}
-	if c.GET(key).Value.DataType != cache.Array {
+
+	item := c.GET(key).Value
+	if item.DataType != cache.Array {
 		return "", errors.Err{Type: errors.TypeError}
 	}
+	if len(item.StrList) <= 0 {
+		return "", errors.Err{Type: errors.EmptyList}
+	}
 
-	var val []string
+	cacheItem := cache.CacheData{
+		DataType: cache.String,
+	}
 	switch popType {
 	case resp.LPOP:
-		val = c.LRANGE(key, 0, 0)
-		if len(val) > 0 {
-			data := val[0]
-			c.LPOP(key)
-			return fmt.Sprintf("$%d\r\n%s\r\n", len(data), data), nil
-		}
+		cacheItem.StrData = &item.StrList[0]
+		c.LPOP(key)
 	case resp.RPOP:
-		val = c.LRANGE(key, 0, -1)
-		if len(val) > 0 {
-			data := val[len(val)-1]
-			c.RPOP(key)
-			return fmt.Sprintf("$%d\r\n%s\r\n", len(data), data), nil
-		}
+		cacheItem.StrData = &item.StrList[len(item.StrList)-1]
+		c.RPOP(key)
 	}
-	return "$0\r\n", nil
+
+	return processCacheItem(cacheItem), nil
 }
 
 func handleLPOP(key string) (string, error) {
-	if err := CheckEmptyList(key); err != nil {
-		return "", err
-	}
-	if c.GET(key).Value.DataType != cache.Array {
-		return "", errors.Err{Type: errors.TypeError}
-	}
 	return handleListPop(key, resp.LPOP)
 }
 
 func handleRPOP(key string) (string, error) {
-	if err := CheckEmptyList(key); err != nil {
-		return "", err
-	}
-	if c.GET(key).Value.DataType != cache.Array {
-		return "", errors.Err{Type: errors.TypeError}
-	}
 	return handleListPop(key, resp.RPOP)
 }
 
@@ -195,18 +185,24 @@ func handleTTL(key string) (string, error) {
 	if err := AssertKeyExists(key); err != nil {
 		return "", err
 	}
+	cacheItem := cache.CacheData{
+		DataType: cache.Int,
+		IntData:  new(int),
+	}
 
 	item := c.GET(key)
 	if item.ExpiryTime == nil {
-		return ":0\r\n", nil
+		temp := 0
+		cacheItem.IntData = &temp
+	} else {
+		if remainingTTL := int(time.Until(*item.ExpiryTime).Seconds()); remainingTTL > 0 {
+			cacheItem.IntData = &remainingTTL
+		} else {
+			ttlExpired := -1
+			cacheItem.IntData = &ttlExpired
+		}
 	}
-
-	remainingTTL := int(time.Until(*item.ExpiryTime).Seconds())
-	if remainingTTL < 0 {
-		return ":-1\r\n", nil
-	}
-
-	return fmt.Sprintf(":%d\r\n", remainingTTL), nil
+	return processCacheItem(cacheItem), nil
 }
 
 func handlePERSIST(key string) (string, error) {
@@ -220,6 +216,10 @@ func handlePERSIST(key string) (string, error) {
 
 func HandleCommand(serializedRawCmd string) (string, error) {
 	cmdSegments, _ := resp.Deserializer(serializedRawCmd).([]string)
+
+	if len(cmdSegments) == 0 {
+		return "", errors.Err{Type: errors.InvalidCommandFormat}
+	}
 
 	cmd := cmdSegments[0]
 	args := cmdSegments[1:]
@@ -240,13 +240,15 @@ func HandleCommand(serializedRawCmd string) (string, error) {
 	case resp.RPUSH:
 		return handleRPUSH(args[0], args[1:])
 	case resp.EXPIRE:
-		key := args[0]
-		ttl, _ := strconv.Atoi(args[1])
-		return handleEXPIRE(key, ttl)
+		ttl, err := strconv.Atoi(args[1])
+		if err != nil {
+			return "", errors.Err{Type: errors.InvalidCommandFormat}
+		}
+		return handleEXPIRE(args[0], ttl)
 	case resp.LRANGE:
-		strIdx, _ := strconv.Atoi(args[1])
+		startIdx, _ := strconv.Atoi(args[1])
 		endIdx, _ := strconv.Atoi(args[2])
-		return handleLRANGE(args[0], strIdx, endIdx)
+		return handleLRANGE(args[0], startIdx, endIdx)
 	case resp.LPOP:
 		return handleLPOP(args[0])
 	case resp.RPOP:
@@ -262,6 +264,6 @@ func HandleCommand(serializedRawCmd string) (string, error) {
 	case resp.PERSIST:
 		return handlePERSIST(args[0])
 	default:
-		return "", nil
+		return "", errors.Err{Type: errors.UnknownCommand}
 	}
 }

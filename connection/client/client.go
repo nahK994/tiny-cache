@@ -80,7 +80,7 @@ func (c *Client) handleConn() error {
 		}
 
 		var response string
-		if err := resp.ValidateRawCommand(str); err != nil {
+		if err := ValidateRawCommand(str); err != nil {
 			response = err.Error()
 		} else {
 			response = resp.Serialize(str)

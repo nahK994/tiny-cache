@@ -3,6 +3,8 @@ package resp
 import (
 	"fmt"
 	"strings"
+
+	"github.com/nahK994/TinyCache/pkg/shared"
 )
 
 type CommandProcessor func([]string) string
@@ -54,7 +56,7 @@ func processPing([]string) string {
 }
 
 func Serialize(rawCmd string) string {
-	words := getCmdSegments(rawCmd)
+	words := shared.SplitCmd(rawCmd)
 	commandName := strings.ToUpper(words[0])
 
 	if processor, exists := commandProcessors[commandName]; exists {
