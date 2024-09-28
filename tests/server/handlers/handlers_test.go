@@ -108,7 +108,17 @@ func TestHandleDEL(t *testing.T) {
 }
 
 func TestHandleINCR_DECR(t *testing.T) {
+	handlers.HandleCommand("*3\r\n$3\r\nSET\r\n$6\r\nnewkey\r\n$2\r\n11\r\n")
 	resp, err := handlers.HandleCommand("*2\r\n$4\r\nINCR\r\n$6\r\nnewkey\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if resp != ":12\r\n" {
+		t.Errorf("Expected ':12\\r\\n', got %s", resp)
+	}
+	handlers.HandleCommand("*2\r\n$3\r\nDEL\r\n$6\r\nnewkey\r\n")
+
+	resp, err = handlers.HandleCommand("*2\r\n$4\r\nINCR\r\n$6\r\nnewkey\r\n")
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}

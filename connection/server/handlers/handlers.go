@@ -33,7 +33,7 @@ func handleGET(key string) (string, error) {
 	}
 }
 
-func handleSET(key, value string) (string, error) {
+func handleSET(key string, value interface{}) (string, error) {
 	c.SET(key, value)
 	return "+OK\r\n", nil
 }

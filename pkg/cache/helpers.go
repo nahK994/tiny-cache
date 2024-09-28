@@ -1,11 +1,17 @@
 package cache
 
+import "strconv"
+
 func (c *Cache) saveData(key string, val interface{}) {
 	switch v := val.(type) {
 	case int:
 		c.saveInt(key, &v)
 	case string:
-		c.saveString(key, &v)
+		if val, err := strconv.Atoi(v); err == nil {
+			c.saveInt(key, &val)
+		} else {
+			c.saveString(key, &v)
+		}
 	case []string:
 		c.saveList(key, v)
 	}
