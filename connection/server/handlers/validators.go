@@ -31,17 +31,3 @@ func AssertKeyExists(key string) error {
 	}
 	return nil
 }
-
-func AssertListType(key string) error {
-	if _, ok := c.GET(key).Val.([]string); !ok {
-		return errors.Err{Type: errors.TypeError}
-	}
-	return nil
-}
-
-func AssertIntType(key string) error {
-	if _, ok := c.GET(key).Val.(int); !ok {
-		return errors.Err{Type: errors.TypeError}
-	}
-	return nil
-}

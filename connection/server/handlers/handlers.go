@@ -21,12 +21,13 @@ func handleGET(key string) (string, error) {
 		return "", err
 	}
 	item := c.GET(key)
-	switch val := item.Val.(type) {
-	case int:
-		str := strconv.Itoa(val)
+	val := item.Value
+	switch val.DataType {
+	case cache.Int:
+		str := strconv.Itoa(*val.IntData)
 		return fmt.Sprintf("$%d\r\n%s\r\n", len(str), str), nil
-	case string:
-		return fmt.Sprintf("$%d\r\n%s\r\n", len(val), val), nil
+	case cache.String:
+		return fmt.Sprintf("$%d\r\n%s\r\n", len(*val.StrData), *val.StrData), nil
 	default:
 		return "", errors.Err{Type: errors.TypeError}
 	}
@@ -57,10 +58,8 @@ func handleEXISTS(key string) string {
 func handleIncDec(key string, operation string) (string, error) {
 	if !IsKeyExists(key) {
 		c.SET(key, 0)
-	} else {
-		if err := AssertIntType(key); err != nil {
-			return "", err
-		}
+	} else if c.GET(key).Value.DataType != cache.Int {
+		return "", errors.Err{Type: errors.TypeError}
 	}
 
 	var result int
@@ -95,8 +94,8 @@ func handleDEL(key string) string {
 
 func handleLPUSH(key string, args []string) (string, error) {
 	if IsKeyExists(key) {
-		if err := AssertListType(key); err != nil {
-			return "", err
+		if c.GET(key).Value.DataType != cache.Array {
+			return "", errors.Err{Type: errors.TypeError}
 		}
 	}
 
@@ -107,8 +106,8 @@ func handleLPUSH(key string, args []string) (string, error) {
 
 func handleRPUSH(key string, args []string) (string, error) {
 	if IsKeyExists(key) {
-		if err := AssertListType(key); err != nil {
-			return "", err
+		if c.GET(key).Value.DataType != cache.Array {
+			return "", errors.Err{Type: errors.TypeError}
 		}
 	}
 
@@ -121,8 +120,8 @@ func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
 	if err := AssertKeyExists(key); err != nil {
 		return "", err
 	}
-	if err := AssertListType(key); err != nil {
-		return "", err
+	if c.GET(key).Value.DataType != cache.Array {
+		return "", errors.Err{Type: errors.TypeError}
 	}
 	vals := c.LRANGE(key, startIdx, endIdx)
 	response := fmt.Sprintf("*%d\r\n", len(vals))
@@ -136,8 +135,8 @@ func handleListPop(key string, popType string) (string, error) {
 	if err := AssertKeyExists(key); err != nil {
 		return "", err
 	}
-	if err := AssertListType(key); err != nil {
-		return "", err
+	if c.GET(key).Value.DataType != cache.Array {
+		return "", errors.Err{Type: errors.TypeError}
 	}
 
 	var val []string
@@ -164,8 +163,8 @@ func handleLPOP(key string) (string, error) {
 	if err := CheckEmptyList(key); err != nil {
 		return "", err
 	}
-	if err := AssertListType(key); err != nil {
-		return "", err
+	if c.GET(key).Value.DataType != cache.Array {
+		return "", errors.Err{Type: errors.TypeError}
 	}
 	return handleListPop(key, resp.LPOP)
 }
@@ -174,8 +173,8 @@ func handleRPOP(key string) (string, error) {
 	if err := CheckEmptyList(key); err != nil {
 		return "", err
 	}
-	if err := AssertListType(key); err != nil {
-		return "", err
+	if c.GET(key).Value.DataType != cache.Array {
+		return "", errors.Err{Type: errors.TypeError}
 	}
 	return handleListPop(key, resp.RPOP)
 }

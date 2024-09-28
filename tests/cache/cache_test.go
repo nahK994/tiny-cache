@@ -14,16 +14,16 @@ func TestCache(t *testing.T) {
 	t.Run("TestSETAndGET", func(t *testing.T) {
 		// Test string value
 		c.SET("name", "Shomi")
-		item := c.GET("name")
-		if item.Val != "Shomi" {
-			t.Errorf("Expected 'Shomi', got %v", item.Val)
+		strItem := c.GET("name").Value.StrData
+		if *strItem != "Shomi" {
+			t.Errorf("Expected 'Shomi', got %v", *strItem)
 		}
 
 		// Test integer value
 		c.SET("age", 25)
-		item = c.GET("age")
-		if item.Val != 25 {
-			t.Errorf("Expected 25, got %v", item.Val)
+		intItem := c.GET("age").Value.IntData
+		if *intItem != 25 {
+			t.Errorf("Expected 25, got %v", *intItem)
 		}
 	})
 
