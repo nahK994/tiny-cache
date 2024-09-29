@@ -69,7 +69,6 @@ func (c *Client) handleConn() error {
 	buf := make([]byte, 1024)
 
 	for {
-		// Read the command input, arrow keys are handled by readline
 		str, err := c.rl.Readline()
 		if err == readline.ErrInterrupt {
 			if len(str) == 0 {
@@ -79,13 +78,11 @@ func (c *Client) handleConn() error {
 			}
 		}
 
-		var response string
 		if err := ValidateRawCommand(str); err != nil {
-			response = err.Error()
+			c.conn.Write([]byte(err.Error()))
 		} else {
-			response = resp.Serialize(str)
+			c.conn.Write([]byte(resp.Serialize(str)))
 		}
-		c.conn.Write([]byte(response))
 
 		n, err := c.conn.Read(buf)
 		if err != nil {

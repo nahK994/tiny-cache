@@ -11,7 +11,7 @@ import (
 	"github.com/nahK994/TinyCache/pkg/resp"
 )
 
-func IsKeyExists(key string) bool {
+func isKeyExists(key string) bool {
 	_ = validateExpiry(key)
 	return c.EXISTS(key)
 }
@@ -41,11 +41,11 @@ func handleFLUSHALL() string {
 }
 
 func handleEXISTS(key string) string {
-	return resp.SerializeBool(IsKeyExists(key))
+	return resp.SerializeBool(isKeyExists(key))
 }
 
 func handleIncDec(key, operation string) (string, error) {
-	if !IsKeyExists(key) {
+	if !isKeyExists(key) {
 		c.SET(key, 0)
 	} else if c.GET(key).Value.DataType != cache.Int {
 		return "", errors.Err{Type: errors.TypeError}
@@ -74,7 +74,7 @@ func handleDECR(key string) (string, error) {
 }
 
 func handleDEL(key string) string {
-	keyExists := IsKeyExists(key)
+	keyExists := isKeyExists(key)
 	if keyExists {
 		c.DEL(key)
 	}
@@ -82,7 +82,7 @@ func handleDEL(key string) string {
 }
 
 func handleLpushRpush(key string, args []string, operation string) (string, error) {
-	if IsKeyExists(key) && c.GET(key).Value.DataType != cache.Array {
+	if isKeyExists(key) && c.GET(key).Value.DataType != cache.Array {
 		return "", errors.Err{Type: errors.TypeError}
 	}
 
