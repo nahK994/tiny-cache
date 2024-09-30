@@ -15,5 +15,5 @@ var App app = app{
 	Port:         8888,
 	IsAsyncFlush: true,
 	FlushCh:      make(chan int),
-	Cache:        cache.Init(60),
+	Cache:        cache.Init(10),
 }

@@ -19,8 +19,7 @@ func TestCache(t *testing.T) {
 			t.Errorf("Expected 'Shomi', got %v", *strItem)
 		}
 
-		// Test integer value
-		c.SET("age", 25)
+		c.SET("age", "25")
 		intItem := c.GET("age").Value.IntData
 		if *intItem != 25 {
 			t.Errorf("Expected 25, got %v", *intItem)
@@ -28,14 +27,12 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("TestINCRAndDECR", func(t *testing.T) {
-		// Test INCR
 		c.SET("counter", 10)
 		val := c.INCR("counter")
 		if val != 11 {
 			t.Errorf("Expected 11, got %v", val)
 		}
 
-		// Test DECR
 		val = c.DECR("counter")
 		if val != 10 {
 			t.Errorf("Expected 10, got %v", val)
@@ -48,7 +45,7 @@ func TestCache(t *testing.T) {
 			t.Errorf("Expected key 'language' to exist")
 		}
 		if c.EXISTS("non-existent") {
-			t.Errorf("Expected 'non-existent' key to not exist")
+			t.Errorf("Expected 'non-existent' key not to exist")
 		}
 	})
 
@@ -63,7 +60,7 @@ func TestCache(t *testing.T) {
 	t.Run("TestLPUSHAndLRANGE", func(t *testing.T) {
 		// Test LPUSH
 		c.LPUSH("numbers", []string{"one", "two", "three"})
-		val := c.LRANGE("numbers", 0, 2)
+		val := c.LRANGE("numbers", 0, -1)
 		expected := []string{"three", "two", "one"}
 		if !reflect.DeepEqual(val, expected) {
 			t.Errorf("Expected %v, got %v", expected, val)
@@ -73,7 +70,7 @@ func TestCache(t *testing.T) {
 	t.Run("TestLPUSH_LPOP", func(t *testing.T) {
 		c.LPUSH("items1", []string{"item1", "item2", "item3"})
 		c.LPOP("items1")
-		val := c.LRANGE("items1", 0, 1)
+		val := c.LRANGE("items1", -3, -1)
 		expected := []string{"item2", "item1"}
 		if !reflect.DeepEqual(val, expected) {
 			t.Errorf("Expected %v, got %v", expected, val)
@@ -83,7 +80,7 @@ func TestCache(t *testing.T) {
 	t.Run("TestRPUSH_RPOP", func(t *testing.T) {
 		c.RPUSH("items2", []string{"item1", "item2", "item3"})
 		c.RPOP("items2")
-		val := c.LRANGE("items2", 0, -1)
+		val := c.LRANGE("items2", 0, 1)
 		expected := []string{"item1", "item2"}
 		if !reflect.DeepEqual(val, expected) {
 			t.Errorf("Expected %v, got %v", expected, val)

@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/handlers"
 )
 
@@ -372,5 +373,50 @@ func TestHandlePERSIST(t *testing.T) {
 	}
 	if resp != ":0\r\n" {
 		t.Errorf("Expected :0\r\n, got %s", resp)
+	}
+}
+
+func TestHandleCommand_FLUSHALL(t *testing.T) {
+	app := &config.App
+	app.IsAsyncFlush = false
+
+	handlers.HandleCommand("*3\r\n$3\r\nSET\r\n$6\r\nnumber\r\n$2\r\n10\r\n")
+	response, err := handlers.HandleCommand("*1\r\n$8\r\nFLUSHALL\r\n")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	expectedResponse := "+OK\r\n"
+	if response != expectedResponse {
+		t.Errorf("Expected response %v, got %v", expectedResponse, response)
+	}
+
+	resp, err := handlers.HandleCommand("*2\r\n$6\r\nEXISTS\r\n$6\r\nnumber\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if resp != ":0\r\n" {
+		t.Errorf("Expected ':0\\r\\n', got %s", resp)
+	}
+
+	go func() {
+		for {
+			select {
+			case <-app.FlushCh:
+				app.Cache.FLUSHALL()
+			}
+		}
+	}()
+	app.IsAsyncFlush = true
+
+	handlers.HandleCommand("*3\r\n$3\r\nSET\r\n$6\r\nnumber\r\n$2\r\n10\r\n")
+	handlers.HandleCommand("*1\r\n$8\r\nFLUSHALL\r\n")
+
+	time.Sleep(15 * time.Second)
+	resp, err = handlers.HandleCommand("*2\r\n$6\r\nEXISTS\r\n$6\r\nnumber\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if resp != ":0\r\n" {
+		t.Errorf("Expected ':0\\r\\n', got %s", resp)
 	}
 }

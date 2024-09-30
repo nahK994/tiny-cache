@@ -14,8 +14,6 @@ func (c *Cache) saveData(key string, val interface{}) {
 		} else {
 			c.saveString(key, &v)
 		}
-	case []string:
-		c.saveList(key, v)
 	}
 
 }
