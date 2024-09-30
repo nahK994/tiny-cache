@@ -18,9 +18,6 @@ func (e Err) Error() string {
 	case UnexpectedCharacter:
 		return "-ERR Protocol error: unexpected character in command. Only valid characters are allowed."
 
-	case MissingCRLF:
-		return "-ERR Protocol error: missing CRLF (\\r\\n) after command segment."
-
 	case CommandLengthMismatch:
 		return "-ERR Protocol error: command length mismatch. Specified length does not match the actual data length."
 

@@ -5,7 +5,6 @@ const (
 	InvalidBulkStringFormat = "InvalidBulkStringFormat"
 	IncompleteCommand       = "IncompleteCommand"
 	UnexpectedCharacter     = "UnexpectedCharacter"
-	MissingCRLF             = "MissingCRLF"
 	CommandLengthMismatch   = "CommandLengthMismatch"
 	UnknownCommand          = "UnknownCommand"
 	WrongNumberOfArguments  = "WrongNumberOfArguments"

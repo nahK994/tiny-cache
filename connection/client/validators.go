@@ -55,6 +55,9 @@ func validateCmdArgs(words []string) error {
 		if len(words) != 3 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
 		}
+		if _, err := strconv.Atoi(words[2]); err != nil {
+			return errors.Err{Type: errors.TypeError}
+		}
 	case resp.RPUSH:
 		if len(words) < 3 {
 			return errors.Err{Type: errors.WrongNumberOfArguments}
