@@ -4,10 +4,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nahK994/TinyCache/connection/server/handlers"
-	"github.com/nahK994/TinyCache/connection/server/validators"
 	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/errors"
+	"github.com/nahK994/TinyCache/pkg/handlers"
+	"github.com/nahK994/TinyCache/pkg/validators"
 )
 
 var mockCache = config.App.Cache

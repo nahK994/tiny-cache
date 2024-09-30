@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"net"
 
-	"github.com/nahK994/TinyCache/connection/server/handlers"
 	"github.com/nahK994/TinyCache/pkg/config"
+	"github.com/nahK994/TinyCache/pkg/handlers"
 )
 
 type Server struct {

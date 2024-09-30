@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nahK994/TinyCache/connection/server/handlers"
+	"github.com/nahK994/TinyCache/pkg/handlers"
 )
 
 func TestHandleGET(t *testing.T) {

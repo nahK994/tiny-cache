@@ -1,9 +1,9 @@
-package validator
+package validators
 
 import (
 	"testing"
 
-	"github.com/nahK994/TinyCache/connection/client/validators"
+	"github.com/nahK994/TinyCache/pkg/validators"
 )
 
 var malformedRawCmds []string = []string{
