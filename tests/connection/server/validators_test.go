@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/nahK994/TinyCache/connection/server"
-	"github.com/nahK994/TinyCache/pkg/cache"
+	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/errors"
 )
 
-var mockCache = cache.Init(60)
+var mockCache = config.App.Cache
 
 func TestAssertKeyExists_KeyExistsAndNotExpired(t *testing.T) {
 	key := "existing_key"
@@ -22,22 +22,13 @@ func TestAssertKeyExists_KeyExistsAndNotExpired(t *testing.T) {
 
 func TestAssertKeyExists_KeyExpired(t *testing.T) {
 	key := "expired_key"
-	data := "value"
-	expiryTime := time.Now().Add(-1 * time.Hour) // expired 1 hour ago
-	mockCache.SET(key, cache.CacheItem{
-		Value: cache.CacheData{
-			DataType: cache.String,
-			StrData:  &data,
-		},
-		ExpiryTime: &expiryTime,
-	})
-
-	// Test case: key exists but is expired
+	server.HandleCommand("*3\r\n$3\r\nSET\r\n$11\r\nexpired_key\r\n$5\r\nvalue\r\n")
+	server.HandleCommand("*3\r\n$6\r\nEXPIRE\r\n$11\r\nexpired_key\r\n$1\r\n1\r\n")
+	time.Sleep(1 * time.Second)
 	err := server.AssertKeyExists(key)
-	expectedErr := errors.Err{Type: errors.TypeError}
 	if err == nil {
 		t.Errorf("Expected error for expired key, but got none")
-	} else if err.Error() != expectedErr.Error() {
+	} else if err.Error() != (errors.Err{Type: errors.ExpiredKey}).Error() {
 		t.Errorf("Expected ExpiredKey error, but got: %v", err)
 	}
 }

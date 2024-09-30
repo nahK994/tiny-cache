@@ -14,3 +14,21 @@ func TestSerialize(t *testing.T) {
 		}
 	}
 }
+
+func TestSerializeBool(t *testing.T) {
+	for _, tc := range boolTestCases {
+		got := resp.SerializeBool(tc.input == "true")
+		if got != tc.output {
+			t.Errorf("SerializeBool(%v) = %v; want %v", tc.input, got, tc.output)
+		}
+	}
+}
+
+func TestSerializeCacheItem(t *testing.T) {
+	for _, tc := range cacheItemTestCases {
+		got := resp.SerializeCacheItem(tc.input)
+		if got != tc.output {
+			t.Errorf("SerializeCacheItem(%v) = %v; want %v", tc.input, got, tc.output)
+		}
+	}
+}

@@ -1,5 +1,10 @@
 package resp
 
+import (
+	"github.com/nahK994/TinyCache/pkg/cache"
+	"github.com/nahK994/TinyCache/pkg/shared"
+)
+
 type deserializeTestCase struct {
 	input  string
 	output []string
@@ -7,6 +12,11 @@ type deserializeTestCase struct {
 
 type serializeTestCase struct {
 	input  string
+	output string
+}
+
+type serializeCacheDataTestCase struct {
+	input  cache.CacheData
 	output string
 }
 
@@ -206,5 +216,47 @@ var serializeTestCases = []serializeTestCase{
 	{
 		input:  "FLUSHALL",
 		output: "*1\r\n$8\r\nFLUSHALL\r\n",
+	},
+}
+
+var boolTestCases = []serializeTestCase{
+	{
+		input:  "true",
+		output: ":1\r\n",
+	},
+	{
+		input:  "false",
+		output: ":0\r\n",
+	},
+}
+
+var cacheItemTestCases = []serializeCacheDataTestCase{
+	{
+		input:  cache.CacheData{DataType: cache.Int, IntData: shared.PtrToInt(42)},
+		output: ":42\r\n",
+	},
+	{
+		input:  cache.CacheData{DataType: cache.String, StrData: shared.PtrToString("hello")},
+		output: "$5\r\nhello\r\n",
+	},
+	{
+		input:  cache.CacheData{DataType: cache.Array, StrList: []string{"foo", "bar"}},
+		output: "*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n",
+	},
+	{
+		input:  cache.CacheData{DataType: cache.Array, StrList: []string{}}, // Empty array
+		output: "*0\r\n",
+	},
+	{
+		input:  cache.CacheData{DataType: cache.String, StrData: nil}, // Nil string data
+		output: "$-1\r\n",
+	},
+	{
+		input:  cache.CacheData{DataType: cache.Int, IntData: nil}, // Nil int data
+		output: "$-1\r\n",
+	},
+	{
+		input:  cache.CacheData{DataType: cache.Array, StrList: nil}, // Nil array
+		output: "$-1\r\n",
 	},
 }

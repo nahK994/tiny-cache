@@ -13,3 +13,11 @@ func SplitCmd(rawCmd string) []string {
 	}
 	return words
 }
+
+func PtrToInt(i int) *int {
+	return &i
+}
+
+func PtrToString(s string) *string {
+	return &s
+}
