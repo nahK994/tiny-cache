@@ -19,6 +19,7 @@ func AssertKeyExists(key string) error {
 	if err := validateExpiry(key); err != nil {
 		return err
 	}
+
 	if !c.EXISTS(key) {
 		return errors.Err{Type: errors.UndefinedKey}
 	}

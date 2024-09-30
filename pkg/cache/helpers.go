@@ -1,6 +1,8 @@
 package cache
 
-import "strconv"
+import (
+	"strconv"
+)
 
 func (c *Cache) saveData(key string, val interface{}) {
 	switch v := val.(type) {
