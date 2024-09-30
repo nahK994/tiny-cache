@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
+	"github.com/nahK994/TinyCache/connection/client/validators"
 	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/resp"
 )
@@ -78,7 +79,7 @@ func (c *Client) handleConn() error {
 			}
 		}
 
-		if err := ValidateRawCommand(str); err != nil {
+		if err := validators.ValidateRawCommand(str); err != nil {
 			c.conn.Write([]byte(err.Error()))
 		} else {
 			c.conn.Write([]byte(resp.Serialize(str)))

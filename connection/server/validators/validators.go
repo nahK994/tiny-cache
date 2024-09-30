@@ -1,12 +1,16 @@
-package server
+package validators
 
 import (
 	"time"
 
+	"github.com/nahK994/TinyCache/pkg/cache"
+	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/errors"
 )
 
-func validateExpiry(key string) error {
+var c *cache.Cache = config.App.Cache
+
+func ValidateExpiry(key string) error {
 	item := c.GET(key)
 	if item.ExpiryTime != nil && time.Now().After(*item.ExpiryTime) {
 		c.DEL(key)
@@ -16,7 +20,7 @@ func validateExpiry(key string) error {
 }
 
 func AssertKeyExists(key string) error {
-	if err := validateExpiry(key); err != nil {
+	if err := ValidateExpiry(key); err != nil {
 		return err
 	}
 

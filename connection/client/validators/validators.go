@@ -1,4 +1,4 @@
-package client
+package validators
 
 import (
 	"strconv"

@@ -17,8 +17,9 @@ elif [[ $cmd == 4 ]]; then
 elif [[ $cmd == 5 ]]; then
     go test -coverpkg=github.com/nahK994/TinyCache/pkg/resp ./tests/resp -v
     go test -coverpkg=github.com/nahK994/TinyCache/pkg/cache ./tests/cache -v
-    go test -coverpkg=github.com/nahK994/TinyCache/connection/server ./tests/connection/server -v
-    go test -coverpkg=github.com/nahK994/TinyCache/connection/client ./tests/connection/client -v
+    go test -coverpkg=github.com/nahK994/TinyCache/connection/server/handlers ./tests/connection/server/handlers -v
+    go test -coverpkg=github.com/nahK994/TinyCache/connection/server/validators ./tests/connection/server/validators -v
+    go test -coverpkg=github.com/nahK994/TinyCache/connection/client/validators ./tests/connection/client/validators -v
 elif [[ $cmd == 6 ]]; then
     go build -ldflags="-s -w" -o ./bin/tinycache cmd/client/main.go
     go build -ldflags="-s -w" -o ./bin/tinycache-server cmd/server/main.go

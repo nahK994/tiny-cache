@@ -1,10 +1,11 @@
-package server
+package handlers
 
 import (
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/nahK994/TinyCache/connection/server/validators"
 	"github.com/nahK994/TinyCache/pkg/cache"
 	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/errors"
@@ -13,14 +14,14 @@ import (
 )
 
 func isKeyExists(key string) bool {
-	_ = validateExpiry(key)
+	_ = validators.ValidateExpiry(key)
 	return c.EXISTS(key)
 }
 
 var c *cache.Cache = config.App.Cache
 
 func handleGET(key string) (string, error) {
-	if err := AssertKeyExists(key); err != nil {
+	if err := validators.AssertKeyExists(key); err != nil {
 		return "", err
 	}
 	item := c.GET(key)
@@ -110,7 +111,7 @@ func handleRPUSH(key string, args []string) (string, error) {
 }
 
 func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
-	if err := AssertKeyExists(key); err != nil {
+	if err := validators.AssertKeyExists(key); err != nil {
 		return "", err
 	}
 	if c.GET(key).Value.DataType != cache.Array {
@@ -125,7 +126,7 @@ func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
 }
 
 func handleListPop(key, popType string) (string, error) {
-	if err := AssertKeyExists(key); err != nil {
+	if err := validators.AssertKeyExists(key); err != nil {
 		return "", err
 	}
 
@@ -161,7 +162,7 @@ func handleRPOP(key string) (string, error) {
 }
 
 func handleEXPIRE(key string, ttl int) (string, error) {
-	if err := AssertKeyExists(key); err != nil {
+	if err := validators.AssertKeyExists(key); err != nil {
 		return "", err
 	}
 
@@ -173,7 +174,7 @@ func handleEXPIRE(key string, ttl int) (string, error) {
 }
 
 func handleTTL(key string) (string, error) {
-	if err := AssertKeyExists(key); err != nil {
+	if err := validators.AssertKeyExists(key); err != nil {
 		return "", err
 	}
 	cacheItem := cache.CacheData{
@@ -195,7 +196,7 @@ func handleTTL(key string) (string, error) {
 }
 
 func handlePERSIST(key string) (string, error) {
-	if err := AssertKeyExists(key); err != nil {
+	if err := validators.AssertKeyExists(key); err != nil {
 		return "", err
 	}
 

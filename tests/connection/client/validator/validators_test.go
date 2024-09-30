@@ -1,9 +1,9 @@
-package client
+package validator
 
 import (
 	"testing"
 
-	"github.com/nahK994/TinyCache/connection/client"
+	"github.com/nahK994/TinyCache/connection/client/validators"
 )
 
 var malformedRawCmds []string = []string{
@@ -34,7 +34,7 @@ var malformedRawCmds []string = []string{
 
 func Test_MalformedRawCommands(t *testing.T) {
 	for _, item := range malformedRawCmds {
-		err := client.ValidateRawCommand(item)
+		err := validators.ValidateRawCommand(item)
 		if err == nil {
 			t.Errorf("%s expected errors but no errors found", item)
 		}
