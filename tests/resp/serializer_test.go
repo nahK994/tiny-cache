@@ -17,7 +17,7 @@ func TestSerialize(t *testing.T) {
 
 func TestSerializeBool(t *testing.T) {
 	for _, tc := range boolTestCases {
-		got := resp.SerializeBool(tc.input == "true")
+		got := resp.SerializeBool(tc.input)
 		if got != tc.output {
 			t.Errorf("SerializeBool(%v) = %v; want %v", tc.input, got, tc.output)
 		}

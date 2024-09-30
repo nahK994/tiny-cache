@@ -1,24 +1,25 @@
 package resp
 
 import (
+	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/nahK994/TinyCache/pkg/resp"
 )
 
 func TestDeserializer(t *testing.T) {
-	for _, item := range deserializeTestCases {
-		respCmd := item.input
-		expected := item.output
+	for _, tc := range deserializeTestCases {
+		result := resp.Deserializer(tc.input)
 
-		segments, _ := resp.Deserializer(respCmd).([]string)
-		if len(segments) != len(expected) {
-			t.Fatalf("expected %d segments, got %d", len(expected), len(segments))
-		}
-
-		for i, seg := range segments {
-			if seg != expected[i] {
-				t.Errorf("expected segment at position %d to be %s, got %s", i, expected[i], seg)
+		if err, ok := result.(error); ok {
+			expectedErr, isErr := tc.output.(error)
+			if !isErr && !errors.Is(err, expectedErr) {
+				t.Errorf("For input %q, expected error %v but got %v", tc.input, tc.output, result)
+			}
+		} else {
+			if !reflect.DeepEqual(result, tc.output) {
+				t.Errorf("For input %q, expected %v but got %v", tc.input, tc.output, result)
 			}
 		}
 	}
