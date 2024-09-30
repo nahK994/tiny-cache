@@ -232,11 +232,11 @@ var boolTestCases = []serializeTestCase{
 
 var cacheItemTestCases = []serializeCacheDataTestCase{
 	{
-		input:  cache.CacheData{DataType: cache.Int, IntData: shared.PtrToInt(42)},
+		input:  cache.CacheData{DataType: cache.Int, IntData: shared.IntToPtr(42)},
 		output: ":42\r\n",
 	},
 	{
-		input:  cache.CacheData{DataType: cache.String, StrData: shared.PtrToString("hello")},
+		input:  cache.CacheData{DataType: cache.String, StrData: shared.StringToPtr("hello")},
 		output: "$5\r\nhello\r\n",
 	},
 	{

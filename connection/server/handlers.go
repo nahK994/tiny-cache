@@ -9,6 +9,7 @@ import (
 	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/errors"
 	"github.com/nahK994/TinyCache/pkg/resp"
+	"github.com/nahK994/TinyCache/pkg/shared"
 )
 
 func isKeyExists(key string) bool {
@@ -53,13 +54,12 @@ func handleIncDec(key, operation string) (string, error) {
 
 	result := cache.CacheData{
 		DataType: cache.Int,
-		IntData:  new(int),
 	}
 	switch operation {
 	case resp.INCR:
-		*result.IntData = c.INCR(key)
+		result.IntData = shared.IntToPtr(c.INCR(key))
 	case resp.DECR:
-		*result.IntData = c.DECR(key)
+		result.IntData = shared.IntToPtr(c.DECR(key))
 	}
 
 	return resp.SerializeCacheItem(result), nil
@@ -183,14 +183,12 @@ func handleTTL(key string) (string, error) {
 
 	item := c.GET(key)
 	if item.ExpiryTime == nil {
-		temp := 0
-		cacheItem.IntData = &temp
+		cacheItem.IntData = shared.IntToPtr(0)
 	} else {
 		if remainingTTL := int(time.Until(*item.ExpiryTime).Seconds()); remainingTTL > 0 {
 			cacheItem.IntData = &remainingTTL
 		} else {
-			ttlExpired := -1
-			cacheItem.IntData = &ttlExpired
+			cacheItem.IntData = shared.IntToPtr(-1)
 		}
 	}
 	return resp.SerializeCacheItem(cacheItem), nil

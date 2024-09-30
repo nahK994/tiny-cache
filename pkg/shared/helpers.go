@@ -14,10 +14,10 @@ func SplitCmd(rawCmd string) []string {
 	return words
 }
 
-func PtrToInt(i int) *int {
+func IntToPtr(i int) *int {
 	return &i
 }
 
-func PtrToString(s string) *string {
+func StringToPtr(s string) *string {
 	return &s
 }
