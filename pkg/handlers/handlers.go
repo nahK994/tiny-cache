@@ -28,14 +28,13 @@ func handleGET(key string) (string, error) {
 	return resp.SerializeCacheItem(item.Value), nil
 }
 
-func handleSET(key string, argList interface{}) (string, error) {
-	args, ok := argList.([]string)
-	if ok {
+func handleSET(key string, args []string) (string, error) {
+	if len(args) > 1 {
 		c.SET(key, args[0])
 		ttl, _ := strconv.Atoi(args[1])
 		c.EXPIRE(key, ttl)
 	} else {
-		c.SET(key, argList)
+		c.SET(key, args[0])
 	}
 	return "+OK\r\n", nil
 }

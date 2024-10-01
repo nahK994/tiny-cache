@@ -21,7 +21,11 @@ var testCases = []struct {
 		expectedErr: nil,
 	},
 	{
-		input:       "EXPIRE key 10\r\n",
+		input:       "EXPIRE key 10",
+		expectedErr: nil,
+	},
+	{
+		input:       "EXPIRE key -10",
 		expectedErr: &errors.Err{Type: errors.InvalidCommand},
 	},
 	{

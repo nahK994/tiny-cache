@@ -39,7 +39,6 @@ func TestHandleGET(t *testing.T) {
 }
 
 func TestHandleSET(t *testing.T) {
-	// Set key and get its value
 	resp, err := handlers.HandleCommand("*3\r\n$3\r\nSET\r\n$5\r\nmykey\r\n$5\r\nvalue\r\n")
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
@@ -54,6 +53,28 @@ func TestHandleSET(t *testing.T) {
 	}
 	if resp != "$5\r\nvalue\r\n" {
 		t.Errorf("Expected '$5\\r\\nvalue\\r\\n', got %s", resp)
+	}
+
+	resp, err = handlers.HandleCommand("*4\r\n$3\r\nSET\r\n$4\r\nname\r\n$10\r\nShomi Khan\r\n$2\r\n10\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if resp != "+OK\r\n" {
+		t.Errorf("Expected '+OK\\r\\n', got %s", resp)
+	}
+
+	resp, err = handlers.HandleCommand("*2\r\n$3\r\nGET\r\n$4\r\nname\r\n")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if resp != "$10\r\nShomi Khan\r\n" {
+		t.Errorf("Expected '$10\\r\\nShomi Khan\\r\\n', got %s", resp)
+	}
+
+	time.Sleep(10 * time.Second)
+	_, err_ttl := handlers.HandleCommand("*2\r\n$3\r\nTTL\r\n$4\r\nname\r\n")
+	if err_ttl == nil {
+		t.Errorf("Expected Expire key error, got %v", err)
 	}
 }
 
