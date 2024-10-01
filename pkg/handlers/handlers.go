@@ -96,9 +96,8 @@ func handleLpushRpush(key string, args []string, operation string) (string, erro
 
 	item := cache.CacheData{
 		DataType: cache.Int,
-		IntData:  new(int),
 	}
-	*item.IntData = len(c.LRANGE(key, 0, -1))
+	item.IntData = shared.IntToPtr(len(c.LRANGE(key, 0, -1)))
 	return resp.SerializeCacheItem(item), nil
 }
 

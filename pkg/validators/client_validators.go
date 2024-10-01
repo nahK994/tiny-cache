@@ -90,6 +90,16 @@ func validateCmdArgs(words []string) error {
 }
 
 func ValidateRawCommand(rawCmd string) error {
+	counter := 0
+	for _, ch := range rawCmd {
+		if ch == '"' {
+			counter++
+		}
+	}
+	if counter%2 != 0 {
+		return errors.Err{Type: errors.InvalidCommandFormat}
+	}
+
 	words := shared.SplitCmd(rawCmd)
 
 	if len(words) == 0 {
