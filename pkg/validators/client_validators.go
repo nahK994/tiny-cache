@@ -93,10 +93,11 @@ func validateCmdArgNumber(words []string) error {
 }
 
 func validateNumericArg(str string) (int, error) {
-	if val, err := strconv.Atoi(str); err != nil {
-		return val, errors.Err{Type: errors.TypeError}
+	val, err := strconv.Atoi(str)
+	if err != nil {
+		return -1, errors.Err{Type: errors.TypeError}
 	}
-	return -1, nil
+	return val, nil
 }
 
 func validateCmdArgs(words []string) error {

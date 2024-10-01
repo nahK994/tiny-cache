@@ -217,7 +217,7 @@ func HandleCommand(serializedRawCmd string) (string, error) {
 	case resp.GET:
 		return handleGET(args[0])
 	case resp.SET:
-		return handleSET(args[0], args[1])
+		return handleSET(args[0], args[1:])
 	case resp.EXISTS:
 		return handleEXISTS(args[0]), nil
 	case resp.DEL:
