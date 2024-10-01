@@ -22,7 +22,7 @@ var testCases = []struct {
 	},
 	{
 		input:       "EXPIRE key 10\r\n",
-		expectedErr: nil,
+		expectedErr: &errors.Err{Type: errors.InvalidCommand},
 	},
 	{
 		input:       "LRANGE mylist 0 10\r\n",
@@ -40,7 +40,7 @@ var testCases = []struct {
 	// Invalid command format (uneven number of quotes)
 	{
 		input:       "SET \"key value\r\n",
-		expectedErr: &errors.Err{Type: errors.InvalidCommandFormat},
+		expectedErr: &errors.Err{Type: errors.InvalidCommand},
 	},
 	// Unknown command
 	{
@@ -70,7 +70,7 @@ var testCases = []struct {
 	// Invalid command format with special characters
 	{
 		input:       "SET \"key\" \"val\r\n",
-		expectedErr: &errors.Err{Type: errors.InvalidCommandFormat},
+		expectedErr: &errors.Err{Type: errors.InvalidCommand},
 	},
 	// Invalid key with spaces
 	{

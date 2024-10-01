@@ -14,7 +14,7 @@ func SplitCmd(rawCmd string) []string {
 
 	var segs []string
 
-	for i, _ := range cmd {
+	for i := 0; i < len(cmd); i++ {
 		if cmd[i] == '"' {
 			if isQuoteFound {
 				if startIdx == -1 && endIdx == -1 {

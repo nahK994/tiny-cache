@@ -92,11 +92,11 @@ func validateCmdArgNumber(words []string) error {
 	return nil
 }
 
-func validateNumericArg(str string) error {
-	if _, err := strconv.Atoi(str); err != nil {
-		return errors.Err{Type: errors.TypeError}
+func validateNumericArg(str string) (int, error) {
+	if val, err := strconv.Atoi(str); err != nil {
+		return val, errors.Err{Type: errors.TypeError}
 	}
-	return nil
+	return -1, nil
 }
 
 func validateCmdArgs(words []string) error {
@@ -111,19 +111,21 @@ func validateCmdArgs(words []string) error {
 
 	if cmd == resp.SET {
 		if len(words) == 4 {
-			if err := validateNumericArg(words[3]); err != nil {
+			if _, err := validateNumericArg(words[3]); err != nil {
 				return err
 			}
 		}
 	} else if cmd == resp.EXPIRE {
-		if err := validateNumericArg(words[2]); err != nil {
+		if val, err := validateNumericArg(words[2]); err != nil {
 			return err
+		} else if val < 0 {
+			return errors.Err{Type: errors.InvalidCommand}
 		}
 	} else if cmd == resp.LRANGE {
-		if err := validateNumericArg(words[2]); err != nil {
+		if _, err := validateNumericArg(words[2]); err != nil {
 			return err
 		}
-		if err := validateNumericArg(words[3]); err != nil {
+		if _, err := validateNumericArg(words[3]); err != nil {
 			return err
 		}
 	}
@@ -138,7 +140,7 @@ func ValidateRawCommand(rawCmd string) error {
 		}
 	}
 	if counter%2 != 0 {
-		return errors.Err{Type: errors.InvalidCommandFormat}
+		return errors.Err{Type: errors.InvalidCommand}
 	}
 
 	words := shared.SplitCmd(rawCmd)

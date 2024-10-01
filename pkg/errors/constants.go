@@ -11,7 +11,7 @@ const (
 	SyntaxError             = "SyntaxError"
 	TypeError               = "TypeError"
 	CommandNotSupported     = "CommandNotSupported"
-	InvalidCommandFormat    = "InvalidCommandFormat"
+	InvalidCommand          = "InvalidCommand"
 	EmptyList               = "EmptyList"
 	UndefinedKey            = "UndefinedKey"
 	ExpiredKey              = "ExpiredKey"

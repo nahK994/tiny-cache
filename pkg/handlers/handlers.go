@@ -28,8 +28,15 @@ func handleGET(key string) (string, error) {
 	return resp.SerializeCacheItem(item.Value), nil
 }
 
-func handleSET(key string, value interface{}) (string, error) {
-	c.SET(key, value)
+func handleSET(key string, argList interface{}) (string, error) {
+	args, ok := argList.([]string)
+	if ok {
+		c.SET(key, args[0])
+		ttl, _ := strconv.Atoi(args[1])
+		c.EXPIRE(key, ttl)
+	} else {
+		c.SET(key, argList)
+	}
 	return "+OK\r\n", nil
 }
 
@@ -165,9 +172,6 @@ func handleEXPIRE(key string, ttl int) (string, error) {
 		return "", err
 	}
 
-	if ttl < 0 {
-		return "", errors.Err{Type: errors.InvalidCommandFormat}
-	}
 	c.EXPIRE(key, ttl)
 	return "+OK\r\n", nil
 }
@@ -206,10 +210,6 @@ func handlePERSIST(key string) (string, error) {
 func HandleCommand(serializedRawCmd string) (string, error) {
 	cmdSegments, _ := resp.Deserializer(serializedRawCmd).([]string)
 
-	if len(cmdSegments) == 0 {
-		return "", errors.Err{Type: errors.InvalidCommandFormat}
-	}
-
 	cmd := cmdSegments[0]
 	args := cmdSegments[1:]
 
@@ -229,10 +229,7 @@ func HandleCommand(serializedRawCmd string) (string, error) {
 	case resp.RPUSH:
 		return handleRPUSH(args[0], args[1:])
 	case resp.EXPIRE:
-		ttl, err := strconv.Atoi(args[1])
-		if err != nil {
-			return "", errors.Err{Type: errors.InvalidCommandFormat}
-		}
+		ttl, _ := strconv.Atoi(args[1])
 		return handleEXPIRE(args[0], ttl)
 	case resp.LRANGE:
 		startIdx, _ := strconv.Atoi(args[1])

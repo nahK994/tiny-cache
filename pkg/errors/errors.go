@@ -36,8 +36,8 @@ func (e Err) Error() string {
 	case CommandNotSupported:
 		return "-ERR command not supported"
 
-	case InvalidCommandFormat:
-		return "-ERR invalid command format"
+	case InvalidCommand:
+		return "-ERR invalid command"
 
 	case EmptyList:
 		return "-ERR empty list or set"
