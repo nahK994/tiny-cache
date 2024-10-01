@@ -17,6 +17,9 @@ func SplitCmd(rawCmd string) []string {
 	for i, _ := range cmd {
 		if cmd[i] == '"' {
 			if isQuoteFound {
+				if startIdx == -1 && endIdx == -1 {
+					continue
+				}
 				segs = append(segs, cmd[startIdx:endIdx+1])
 				startIdx = -1
 				endIdx = -1
@@ -45,6 +48,7 @@ func SplitCmd(rawCmd string) []string {
 		} else {
 			if startIdx == -1 {
 				startIdx = i
+				endIdx = i
 			} else {
 				endIdx = i
 			}

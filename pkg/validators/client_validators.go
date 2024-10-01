@@ -9,82 +9,123 @@ import (
 	"github.com/nahK994/TinyCache/pkg/shared"
 )
 
+type cmdArgInfoType struct {
+	min int
+	max int
+}
+
+var cmdArgNumber = map[string]cmdArgInfoType{
+	resp.SET: {
+		min: 3,
+		max: 4,
+	},
+	resp.GET: {
+		min: 2,
+		max: 2,
+	},
+	resp.EXISTS: {
+		min: 2,
+		max: 2,
+	},
+	resp.DEL: {
+		min: 2,
+		max: 2,
+	},
+	resp.LRANGE: {
+		min: 4,
+		max: 4,
+	},
+	resp.LPUSH: {
+		min: 3,
+		max: -1,
+	},
+	resp.RPUSH: {
+		min: 3,
+		max: -1,
+	},
+	resp.LPOP: {
+		min: 2,
+		max: 2,
+	},
+	resp.RPOP: {
+		min: 2,
+		max: 2,
+	},
+	resp.EXPIRE: {
+		min: 3,
+		max: 3,
+	},
+	resp.TTL: {
+		min: 2,
+		max: 2,
+	},
+	resp.PERSIST: {
+		min: 2,
+		max: 2,
+	},
+	resp.INCR: {
+		min: 2,
+		max: 2,
+	},
+	resp.DECR: {
+		min: 2,
+		max: 2,
+	},
+	resp.PING: {
+		min: 1,
+		max: 1,
+	},
+	resp.FLUSHALL: {
+		min: 1,
+		max: 1,
+	},
+}
+
+func validateCmdArgNumber(words []string) error {
+	cmd := strings.ToUpper(words[0])
+	if len(words) < cmdArgNumber[cmd].min {
+		return errors.Err{Type: errors.IncompleteCommand}
+	}
+	if cmdArgNumber[cmd].max != -1 && len(words) > cmdArgNumber[cmd].max {
+		return errors.Err{Type: errors.WrongNumberOfArguments}
+	}
+	return nil
+}
+
+func validateNumericArg(str string) error {
+	if _, err := strconv.Atoi(str); err != nil {
+		return errors.Err{Type: errors.TypeError}
+	}
+	return nil
+}
+
 func validateCmdArgs(words []string) error {
-	switch strings.ToUpper(words[0]) {
-	case resp.SET:
-		if len(words) < 3 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-	case resp.GET:
-		if len(words) != 2 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-	case resp.EXISTS:
-		if len(words) != 2 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-	case resp.DEL:
-		if len(words) != 2 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-	case resp.INCR:
-		if len(words) != 2 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-	case resp.DECR:
-		if len(words) != 2 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-	case resp.PING:
-		if len(words) != 1 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-	case resp.FLUSHALL:
-		if len(words) != 1 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-	case resp.LPUSH:
-		if len(words) < 3 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-	case resp.LPOP:
-		if len(words) != 2 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-	case resp.EXPIRE:
-		if len(words) != 3 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-		if _, err := strconv.Atoi(words[2]); err != nil {
-			return errors.Err{Type: errors.TypeError}
-		}
-	case resp.RPUSH:
-		if len(words) < 3 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-	case resp.RPOP:
-		if len(words) != 2 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-	case resp.TTL:
-		if len(words) != 2 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-	case resp.PERSIST:
-		if len(words) != 2 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-	case resp.LRANGE:
-		if len(words) != 4 {
-			return errors.Err{Type: errors.WrongNumberOfArguments}
-		}
-		_, strIdx_ok := strconv.Atoi(words[2])
-		_, endIdx_ok := strconv.Atoi(words[3])
-		if strIdx_ok != nil || endIdx_ok != nil {
-			return errors.Err{Type: errors.TypeError}
-		}
-	default:
+	cmd := strings.ToUpper(words[0])
+	if _, exists := cmdArgNumber[cmd]; !exists {
 		return errors.Err{Type: errors.UnknownCommand}
+	}
+
+	if err := validateCmdArgNumber(words); err != nil {
+		return err
+	}
+
+	if cmd == resp.SET {
+		if len(words) == 4 {
+			if err := validateNumericArg(words[3]); err != nil {
+				return err
+			}
+		}
+	} else if cmd == resp.EXPIRE {
+		if err := validateNumericArg(words[2]); err != nil {
+			return err
+		}
+	} else if cmd == resp.LRANGE {
+		if err := validateNumericArg(words[2]); err != nil {
+			return err
+		}
+		if err := validateNumericArg(words[3]); err != nil {
+			return err
+		}
 	}
 	return nil
 }
