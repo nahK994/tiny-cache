@@ -9,7 +9,7 @@ The following is a set of guidelines for contributing to this project. These are
 1. **Fork the repository** to your own GitHub account.
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/your-username/project-name.git
+   git clone https://github.com/your-username/TinyCache.git
    ```
 3. **Create a new branch** for your work:
     ```bash
