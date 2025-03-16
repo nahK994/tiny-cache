@@ -190,8 +190,8 @@ func handleRPOP(key string) (string, error) {
 }
 
 func handleEXPIRE(key string, ttl int) (string, error) {
-	if err := validators.AssertKeyExists(key); err != nil {
-		return "", err
+	if !c.EXISTS(key) {
+		return "", errors.Err{Type: errors.UndefinedKey}
 	}
 
 	c.EXPIRE(key, ttl)
@@ -222,8 +222,8 @@ func handleTTL(key string) (string, error) {
 }
 
 func handlePERSIST(key string) (string, error) {
-	if err := validators.AssertKeyExists(key); err != nil {
-		return "", err
+	if c.EXISTS(key) {
+		return "", errors.Err{Type: errors.UndefinedKey}
 	}
 
 	c.EXPIRE(key, 0)

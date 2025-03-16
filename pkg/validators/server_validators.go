@@ -18,14 +18,3 @@ func ValidateExpiry(key string) error {
 	}
 	return nil
 }
-
-func AssertKeyExists(key string) error {
-	if err := ValidateExpiry(key); err != nil {
-		return err
-	}
-
-	if !c.EXISTS(key) {
-		return errors.Err{Type: errors.UndefinedKey}
-	}
-	return nil
-}
