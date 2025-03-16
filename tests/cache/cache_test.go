@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/nahK994/TinyCache/pkg/config"
 )
@@ -27,6 +28,11 @@ func TestCache(t *testing.T) {
 		if intItem != 25 {
 			t.Errorf("Expected 25, got %v", intItem)
 		}
+
+		_, isExists := c.GET("new_key")
+		if isExists {
+			t.Errorf("new_key not exists")
+		}
 	})
 
 	t.Run("TestINCRAndDECR", func(t *testing.T) {
@@ -42,7 +48,7 @@ func TestCache(t *testing.T) {
 		}
 	})
 
-	t.Run("TestEXIST", func(t *testing.T) {
+	t.Run("TestEXISTS", func(t *testing.T) {
 		c.SET("language", "Go")
 		if !c.EXISTS("language") {
 			t.Errorf("Expected key 'language' to exist")
@@ -63,7 +69,7 @@ func TestCache(t *testing.T) {
 	t.Run("TestLPUSHAndLRANGE", func(t *testing.T) {
 		// Test LPUSH
 		c.LPUSH("numbers", []string{"one", "two", "three"})
-		val := c.LRANGE("numbers", 0, -1)
+		val := c.LRANGE("numbers", -5, 6)
 		expected := []string{"three", "two", "one"}
 		if !reflect.DeepEqual(val, expected) {
 			t.Errorf("Expected %v, got %v", expected, val)
@@ -95,6 +101,22 @@ func TestCache(t *testing.T) {
 		c.FLUSHALL()
 		if c.EXISTS("key") {
 			t.Errorf("'key' exists after FLUSHALL")
+		}
+	})
+
+	t.Run("TestEXPIRE", func(t *testing.T) {
+		c.SET("key", "value")
+		c.EXPIRE("key", 5)
+		data, _ := c.GET("key")
+
+		time.Sleep(2 * time.Second)
+		if time.Now().After(*data.ExpiryTime) {
+			t.Errorf("'key' isn't supposed to be expired so soon")
+		}
+
+		time.Sleep(6 * time.Second)
+		if !time.Now().After(*data.ExpiryTime) {
+			t.Errorf("'key' is supposed to be expired by now")
 		}
 	})
 }

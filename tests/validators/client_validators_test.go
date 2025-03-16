@@ -88,7 +88,7 @@ var testCases = []struct {
 	},
 }
 
-func TestValidateRawCommand(t *testing.T) {
+func TestRawCommand(t *testing.T) {
 	for _, tc := range testCases {
 		err := validators.ValidateRawCommand(tc.input)
 
