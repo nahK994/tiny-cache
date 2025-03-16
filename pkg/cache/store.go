@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"errors"
 	"strconv"
 	"time"
 )
@@ -94,50 +93,41 @@ func (c *Cache) RPUSH(key string, values []string) {
 }
 
 // LRANGE retrieves a range of values from a list
-func (c *Cache) LRANGE(key string, startIdx, endIdx int) ([]string, error) {
+func (c *Cache) LRANGE(key string, startIdx, endIdx int) []string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
 	vals := c.getList(key)
 	if len(vals) == 0 {
-		return []string{}, nil
+		return []string{}
 	}
 
 	startIdx = processIdx(vals, startIdx)
 	endIdx = processIdx(vals, endIdx)
-	if startIdx > endIdx || startIdx < 0 || endIdx >= len(vals) {
-		return nil, errors.New("invalid range")
-	}
 
-	return vals[startIdx : endIdx+1], nil
+	return vals[startIdx : endIdx+1]
 }
 
 // LPOP removes and returns the first element from a list
-func (c *Cache) LPOP(key string) error {
+func (c *Cache) LPOP(key string) string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	vals := c.getList(key)
-	if len(vals) == 0 {
-		return errors.New("list is empty")
-	}
 
 	c.saveList(key, vals[1:])
-	return nil
+	return vals[0]
 }
 
 // RPOP removes and returns the last element from a list
-func (c *Cache) RPOP(key string) error {
+func (c *Cache) RPOP(key string) string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	vals := c.getList(key)
-	if len(vals) == 0 {
-		return errors.New("list is empty")
-	}
 
 	c.saveList(key, vals[:len(vals)-1])
-	return nil
+	return vals[len(vals)-1]
 }
 
 // FLUSHALL removes all keys from the cache

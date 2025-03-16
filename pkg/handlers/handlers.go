@@ -113,7 +113,7 @@ func handleLpushRpush(key string, args []string, operation string) (string, erro
 		DataType: utils.Int,
 	}
 
-	vals, _ := c.LRANGE(key, 0, -1)
+	vals := c.LRANGE(key, 0, -1)
 	item.Value = []byte(strconv.Itoa(len(vals)))
 
 	if err := validators.ValidateExpiry(key); err != nil {
@@ -136,7 +136,11 @@ func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
 		return "", errors.Err{Type: errors.TypeError}
 	}
 
-	vals, _ := c.LRANGE(key, startIdx, endIdx)
+	if startIdx > endIdx {
+		return "", errors.Err{Type: errors.IndexError}
+	}
+
+	vals := c.LRANGE(key, startIdx, endIdx)
 	valsInBytes, _ := json.Marshal(vals)
 	item := cache.DataItem{
 		DataType: utils.Array,
@@ -155,9 +159,8 @@ func handleListPop(key, popType string) (string, error) {
 		return "", errors.Err{Type: errors.TypeError}
 	}
 
-	item, _ := c.GET(key)
 	var vals []string
-	json.Unmarshal(item.Value, &vals)
+	json.Unmarshal(data.Value, &vals)
 	if len(vals) <= 0 {
 		return "", errors.Err{Type: errors.EmptyList}
 	}
@@ -167,11 +170,9 @@ func handleListPop(key, popType string) (string, error) {
 	}
 	switch popType {
 	case resp.LPOP:
-		cacheItem.Value = []byte(vals[0])
-		c.LPOP(key)
+		cacheItem.Value = []byte(c.LPOP(key))
 	case resp.RPOP:
-		cacheItem.Value = []byte(vals[len(vals)-1])
-		c.RPOP(key)
+		cacheItem.Value = []byte(c.RPOP(key))
 	}
 
 	if err := validators.ValidateExpiry(key); err != nil {

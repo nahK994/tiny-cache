@@ -48,6 +48,9 @@ func (e Err) Error() string {
 	case ExpiredKey:
 		return "-ERR key is expired"
 
+	case IndexError:
+		return "-ERR index error"
+
 	default:
 		return "-ERR unknown command error"
 	}

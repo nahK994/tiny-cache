@@ -15,4 +15,5 @@ const (
 	EmptyList               = "EmptyList"
 	UndefinedKey            = "UndefinedKey"
 	ExpiredKey              = "ExpiredKey"
+	IndexError              = "IndexError"
 )
