@@ -43,14 +43,19 @@ func SerializeBool(arg bool) string {
 func SerializeCacheItem(item cache.DataItem) string {
 	switch item.DataType {
 	case utils.Int:
-		val, _ := strconv.Atoi(string(item.Value))
+		val, err := strconv.Atoi(string(item.Value))
+		if err != nil {
+			return "$-1\r\n"
+		}
 		return fmt.Sprintf(":%d\r\n", val)
 	case utils.String:
 		val := string(item.Value)
 		return fmt.Sprintf("$%d\r\n%s\r\n", len(val), val)
 	case utils.Array:
 		var vals []string
-		json.Unmarshal(item.Value, &vals)
+		if err := json.Unmarshal(item.Value, &vals); err != nil {
+			return "$-1\r\n"
+		}
 		return processArray(vals)
 	}
 	return "$-1\r\n"
