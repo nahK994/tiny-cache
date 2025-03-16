@@ -64,14 +64,17 @@ func handleIncDec(key, operation string) (string, error) {
 		}
 	}
 
-	result := cache.DataItem{
-		DataType: utils.Int,
-	}
+	var val []byte
 	switch operation {
 	case resp.INCR:
-		result.Value = []byte(strconv.Itoa(c.INCR(key)))
+		val = []byte(strconv.Itoa(c.INCR(key)))
 	case resp.DECR:
-		result.Value = []byte(strconv.Itoa(c.DECR(key)))
+		val = []byte(strconv.Itoa(c.DECR(key)))
+	}
+
+	result := cache.DataItem{
+		DataType: utils.Int,
+		Value:    val,
 	}
 
 	if err := validators.ValidateExpiry(key); err != nil {
@@ -97,8 +100,9 @@ func handleDEL(key string) string {
 }
 
 func handleLpushRpush(key string, args []string, operation string) (string, error) {
-	data, _ := c.GET(key)
-	if data.DataType != utils.Array {
+	data, isExists := c.GET(key)
+
+	if isExists && data.DataType != utils.Array {
 		return "", errors.Err{Type: errors.TypeError}
 	}
 
@@ -109,12 +113,11 @@ func handleLpushRpush(key string, args []string, operation string) (string, erro
 		c.RPUSH(key, args)
 	}
 
+	vals := c.LRANGE(key, 0, -1)
 	item := cache.DataItem{
 		DataType: utils.Int,
+		Value:    []byte(strconv.Itoa(len(vals))),
 	}
-
-	vals := c.LRANGE(key, 0, -1)
-	item.Value = []byte(strconv.Itoa(len(vals)))
 
 	if err := validators.ValidateExpiry(key); err != nil {
 		return "", err
@@ -131,7 +134,11 @@ func handleRPUSH(key string, args []string) (string, error) {
 }
 
 func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
-	data, _ := c.GET(key)
+	data, isExists := c.GET(key)
+	if !isExists {
+		return "", errors.Err{Type: errors.UndefinedKey}
+	}
+
 	if data.DataType != utils.Array {
 		return "", errors.Err{Type: errors.TypeError}
 	}
@@ -165,14 +172,17 @@ func handleListPop(key, popType string) (string, error) {
 		return "", errors.Err{Type: errors.EmptyList}
 	}
 
-	cacheItem := cache.DataItem{
-		DataType: utils.String,
-	}
+	var val []byte
 	switch popType {
 	case resp.LPOP:
-		cacheItem.Value = []byte(c.LPOP(key))
+		val = []byte(c.LPOP(key))
 	case resp.RPOP:
-		cacheItem.Value = []byte(c.RPOP(key))
+		val = []byte(c.RPOP(key))
+	}
+
+	cacheItem := cache.DataItem{
+		DataType: utils.String,
+		Value:    val,
 	}
 
 	if err := validators.ValidateExpiry(key); err != nil {
@@ -199,30 +209,32 @@ func handleEXPIRE(key string, ttl int) (string, error) {
 }
 
 func handleTTL(key string) (string, error) {
-	data, _ := c.GET(key)
-	if data.DataType != utils.Array {
-		return "", errors.Err{Type: errors.TypeError}
+	data, isExists := c.GET(key)
+	if !isExists {
+		return "", errors.Err{Type: errors.UndefinedKey}
+	}
+
+	var val []byte
+	if data.ExpiryTime == nil {
+		val = []byte(strconv.Itoa(0))
+	} else {
+		if remainingTTL := int(time.Until(*data.ExpiryTime).Seconds()); remainingTTL > 0 {
+			val = []byte(strconv.Itoa(remainingTTL))
+		} else {
+			c.DEL(key)
+			return "", errors.Err{Type: errors.ExpiredKey}
+		}
 	}
 
 	cacheItem := cache.DataItem{
 		DataType: utils.Int,
-	}
-
-	item, _ := c.GET(key)
-	if item.ExpiryTime == nil {
-		cacheItem.Value = []byte(strconv.Itoa(0))
-	} else {
-		if remainingTTL := int(time.Until(*item.ExpiryTime).Seconds()); remainingTTL > 0 {
-			cacheItem.Value = []byte(strconv.Itoa(remainingTTL))
-		} else {
-			cacheItem.Value = []byte(strconv.Itoa(-1))
-		}
+		Value:    val,
 	}
 	return resp.SerializeCacheItem(cacheItem), nil
 }
 
 func handlePERSIST(key string) (string, error) {
-	if c.EXISTS(key) {
+	if !c.EXISTS(key) {
 		return "", errors.Err{Type: errors.UndefinedKey}
 	}
 
