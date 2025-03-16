@@ -1,10 +1,12 @@
 package resp
 
 import (
+	"encoding/json"
 	"errors"
+	"strconv"
 
 	"github.com/nahK994/TinyCache/pkg/cache"
-	"github.com/nahK994/TinyCache/pkg/shared"
+	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
 type deserializeTestCase struct {
@@ -18,7 +20,7 @@ type serializeTestCase struct {
 }
 
 type serializeCacheDataTestCase struct {
-	input  cache.CacheData
+	input  cache.DataItem
 	output string
 }
 
@@ -128,33 +130,38 @@ var boolTestCases = []serializeBoolTestCase{
 	},
 }
 
+func strListToByteSlice(list []string) []byte {
+	ls, _ := json.Marshal(list)
+	return ls
+}
+
 var cacheItemTestCases = []serializeCacheDataTestCase{
 	{
-		input:  cache.CacheData{DataType: cache.Int, IntData: shared.IntToPtr(42)},
+		input:  cache.DataItem{DataType: utils.Int, Value: []byte(strconv.Itoa(42))},
 		output: ":42\r\n",
 	},
 	{
-		input:  cache.CacheData{DataType: cache.String, StrData: shared.StringToPtr("hello")},
+		input:  cache.DataItem{DataType: utils.String, Value: []byte("hello")},
 		output: "$5\r\nhello\r\n",
 	},
 	{
-		input:  cache.CacheData{DataType: cache.Array, StrList: []string{"foo", "bar"}},
+		input:  cache.DataItem{DataType: utils.Array, Value: strListToByteSlice([]string{"foo", "bar"})},
 		output: "*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n",
 	},
 	{
-		input:  cache.CacheData{DataType: cache.Array, StrList: []string{}}, // Empty array
+		input:  cache.DataItem{DataType: utils.Array, Value: strListToByteSlice([]string{})}, // Empty array
 		output: "*0\r\n",
 	},
 	{
-		input:  cache.CacheData{DataType: cache.String, StrData: nil}, // Nil string data
+		input:  cache.DataItem{DataType: utils.String, Value: nil}, // Nil string data
 		output: "$-1\r\n",
 	},
 	{
-		input:  cache.CacheData{DataType: cache.Int, IntData: nil}, // Nil int data
+		input:  cache.DataItem{DataType: utils.Int, Value: nil}, // Nil int data
 		output: "$-1\r\n",
 	},
 	{
-		input:  cache.CacheData{DataType: cache.Array, StrList: nil}, // Nil array
+		input:  cache.DataItem{DataType: utils.Array, Value: nil}, // Nil array
 		output: "$-1\r\n",
 	},
 }

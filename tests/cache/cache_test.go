@@ -2,6 +2,7 @@ package cache
 
 import (
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/nahK994/TinyCache/pkg/config"
@@ -14,15 +15,17 @@ func TestCache(t *testing.T) {
 	t.Run("TestSETAndGET", func(t *testing.T) {
 		// Test string value
 		c.SET("name", "Shomi")
-		strItem := c.GET("name").Value.StrData
-		if *strItem != "Shomi" {
-			t.Errorf("Expected 'Shomi', got %v", *strItem)
+		item, _ := c.GET("name")
+		strItem := string(item.Value)
+		if strItem != "Shomi" {
+			t.Errorf("Expected 'Shomi', got %v", strItem)
 		}
 
 		c.SET("age", "25")
-		intItem := c.GET("age").Value.IntData
-		if *intItem != 25 {
-			t.Errorf("Expected 25, got %v", *intItem)
+		item, _ = c.GET("age")
+		intItem, _ := strconv.Atoi(string(item.Value))
+		if intItem != 25 {
+			t.Errorf("Expected 25, got %v", intItem)
 		}
 	})
 

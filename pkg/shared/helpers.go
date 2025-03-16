@@ -61,11 +61,3 @@ func SplitCmd(rawCmd string) []string {
 
 	return segs
 }
-
-func IntToPtr(i int) *int {
-	return &i
-}
-
-func StringToPtr(s string) *string {
-	return &s
-}
