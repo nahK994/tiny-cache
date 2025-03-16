@@ -1,11 +1,14 @@
 package resp
 
 import (
+	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/nahK994/TinyCache/pkg/cache"
 	"github.com/nahK994/TinyCache/pkg/shared"
+	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
 func processArray(segments []string) string {
@@ -37,24 +40,18 @@ func SerializeBool(arg bool) string {
 	}
 }
 
-func SerializeCacheItem(item cache.CacheData) string {
+func SerializeCacheItem(item cache.DataItem) string {
 	switch item.DataType {
-	case cache.Int:
-		if item.IntData != nil {
-			return fmt.Sprintf(":%d\r\n", *item.IntData)
-		}
-	case cache.String:
-		if item.StrData != nil {
-			return fmt.Sprintf("$%d\r\n%s\r\n", len(*item.StrData), *item.StrData)
-		}
-	case cache.Array:
-		if item.StrList != nil {
-			response := fmt.Sprintf("*%d\r\n", len(item.StrList))
-			for _, v := range item.StrList {
-				response += fmt.Sprintf("$%d\r\n%s\r\n", len(v), v)
-			}
-			return processArray(item.StrList)
-		}
+	case utils.Int:
+		val, _ := strconv.Atoi(string(item.Value))
+		return fmt.Sprintf(":%d\r\n", val)
+	case utils.String:
+		val := string(item.Value)
+		return fmt.Sprintf("$%d\r\n%s\r\n", len(val), val)
+	case utils.Array:
+		var vals []string
+		json.Unmarshal(item.Value, &vals)
+		return processArray(vals)
 	}
 	return "$-1\r\n"
 }

@@ -11,7 +11,7 @@ import (
 var c *cache.Cache = config.App.Cache
 
 func ValidateExpiry(key string) error {
-	item := c.GET(key)
+	item, _ := c.GET(key)
 	if item.ExpiryTime != nil && time.Now().After(*item.ExpiryTime) {
 		c.DEL(key)
 		return errors.Err{Type: errors.ExpiredKey}

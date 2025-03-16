@@ -1,63 +1,85 @@
 package cache
 
 import (
+	"encoding/json"
 	"strconv"
+
+	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
-func (c *Cache) saveData(key string, val interface{}) {
-	switch v := val.(type) {
+// saveData stores a value in the cache
+func (c *Cache) saveData(key string, value interface{}) {
+	switch v := value.(type) {
 	case int:
-		c.saveInt(key, &v)
+		c.saveInt(key, v)
 	case string:
 		if val, err := strconv.Atoi(v); err == nil {
-			c.saveInt(key, &val)
+			c.saveInt(key, val)
 		} else {
-			c.saveString(key, &v)
+			c.saveString(key, v)
 		}
 	}
-
 }
 
-func (c *Cache) saveString(key string, val *string) {
-	c.items[key] = CacheItem{
-		Value: CacheData{
-			StrData:  val,
-			DataType: String,
-		},
-		ExpiryTime: c.items[key].ExpiryTime,
+// saveSting stores an string value
+func (c *Cache) saveString(key string, value string) {
+	bytes := []byte(value)
+	c.data[key] = DataItem{
+		DataType: utils.String,
+		Value:    bytes,
 	}
 }
 
-func (c *Cache) saveInt(key string, val *int) {
-	c.items[key] = CacheItem{
-		Value: CacheData{
-			IntData:  val,
-			DataType: Int,
-		},
-		ExpiryTime: c.items[key].ExpiryTime,
+// saveInt stores an integer value
+func (c *Cache) saveInt(key string, value int) {
+	bytes := []byte(strconv.Itoa(value))
+	c.data[key] = DataItem{
+		DataType: utils.Int,
+		Value:    bytes,
 	}
 }
 
-func (c *Cache) saveList(key string, val []string) {
-	c.items[key] = CacheItem{
-		Value: CacheData{
-			StrList:  val,
-			DataType: Array,
-		},
-		ExpiryTime: c.items[key].ExpiryTime,
+// saveList stores a list
+func (c *Cache) saveList(key string, values []string) {
+	bytes, _ := json.Marshal(values)
+	c.data[key] = DataItem{
+		DataType: utils.Array,
+		Value:    bytes,
 	}
 }
 
+// getList retrieves a list from cache
+func (c *Cache) getList(key string) []string {
+	item, exists := c.data[key]
+	if !exists {
+		return []string{}
+	}
+
+	var vals []string
+	json.Unmarshal(item.Value, &vals)
+	return vals
+}
+
+// reverseSlice reverses a slice of strings
+func reverseSlice(s []string) []string {
+	n := len(s)
+	result := make([]string, n)
+	for i := range s {
+		result[n-i-1] = s[i]
+	}
+	return result
+}
+
+// processIdx normalizes index values for LRANGE
 func processIdx(vals []string, idx int) int {
-	if idx > len(vals) {
-		idx = len(vals) - 1
-	} else if idx < 0 {
-		if -1*len(vals) > idx {
-			idx = 0
-		} else {
-			idx = len(vals) + idx
-		}
+	if idx < 0 {
+		idx = len(vals) + idx
 	}
-
+	if idx < 0 {
+		return 0
+	}
+	if idx >= len(vals) {
+		return len(vals) - 1
+	}
 	return idx
 }

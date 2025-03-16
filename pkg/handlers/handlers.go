@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 	"time"
@@ -9,23 +10,23 @@ import (
 	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/errors"
 	"github.com/nahK994/TinyCache/pkg/resp"
-	"github.com/nahK994/TinyCache/pkg/shared"
+	"github.com/nahK994/TinyCache/pkg/utils"
 	"github.com/nahK994/TinyCache/pkg/validators"
 )
-
-func isKeyExists(key string) bool {
-	_ = validators.ValidateExpiry(key)
-	return c.EXISTS(key)
-}
 
 var c *cache.Cache = config.App.Cache
 
 func handleGET(key string) (string, error) {
-	if err := validators.AssertKeyExists(key); err != nil {
+	if !c.EXISTS(key) {
+		return "", errors.Err{Type: errors.UndefinedKey}
+	}
+
+	if err := validators.ValidateExpiry(key); err != nil {
 		return "", err
 	}
-	item := c.GET(key)
-	return resp.SerializeCacheItem(item.Value), nil
+
+	item, _ := c.GET(key)
+	return resp.SerializeCacheItem(item), nil
 }
 
 func handleSET(key string, args []string) (string, error) {
@@ -49,26 +50,33 @@ func handleFLUSHALL() string {
 }
 
 func handleEXISTS(key string) string {
-	return resp.SerializeBool(isKeyExists(key))
+	_, isExists := c.GET(key)
+	return resp.SerializeBool(isExists)
 }
 
 func handleIncDec(key, operation string) (string, error) {
-	if !isKeyExists(key) {
+	if !c.EXISTS(key) {
 		c.SET(key, 0)
-	} else if c.GET(key).Value.DataType != cache.Int {
-		return "", errors.Err{Type: errors.TypeError}
+	} else {
+		data, _ := c.GET(key)
+		if data.DataType != utils.Int {
+			return "", errors.Err{Type: errors.TypeError}
+		}
 	}
 
-	result := cache.CacheData{
-		DataType: cache.Int,
+	result := cache.DataItem{
+		DataType: utils.Int,
 	}
 	switch operation {
 	case resp.INCR:
-		result.IntData = shared.IntToPtr(c.INCR(key))
+		result.Value = []byte(strconv.Itoa(c.INCR(key)))
 	case resp.DECR:
-		result.IntData = shared.IntToPtr(c.DECR(key))
+		result.Value = []byte(strconv.Itoa(c.DECR(key)))
 	}
 
+	if err := validators.ValidateExpiry(key); err != nil {
+		return "", err
+	}
 	return resp.SerializeCacheItem(result), nil
 }
 
@@ -81,7 +89,7 @@ func handleDECR(key string) (string, error) {
 }
 
 func handleDEL(key string) string {
-	keyExists := isKeyExists(key)
+	_, keyExists := c.GET(key)
 	if keyExists {
 		c.DEL(key)
 	}
@@ -89,7 +97,8 @@ func handleDEL(key string) string {
 }
 
 func handleLpushRpush(key string, args []string, operation string) (string, error) {
-	if isKeyExists(key) && c.GET(key).Value.DataType != cache.Array {
+	data, _ := c.GET(key)
+	if data.DataType != utils.Array {
 		return "", errors.Err{Type: errors.TypeError}
 	}
 
@@ -100,10 +109,16 @@ func handleLpushRpush(key string, args []string, operation string) (string, erro
 		c.RPUSH(key, args)
 	}
 
-	item := cache.CacheData{
-		DataType: cache.Int,
+	item := cache.DataItem{
+		DataType: utils.Int,
 	}
-	item.IntData = shared.IntToPtr(len(c.LRANGE(key, 0, -1)))
+
+	vals, _ := c.LRANGE(key, 0, -1)
+	item.Value = []byte(strconv.Itoa(len(vals)))
+
+	if err := validators.ValidateExpiry(key); err != nil {
+		return "", err
+	}
 	return resp.SerializeCacheItem(item), nil
 }
 
@@ -116,45 +131,52 @@ func handleRPUSH(key string, args []string) (string, error) {
 }
 
 func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
-	if err := validators.AssertKeyExists(key); err != nil {
-		return "", err
-	}
-	if c.GET(key).Value.DataType != cache.Array {
+	data, _ := c.GET(key)
+	if data.DataType != utils.Array {
 		return "", errors.Err{Type: errors.TypeError}
 	}
-	vals := c.LRANGE(key, startIdx, endIdx)
-	item := cache.CacheData{
-		DataType: cache.Array,
-		StrList:  vals,
+
+	vals, _ := c.LRANGE(key, startIdx, endIdx)
+	valsInBytes, _ := json.Marshal(vals)
+	item := cache.DataItem{
+		DataType: utils.Array,
+		Value:    valsInBytes,
+	}
+
+	if err := validators.ValidateExpiry(key); err != nil {
+		return "", err
 	}
 	return resp.SerializeCacheItem(item), nil
 }
 
 func handleListPop(key, popType string) (string, error) {
-	if err := validators.AssertKeyExists(key); err != nil {
-		return "", err
-	}
-
-	item := c.GET(key).Value
-	if item.DataType != cache.Array {
+	data, _ := c.GET(key)
+	if data.DataType != utils.Array {
 		return "", errors.Err{Type: errors.TypeError}
 	}
-	if len(item.StrList) <= 0 {
+
+	item, _ := c.GET(key)
+	var vals []string
+	json.Unmarshal(item.Value, &vals)
+	if len(vals) <= 0 {
 		return "", errors.Err{Type: errors.EmptyList}
 	}
 
-	cacheItem := cache.CacheData{
-		DataType: cache.String,
+	cacheItem := cache.DataItem{
+		DataType: utils.String,
 	}
 	switch popType {
 	case resp.LPOP:
-		cacheItem.StrData = &item.StrList[0]
+		cacheItem.Value = []byte(vals[0])
 		c.LPOP(key)
 	case resp.RPOP:
-		cacheItem.StrData = &item.StrList[len(item.StrList)-1]
+		cacheItem.Value = []byte(vals[len(vals)-1])
 		c.RPOP(key)
 	}
 
+	if err := validators.ValidateExpiry(key); err != nil {
+		return "", err
+	}
 	return resp.SerializeCacheItem(cacheItem), nil
 }
 
@@ -176,22 +198,23 @@ func handleEXPIRE(key string, ttl int) (string, error) {
 }
 
 func handleTTL(key string) (string, error) {
-	if err := validators.AssertKeyExists(key); err != nil {
-		return "", err
-	}
-	cacheItem := cache.CacheData{
-		DataType: cache.Int,
-		IntData:  new(int),
+	data, _ := c.GET(key)
+	if data.DataType != utils.Array {
+		return "", errors.Err{Type: errors.TypeError}
 	}
 
-	item := c.GET(key)
+	cacheItem := cache.DataItem{
+		DataType: utils.Int,
+	}
+
+	item, _ := c.GET(key)
 	if item.ExpiryTime == nil {
-		cacheItem.IntData = shared.IntToPtr(0)
+		cacheItem.Value = []byte(strconv.Itoa(0))
 	} else {
 		if remainingTTL := int(time.Until(*item.ExpiryTime).Seconds()); remainingTTL > 0 {
-			cacheItem.IntData = &remainingTTL
+			cacheItem.Value = []byte(strconv.Itoa(remainingTTL))
 		} else {
-			cacheItem.IntData = shared.IntToPtr(-1)
+			cacheItem.Value = []byte(strconv.Itoa(-1))
 		}
 	}
 	return resp.SerializeCacheItem(cacheItem), nil
