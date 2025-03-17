@@ -172,16 +172,28 @@ func TestHandlers(t *testing.T) {
 			t.Errorf("Expected ':1\\r\\n', got %s", resp)
 		}
 
-		h.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$4\r\nlist\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
-		_, err = h.HandleCommand("*2\r\n$4\r\nINCR\r\n$4\r\nlist\r\n")
+		_, err = h.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$5\r\nmykey\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
 		if err == nil {
 			t.Errorf("Expected type error, got %v", err)
 		}
 
-		h.HandleCommand("*5\r\n$5\r\nLPUSH\r\n$4\r\nlist\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
-		_, err = h.HandleCommand("*2\r\n$4\r\nDECR\r\n$4\r\nlist\r\n")
+		_, err = h.HandleCommand("*5\r\n$5\r\nRPUSH\r\n$5\r\nmykey\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n")
 		if err == nil {
 			t.Errorf("Expected type error, got %v", err)
+		}
+
+		resp, err = h.HandleCommand("*3\r\n$6\r\nEXPIRE\r\n$6\r\nnewkey\r\n$1\r\n4\r\n")
+		if err != nil {
+			t.Errorf("Expected no error, got %v", err)
+		}
+		if resp != "+OK\r\n" { // 1 if the key was set to expire
+			t.Errorf("Expected +OK\r\n, got %s", resp)
+		}
+
+		time.Sleep(5 * time.Second)
+		_, err = h.HandleCommand("*2\r\n$4\r\nDECR\r\n$6\r\nnewkey\r\n")
+		if err == nil {
+			t.Errorf("Expected expired error, got %v", err)
 		}
 	})
 
