@@ -6,7 +6,7 @@ import (
 )
 
 // Init initializes the cache with an expiration sweeper
-func Init(expirationSweepInterval int) *Cache {
+func NewCache(expirationSweepInterval int) *Cache {
 	cache := &Cache{
 		data:          make(map[string]DataItem),
 		SweepInterval: expirationSweepInterval,

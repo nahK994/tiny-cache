@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net"
 
+	"github.com/nahK994/TinyCache/pkg/cache"
 	"github.com/nahK994/TinyCache/pkg/config"
 	"github.com/nahK994/TinyCache/pkg/handlers"
 )
@@ -32,12 +33,11 @@ func newPeer(addr string, conn net.Conn) *Peer {
 	}
 }
 
-func processAsyncTasks() {
-	c := config.App.Cache
+func processAsyncTasks(cache *cache.Cache) {
 	for {
 		select {
 		case <-config.App.FlushCh:
-			c.FLUSHALL()
+			cache.FLUSHALL()
 		}
 	}
 }
@@ -51,8 +51,9 @@ func (s *Server) acceptConn() error {
 
 		peer := newPeer(conn.RemoteAddr().String(), conn)
 
-		go processAsyncTasks()
-		go peer.handleConn()
+		cache := cache.NewCache(10)
+		go processAsyncTasks(cache)
+		go peer.handleConn(cache)
 	}
 }
 
@@ -70,7 +71,7 @@ func (s *Server) Start() error {
 	return s.acceptConn()
 }
 
-func (p *Peer) handleConn() {
+func (p *Peer) handleConn(cache *cache.Cache) {
 	fmt.Printf("\nPaired with %s\n\n", p.clientAddr)
 	buf := make([]byte, 1024)
 	for {
@@ -95,7 +96,8 @@ func (p *Peer) handleConn() {
 		fmt.Printf("%s> %s\n", p.clientAddr, formattedCmd)
 
 		var res string
-		if output, err := handlers.HandleCommand(rawCmd); err != nil {
+		handler := handlers.NewHandler(cache)
+		if output, err := handler.HandleCommand(rawCmd); err != nil {
 			res = err.Error()
 		} else {
 			res = output

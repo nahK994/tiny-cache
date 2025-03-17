@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nahK994/TinyCache/pkg/config"
+	"github.com/nahK994/TinyCache/pkg/cache"
 )
 
 func TestCache(t *testing.T) {
 	// Initialize a new cache
-	c := config.App.Cache
+	c := cache.NewCache(10)
 
 	t.Run("TestSETAndGET", func(t *testing.T) {
 		// Test string value

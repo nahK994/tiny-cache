@@ -11,54 +11,70 @@ import (
 	"github.com/nahK994/TinyCache/pkg/errors"
 	"github.com/nahK994/TinyCache/pkg/resp"
 	"github.com/nahK994/TinyCache/pkg/utils"
-	"github.com/nahK994/TinyCache/pkg/validators"
 )
 
-var c *cache.Cache = config.App.Cache
+type Handler struct {
+	cache *cache.Cache
+}
 
-func handleGET(key string) (string, error) {
-	if !c.EXISTS(key) {
+func NewHandler(c *cache.Cache) *Handler {
+	return &Handler{
+		cache: c,
+	}
+}
+
+func (h *Handler) validateExpiry(key string) error {
+	item, _ := h.cache.GET(key)
+	if item.ExpiryTime != nil && time.Now().After(*item.ExpiryTime) {
+		h.cache.DEL(key)
+		return errors.Err{Type: errors.ExpiredKey}
+	}
+	return nil
+}
+
+func (h *Handler) handleGET(key string) (string, error) {
+	if !h.cache.EXISTS(key) {
 		return "", errors.Err{Type: errors.UndefinedKey}
 	}
 
-	if err := validators.ValidateExpiry(key); err != nil {
+	if err := h.validateExpiry(key); err != nil {
 		return "", err
 	}
 
-	item, _ := c.GET(key)
+	item, _ := h.cache.GET(key)
 	return resp.SerializeCacheItem(item), nil
 }
 
-func handleSET(key string, args []string) (string, error) {
+func (h *Handler) handleSET(key string, args []string) (string, error) {
 	if len(args) > 1 {
-		c.SET(key, args[0])
+		h.cache.SET(key, args[0])
 		ttl, _ := strconv.Atoi(args[1])
-		c.EXPIRE(key, ttl)
+		h.cache.EXPIRE(key, ttl)
 	} else {
-		c.SET(key, args[0])
+		h.cache.SET(key, args[0])
 	}
 	return "+OK\r\n", nil
 }
 
-func handleFLUSHALL() string {
+func (h *Handler) handleFLUSHALL() string {
 	if config.App.IsAsyncFlush {
 		config.App.FlushCh <- 1
 	} else {
-		c.FLUSHALL()
+		h.cache.FLUSHALL()
 	}
 	return "+OK\r\n"
 }
 
-func handleEXISTS(key string) string {
-	_, isExists := c.GET(key)
+func (h *Handler) handleEXISTS(key string) string {
+	_, isExists := h.cache.GET(key)
 	return resp.SerializeBool(isExists)
 }
 
-func handleIncDec(key, operation string) (string, error) {
-	if !c.EXISTS(key) {
-		c.SET(key, 0)
+func (h *Handler) handleIncDec(key, operation string) (string, error) {
+	if !h.cache.EXISTS(key) {
+		h.cache.SET(key, 0)
 	} else {
-		data, _ := c.GET(key)
+		data, _ := h.cache.GET(key)
 		if data.DataType != utils.Int {
 			return "", errors.Err{Type: errors.TypeError}
 		}
@@ -67,9 +83,9 @@ func handleIncDec(key, operation string) (string, error) {
 	var val []byte
 	switch operation {
 	case resp.INCR:
-		val = []byte(strconv.Itoa(c.INCR(key)))
+		val = []byte(strconv.Itoa(h.cache.INCR(key)))
 	case resp.DECR:
-		val = []byte(strconv.Itoa(c.DECR(key)))
+		val = []byte(strconv.Itoa(h.cache.DECR(key)))
 	}
 
 	result := cache.DataItem{
@@ -77,30 +93,30 @@ func handleIncDec(key, operation string) (string, error) {
 		Value:    val,
 	}
 
-	if err := validators.ValidateExpiry(key); err != nil {
+	if err := h.validateExpiry(key); err != nil {
 		return "", err
 	}
 	return resp.SerializeCacheItem(result), nil
 }
 
-func handleINCR(key string) (string, error) {
-	return handleIncDec(key, resp.INCR)
+func (h *Handler) handleINCR(key string) (string, error) {
+	return h.handleIncDec(key, resp.INCR)
 }
 
-func handleDECR(key string) (string, error) {
-	return handleIncDec(key, resp.DECR)
+func (h *Handler) handleDECR(key string) (string, error) {
+	return h.handleIncDec(key, resp.DECR)
 }
 
-func handleDEL(key string) string {
-	_, keyExists := c.GET(key)
+func (h *Handler) handleDEL(key string) string {
+	_, keyExists := h.cache.GET(key)
 	if keyExists {
-		c.DEL(key)
+		h.cache.DEL(key)
 	}
 	return resp.SerializeBool(keyExists)
 }
 
-func handleLpushRpush(key string, args []string, operation string) (string, error) {
-	data, isExists := c.GET(key)
+func (h *Handler) handleLpushRpush(key string, args []string, operation string) (string, error) {
+	data, isExists := h.cache.GET(key)
 
 	if isExists && data.DataType != utils.Array {
 		return "", errors.Err{Type: errors.TypeError}
@@ -108,33 +124,33 @@ func handleLpushRpush(key string, args []string, operation string) (string, erro
 
 	switch operation {
 	case resp.LPUSH:
-		c.LPUSH(key, args)
+		h.cache.LPUSH(key, args)
 	case resp.RPUSH:
-		c.RPUSH(key, args)
+		h.cache.RPUSH(key, args)
 	}
 
-	vals := c.LRANGE(key, 0, -1)
+	vals := h.cache.LRANGE(key, 0, -1)
 	item := cache.DataItem{
 		DataType: utils.Int,
 		Value:    []byte(strconv.Itoa(len(vals))),
 	}
 
-	if err := validators.ValidateExpiry(key); err != nil {
+	if err := h.validateExpiry(key); err != nil {
 		return "", err
 	}
 	return resp.SerializeCacheItem(item), nil
 }
 
-func handleLPUSH(key string, args []string) (string, error) {
-	return handleLpushRpush(key, args, resp.LPUSH)
+func (h *Handler) handleLPUSH(key string, args []string) (string, error) {
+	return h.handleLpushRpush(key, args, resp.LPUSH)
 }
 
-func handleRPUSH(key string, args []string) (string, error) {
-	return handleLpushRpush(key, args, resp.RPUSH)
+func (h *Handler) handleRPUSH(key string, args []string) (string, error) {
+	return h.handleLpushRpush(key, args, resp.RPUSH)
 }
 
-func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
-	data, isExists := c.GET(key)
+func (h *Handler) handleLRANGE(key string, startIdx, endIdx int) (string, error) {
+	data, isExists := h.cache.GET(key)
 	if !isExists {
 		return "", errors.Err{Type: errors.UndefinedKey}
 	}
@@ -147,21 +163,21 @@ func handleLRANGE(key string, startIdx, endIdx int) (string, error) {
 		return "", errors.Err{Type: errors.IndexError}
 	}
 
-	vals := c.LRANGE(key, startIdx, endIdx)
+	vals := h.cache.LRANGE(key, startIdx, endIdx)
 	valsInBytes, _ := json.Marshal(vals)
 	item := cache.DataItem{
 		DataType: utils.Array,
 		Value:    valsInBytes,
 	}
 
-	if err := validators.ValidateExpiry(key); err != nil {
+	if err := h.validateExpiry(key); err != nil {
 		return "", err
 	}
 	return resp.SerializeCacheItem(item), nil
 }
 
-func handleListPop(key, popType string) (string, error) {
-	data, _ := c.GET(key)
+func (h *Handler) handleListPop(key, popType string) (string, error) {
+	data, _ := h.cache.GET(key)
 	if data.DataType != utils.Array {
 		return "", errors.Err{Type: errors.TypeError}
 	}
@@ -175,9 +191,9 @@ func handleListPop(key, popType string) (string, error) {
 	var val []byte
 	switch popType {
 	case resp.LPOP:
-		val = []byte(c.LPOP(key))
+		val = []byte(h.cache.LPOP(key))
 	case resp.RPOP:
-		val = []byte(c.RPOP(key))
+		val = []byte(h.cache.RPOP(key))
 	}
 
 	cacheItem := cache.DataItem{
@@ -185,31 +201,31 @@ func handleListPop(key, popType string) (string, error) {
 		Value:    val,
 	}
 
-	if err := validators.ValidateExpiry(key); err != nil {
+	if err := h.validateExpiry(key); err != nil {
 		return "", err
 	}
 	return resp.SerializeCacheItem(cacheItem), nil
 }
 
-func handleLPOP(key string) (string, error) {
-	return handleListPop(key, resp.LPOP)
+func (h *Handler) handleLPOP(key string) (string, error) {
+	return h.handleListPop(key, resp.LPOP)
 }
 
-func handleRPOP(key string) (string, error) {
-	return handleListPop(key, resp.RPOP)
+func (h *Handler) handleRPOP(key string) (string, error) {
+	return h.handleListPop(key, resp.RPOP)
 }
 
-func handleEXPIRE(key string, ttl int) (string, error) {
-	if !c.EXISTS(key) {
+func (h *Handler) handleEXPIRE(key string, ttl int) (string, error) {
+	if !h.cache.EXISTS(key) {
 		return "", errors.Err{Type: errors.UndefinedKey}
 	}
 
-	c.EXPIRE(key, ttl)
+	h.cache.EXPIRE(key, ttl)
 	return "+OK\r\n", nil
 }
 
-func handleTTL(key string) (string, error) {
-	data, isExists := c.GET(key)
+func (h *Handler) handleTTL(key string) (string, error) {
+	data, isExists := h.cache.GET(key)
 	if !isExists {
 		return "", errors.Err{Type: errors.UndefinedKey}
 	}
@@ -221,7 +237,7 @@ func handleTTL(key string) (string, error) {
 		if remainingTTL := int(time.Until(*data.ExpiryTime).Seconds()); remainingTTL > 0 {
 			val = []byte(strconv.Itoa(remainingTTL))
 		} else {
-			c.DEL(key)
+			h.cache.DEL(key)
 			return "", errors.Err{Type: errors.ExpiredKey}
 		}
 	}
@@ -233,16 +249,16 @@ func handleTTL(key string) (string, error) {
 	return resp.SerializeCacheItem(cacheItem), nil
 }
 
-func handlePERSIST(key string) (string, error) {
-	if !c.EXISTS(key) {
+func (h *Handler) handlePERSIST(key string) (string, error) {
+	if !h.cache.EXISTS(key) {
 		return "", errors.Err{Type: errors.UndefinedKey}
 	}
 
-	c.EXPIRE(key, 0)
+	h.cache.EXPIRE(key, 0)
 	return "+OK\r\n", nil
 }
 
-func HandleCommand(serializedRawCmd string) (string, error) {
+func (h *Handler) HandleCommand(serializedRawCmd string) (string, error) {
 	cmdSegments, _ := resp.Deserializer(serializedRawCmd).([]string)
 
 	cmd := cmdSegments[0]
@@ -250,40 +266,40 @@ func HandleCommand(serializedRawCmd string) (string, error) {
 
 	switch strings.ToUpper(cmd) {
 	case resp.GET:
-		return handleGET(args[0])
+		return h.handleGET(args[0])
 	case resp.SET:
-		return handleSET(args[0], args[1:])
+		return h.handleSET(args[0], args[1:])
 	case resp.EXISTS:
-		return handleEXISTS(args[0]), nil
+		return h.handleEXISTS(args[0]), nil
 	case resp.DEL:
-		return handleDEL(args[0]), nil
+		return h.handleDEL(args[0]), nil
 	case resp.PING:
 		return "+PONG\r\n", nil
 	case resp.LPUSH:
-		return handleLPUSH(args[0], args[1:])
+		return h.handleLPUSH(args[0], args[1:])
 	case resp.RPUSH:
-		return handleRPUSH(args[0], args[1:])
+		return h.handleRPUSH(args[0], args[1:])
 	case resp.EXPIRE:
 		ttl, _ := strconv.Atoi(args[1])
-		return handleEXPIRE(args[0], ttl)
+		return h.handleEXPIRE(args[0], ttl)
 	case resp.LRANGE:
 		startIdx, _ := strconv.Atoi(args[1])
 		endIdx, _ := strconv.Atoi(args[2])
-		return handleLRANGE(args[0], startIdx, endIdx)
+		return h.handleLRANGE(args[0], startIdx, endIdx)
 	case resp.LPOP:
-		return handleLPOP(args[0])
+		return h.handleLPOP(args[0])
 	case resp.RPOP:
-		return handleRPOP(args[0])
+		return h.handleRPOP(args[0])
 	case resp.INCR:
-		return handleINCR(args[0])
+		return h.handleINCR(args[0])
 	case resp.DECR:
-		return handleDECR(args[0])
+		return h.handleDECR(args[0])
 	case resp.FLUSHALL:
-		return handleFLUSHALL(), nil
+		return h.handleFLUSHALL(), nil
 	case resp.TTL:
-		return handleTTL(args[0])
+		return h.handleTTL(args[0])
 	case resp.PERSIST:
-		return handlePERSIST(args[0])
+		return h.handlePERSIST(args[0])
 	default:
 		return "", errors.Err{Type: errors.UnknownCommand}
 	}
