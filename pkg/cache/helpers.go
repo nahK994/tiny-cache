@@ -3,6 +3,7 @@ package cache
 import (
 	"encoding/json"
 	"strconv"
+	"time"
 
 	"github.com/nahK994/TinyCache/pkg/utils"
 )
@@ -11,40 +12,43 @@ import (
 func (c *Cache) saveData(key string, value interface{}) {
 	switch v := value.(type) {
 	case int:
-		c.saveInt(key, v)
+		c.saveInt(key, v, nil)
 	case string:
 		if val, err := strconv.Atoi(v); err == nil {
-			c.saveInt(key, val)
+			c.saveInt(key, val, nil)
 		} else {
-			c.saveString(key, v)
+			c.saveString(key, v, nil)
 		}
 	}
 }
 
 // saveSting stores an string value
-func (c *Cache) saveString(key string, value string) {
+func (c *Cache) saveString(key string, value string, expiryTime *time.Time) {
 	bytes := []byte(value)
 	c.data[key] = DataItem{
-		DataType: utils.String,
-		Value:    bytes,
+		DataType:   utils.String,
+		Value:      bytes,
+		ExpiryTime: expiryTime,
 	}
 }
 
 // saveInt stores an integer value
-func (c *Cache) saveInt(key string, value int) {
+func (c *Cache) saveInt(key string, value int, expiryTime *time.Time) {
 	bytes := []byte(strconv.Itoa(value))
 	c.data[key] = DataItem{
-		DataType: utils.Int,
-		Value:    bytes,
+		DataType:   utils.Int,
+		Value:      bytes,
+		ExpiryTime: expiryTime,
 	}
 }
 
 // saveList stores a list
-func (c *Cache) saveList(key string, values []string) {
+func (c *Cache) saveList(key string, values []string, expiryTime *time.Time) {
 	bytes, _ := json.Marshal(values)
 	c.data[key] = DataItem{
-		DataType: utils.Array,
-		Value:    bytes,
+		DataType:   utils.Array,
+		Value:      bytes,
+		ExpiryTime: expiryTime,
 	}
 }
 

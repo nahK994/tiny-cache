@@ -55,7 +55,8 @@ func (c *Cache) INCR(key string) int {
 
 	intVal, _ := strconv.Atoi(string(item.Value))
 	intVal++
-	c.saveInt(key, intVal)
+	expiryTime := c.data[key].ExpiryTime
+	c.saveInt(key, intVal, expiryTime)
 	return intVal
 }
 
@@ -68,7 +69,8 @@ func (c *Cache) DECR(key string) int {
 
 	intVal, _ := strconv.Atoi(string(item.Value))
 	intVal--
-	c.saveInt(key, intVal)
+	expiryTime := c.data[key].ExpiryTime
+	c.saveInt(key, intVal, expiryTime)
 	return intVal
 }
 
@@ -79,7 +81,8 @@ func (c *Cache) LPUSH(key string, values []string) {
 
 	oldData := c.getList(key)
 	vals := append(reverseSlice(values), oldData...)
-	c.saveList(key, vals)
+	expiryTime := c.data[key].ExpiryTime
+	c.saveList(key, vals, expiryTime)
 }
 
 // RPUSH adds values to the right of a list
@@ -89,7 +92,8 @@ func (c *Cache) RPUSH(key string, values []string) {
 
 	oldData := c.getList(key)
 	vals := append(oldData, values...)
-	c.saveList(key, vals)
+	expiryTime := c.data[key].ExpiryTime
+	c.saveList(key, vals, expiryTime)
 }
 
 // LRANGE retrieves a range of values from a list
@@ -115,7 +119,8 @@ func (c *Cache) LPOP(key string) string {
 
 	vals := c.getList(key)
 
-	c.saveList(key, vals[1:])
+	expiryTime := c.data[key].ExpiryTime
+	c.saveList(key, vals[1:], expiryTime)
 	return vals[0]
 }
 
@@ -126,7 +131,8 @@ func (c *Cache) RPOP(key string) string {
 
 	vals := c.getList(key)
 
-	c.saveList(key, vals[:len(vals)-1])
+	expiryTime := c.data[key].ExpiryTime
+	c.saveList(key, vals[:len(vals)-1], expiryTime)
 	return vals[len(vals)-1]
 }
 
