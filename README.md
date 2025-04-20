@@ -83,32 +83,69 @@ This will stop the service, remove the binaries, and clean up all installed file
 
 This project is organized into several directories to maintain a clean and modular structure. Below is a breakdown of each folder and its purpose:
 
-**`cmd`** Contains the entry points for running different components of the project.
+```shell
+├── cmd/                         # Entry points for different binaries
+│   ├── client/
+│   │   └── main.go              # Main file to run the CLI-based cache client
+│   ├── playground/
+│   │   └── main.go              # For experimentaion stuffs
+│   └── server/
+│       └── main.go              # Main file to launch the TinyCache server
 
-- **server**: The main server application.
-- **client**: The client application to communicate with the server.
-- **playground**: A playground for testing and experimenting with features.
+├── connection/                  # Logic for handling low-level connections
+│   ├── client/
+│   │   └── client.go            # Code for client-side connection handling
+│   └── server/
+│       └── server.go            # Code for accepting and managing client connections on the server
 
-**`connection`** Handles server and client connections.
+├── CONTRIBUTING.md              # Guide for contributors (e.g., how to fork, open PRs, coding style)
+├── go.mod                       # Go module file
+├── go.sum                       # Checksum of module dependencies
+├── install.sh                   # Script to install or set up TinyCache locally
+├── LICENSE                      # License file (e.g., MIT, Apache)
+├── run.sh                       # Helper script to build and run the project
+├── uninstall.sh                 # Script to cleanly uninstall TinyCache
 
-- **server**: Manages server-side connections.
-- **client**: Manages client-side connections.
+├── pkg/                         # All core functionality and reusable code lives here
+│   ├── cache/                   # Main cache logic and internal data structures
+│   │   ├── helpers.go           # Utility functions for cache operations
+│   │   ├── models.go            # Data models
+│   │   └── store.go             # Core implementation of the cache logic
+│   ├── config/
+│   │   └── config.go            # Configuration management
+│   ├── errors/
+│   │   ├── constants.go         # Custom error constants
+│   │   └── errors.go            # Custom error types and functions
+│   ├── handlers/
+│   │   └── handlers.go          # High-level request handlers
+│   ├── resp/
+│   │   ├── constants.go         # RESP protocol-specific constants
+│   │   ├── deserializer.go      # Parse raw RESP input
+│   │   └── serializer.go        # Encode responses into RESP format
+│   ├── shared/
+│   │   └── helpers.go           # Shared helper utilities across the project
+│   ├── utils/
+│   │   └── constants.go         # Miscellaneous constants
+│   └── validators/
+│       ├── client_validators.go # Validate client-side input/flags/config
+│       └── server_validators.go # Validate server-side configuration/commands
 
-**`pkg`** Contains core logic and utilities used across the project.
+├── tests/                       # Organized unit & integration tests
+│   ├── cache/
+│   │   └── cache_test.go        # Tests for core cache logic
+│   ├── handlers/
+│   │   └── handlers_test.go     # Tests for command handlers
+│   ├── resp/
+│   │   ├── deserializer_test.go # Tests for RESP deserialization
+│   │   ├── serializer_test.go   # Tests for RESP serialization
+│   │   └── test_cases.go        # Common RESP test cases
+│   ├── shared/
+│   │   └── helpers_test.go      # Tests for shared helper functions
+│   └── validators/
+│       └── client_validators_test.go # Tests for client validation logic
 
-- **utils**: General utility functions used across the project.
-- **resp**: Handles RESP serializing and deserializing logic.
-- **cache**: Contains caching logic.
-- **errors**: Contains custom error definations.
-- **handlers**: Contains the request handlers.
-
-**`tests`** Includes unit tests for different components.
-
-- **resp**: Tests for RESP command handling.
-- **cache**: Tests for caching functionality.
-
-
-
+├── README.md                    # Project overview, how to install/use, contribution guide
+```
 
 ## 🤝 Contributing
 
