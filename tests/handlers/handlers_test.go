@@ -12,7 +12,7 @@ import (
 )
 
 func TestHandlers(t *testing.T) {
-	c := cache.NewCache(10)
+	c := cache.NewCache(10, 100)
 	h := handlers.NewHandler(c)
 
 	t.Run("TestHandleGET", func(t *testing.T) {

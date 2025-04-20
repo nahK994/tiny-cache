@@ -8,37 +8,53 @@ import (
 	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
+func (c *Cache) evictLFU() {
+	var lfuKey string
+	minFreq := int(^uint(0) >> 1) // max int
+
+	for key, item := range c.data {
+		if item.Frequency < minFreq {
+			minFreq = item.Frequency
+			lfuKey = key
+		}
+	}
+
+	delete(c.data, lfuKey)
+}
+
 // saveData stores a value in the cache
 func (c *Cache) saveData(key string, value interface{}) {
 	switch v := value.(type) {
 	case int:
-		c.saveInt(key, v, nil)
+		c.saveInt(key, v, nil, 1)
 	case string:
 		if val, err := strconv.Atoi(v); err == nil {
-			c.saveInt(key, val, nil)
+			c.saveInt(key, val, nil, 1)
 		} else {
-			c.saveString(key, v, nil)
+			c.saveString(key, v, nil, 1)
 		}
 	}
 }
 
 // saveSting stores an string value
-func (c *Cache) saveString(key string, value string, expiryTime *time.Time) {
+func (c *Cache) saveString(key string, value string, expiryTime *time.Time, frequency int) {
 	bytes := []byte(value)
 	c.data[key] = DataItem{
 		DataType:   utils.String,
 		Value:      bytes,
 		ExpiryTime: expiryTime,
+		Frequency:  frequency,
 	}
 }
 
 // saveInt stores an integer value
-func (c *Cache) saveInt(key string, value int, expiryTime *time.Time) {
+func (c *Cache) saveInt(key string, value int, expiryTime *time.Time, frequency int) {
 	bytes := []byte(strconv.Itoa(value))
 	c.data[key] = DataItem{
 		DataType:   utils.Int,
 		Value:      bytes,
 		ExpiryTime: expiryTime,
+		Frequency:  frequency,
 	}
 }
 

@@ -11,7 +11,7 @@ import (
 
 func TestCache(t *testing.T) {
 	// Initialize a new cache
-	c := cache.NewCache(10)
+	c := cache.NewCache(10, 100)
 
 	t.Run("TestSETAndGET", func(t *testing.T) {
 		// Test string value

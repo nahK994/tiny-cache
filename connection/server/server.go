@@ -51,7 +51,7 @@ func (s *Server) acceptConn() error {
 
 		peer := newPeer(conn.RemoteAddr().String(), conn)
 
-		cache := cache.NewCache(10)
+		cache := cache.NewCache(10, 100)
 		go processAsyncTasks(cache)
 		go peer.handleConn(cache)
 	}

@@ -6,10 +6,11 @@ import (
 )
 
 // Init initializes the cache with an expiration sweeper
-func NewCache(expirationSweepInterval int) *Cache {
+func NewCache(expirationSweepInterval, maxSize int) *Cache {
 	cache := &Cache{
 		data:          make(map[string]DataItem),
 		SweepInterval: expirationSweepInterval,
+		MaxSize:       maxSize,
 	}
 	go cache.activeExpiration()
 	return cache
@@ -21,6 +22,7 @@ func (c *Cache) GET(key string) (DataItem, bool) {
 	defer c.mu.RUnlock()
 
 	item, exists := c.data[key]
+	item.Frequency++
 	return item, exists
 }
 
@@ -29,6 +31,9 @@ func (c *Cache) SET(key string, value interface{}) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.saveData(key, value)
+	if len(c.data) >= c.MaxSize {
+		c.evictLFU()
+	}
 }
 
 // EXISTS checks if a key exists in the cache
@@ -52,11 +57,10 @@ func (c *Cache) INCR(key string) int {
 	defer c.mu.Unlock()
 
 	item := c.data[key]
-
 	intVal, _ := strconv.Atoi(string(item.Value))
 	intVal++
-	expiryTime := c.data[key].ExpiryTime
-	c.saveInt(key, intVal, expiryTime)
+
+	c.saveInt(key, intVal, item.ExpiryTime, item.Frequency+1)
 	return intVal
 }
 
@@ -66,11 +70,10 @@ func (c *Cache) DECR(key string) int {
 	defer c.mu.Unlock()
 
 	item := c.data[key]
-
 	intVal, _ := strconv.Atoi(string(item.Value))
 	intVal--
-	expiryTime := c.data[key].ExpiryTime
-	c.saveInt(key, intVal, expiryTime)
+
+	c.saveInt(key, intVal, item.ExpiryTime, item.Frequency+1)
 	return intVal
 }
 
