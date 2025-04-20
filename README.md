@@ -11,10 +11,9 @@
 - [x] **Thread-safe operations**: Ensure that the cache works correctly in programs with multiple tasks running at the same time.
 - [x] **Unit tests**: Write tests to make sure all parts of the cache work as expected.
 
-### Milestone 2: Feature Expansion (In Progress 🚧)
+### Milestone 2: Feature Expansion (Completed ✅)
 - [x] **TTL (Time-to-Live)**: Add a feature that automatically removes cached data after a set time.
-- [ ] **LRU (Least Recently Used) eviction policy**: Automatically remove the least used items when the cache gets full.
-- [ ] **LFU (Least Frequently Used) eviction policy**: Add an LFU eviction policy to remove the least frequently used items when the cache is full, providing an alternative to LRU.
+- [x] **LFU (Least Frequently Used) eviction policy**: Add an LFU eviction policy to remove the least frequently used items when the cache is full, providing an alternative to LRU.
 
 ### Milestone 3: Advanced Features (Planned 🛠️)
 - [ ] **Pluggable storage backends**: Allow users to store cache data in different places (e.g., in a file or a database like Redis).
