@@ -420,10 +420,8 @@ func TestHandlers(t *testing.T) {
 
 		go func() {
 			for {
-				select {
-				case <-app.FlushCh:
-					c.FLUSHALL()
-				}
+				<-app.FlushCh
+				c.FLUSHALL()
 			}
 		}()
 		app.IsAsyncFlush = true
