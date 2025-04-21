@@ -7,7 +7,7 @@
 ### Milestone 1: Basic Cache System (Completed ✅)
 - [x] **Cache server and client**: Set up a cache server that handles requests and a client that interacts with the server to store and retrieve data.
 - [x] **RESP**: Build a simple communication protocol to send and receive data.
-- [x] **In-memory cache storage**: Implement basic commands to create a basic caching system. Commands are -
+- [x] **In-memory cache storage**: Implement basic commands to create a basic caching system. Commands are-
 
     ***PING, GET, SET, EXISTS, FLUSHALL, DEL, INCR, DECR, LPUSH, RPUSH, LPOP, RPOP, LRANGE, EXPIRE, TTL, PERSIST***
 - [x] **Thread-safe operations**: Ensure that the cache works correctly in programs with multiple tasks running at the same time.

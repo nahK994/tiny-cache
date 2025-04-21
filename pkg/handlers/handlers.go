@@ -256,7 +256,7 @@ func (h *Handler) HandleCommand(serializedRawCmd string) (string, error) {
 		h.cache.IncrementFrequency(key)
 		return resp.SerializeCacheItem(response), nil
 	case resp.SET:
-		return h.handleSET(args[0], args[1:])
+		return h.handleSET(key, args[1:])
 	case resp.EXISTS:
 		isExists := h.handleEXISTS(key)
 		if isExists {
@@ -330,7 +330,7 @@ func (h *Handler) HandleCommand(serializedRawCmd string) (string, error) {
 	case resp.FLUSHALL:
 		return h.handleFLUSHALL(), nil
 	case resp.TTL:
-		response, err := h.handleTTL(args[0])
+		response, err := h.handleTTL(key)
 		if err != nil {
 			return "", err
 		}
