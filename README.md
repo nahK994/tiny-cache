@@ -9,7 +9,11 @@
 - [x] **RESP**: Build a simple communication protocol to send and receive data.
 - [x] **In-memory cache storage**: Implement basic commands to create a basic caching system. Commands are-
 
-    ***PING, GET, SET, EXISTS, FLUSHALL, DEL, INCR, DECR, LPUSH, RPUSH, LPOP, RPOP, LRANGE, EXPIRE, TTL, PERSIST***
+    ***PING, GET, SET, EXISTS, DEL,***
+    
+    ***INCR, DECR, LPUSH, RPUSH, LPOP, RPOP,***
+
+    ***LRANGE, EXPIRE, TTL, PERSIST, FLUSHALL***
 - [x] **Thread-safe operations**: Ensure that the cache works correctly in programs with multiple tasks running at the same time.
 - [x] **Unit tests**: Write tests to make sure all parts of the cache work as expected.
 
