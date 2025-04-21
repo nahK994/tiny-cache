@@ -58,6 +58,14 @@ func (c *Cache) saveInt(key string, value int, expiryTime *time.Time, frequency 
 	}
 }
 
+func (c *Cache) IncrementFrequency(key string) error {
+	item := c.data[key]
+	item.Frequency++
+
+	c.data[key] = item
+	return nil
+}
+
 // saveList stores a list
 func (c *Cache) saveList(key string, values []string, expiryTime *time.Time) {
 	bytes, _ := json.Marshal(values)

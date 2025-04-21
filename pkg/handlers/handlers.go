@@ -41,6 +41,7 @@ func (h *Handler) handleGET(key string) (string, error) {
 		return "", err
 	}
 
+	h.cache.IncrementFrequency(key)
 	item, _ := h.cache.GET(key)
 	return resp.SerializeCacheItem(item), nil
 }
@@ -67,6 +68,9 @@ func (h *Handler) handleFLUSHALL() string {
 
 func (h *Handler) handleEXISTS(key string) string {
 	_, isExists := h.cache.GET(key)
+	if isExists {
+		h.cache.IncrementFrequency(key)
+	}
 	return resp.SerializeBool(isExists)
 }
 
@@ -96,6 +100,7 @@ func (h *Handler) handleIncDec(key, operation string) (string, error) {
 	if err := h.validateExpiry(key); err != nil {
 		return "", err
 	}
+	h.cache.IncrementFrequency(key)
 	return resp.SerializeCacheItem(result), nil
 }
 
@@ -138,6 +143,7 @@ func (h *Handler) handleLpushRpush(key string, args []string, operation string) 
 	if err := h.validateExpiry(key); err != nil {
 		return "", err
 	}
+	h.cache.IncrementFrequency(key)
 	return resp.SerializeCacheItem(item), nil
 }
 
@@ -173,6 +179,7 @@ func (h *Handler) handleLRANGE(key string, startIdx, endIdx int) (string, error)
 	if err := h.validateExpiry(key); err != nil {
 		return "", err
 	}
+	h.cache.IncrementFrequency(key)
 	return resp.SerializeCacheItem(item), nil
 }
 
@@ -204,6 +211,7 @@ func (h *Handler) handleListPop(key, popType string) (string, error) {
 	if err := h.validateExpiry(key); err != nil {
 		return "", err
 	}
+	h.cache.IncrementFrequency(key)
 	return resp.SerializeCacheItem(cacheItem), nil
 }
 
@@ -221,6 +229,7 @@ func (h *Handler) handleEXPIRE(key string, ttl int) (string, error) {
 	}
 
 	h.cache.EXPIRE(key, ttl)
+	h.cache.IncrementFrequency(key)
 	return "+OK\r\n", nil
 }
 
@@ -246,6 +255,7 @@ func (h *Handler) handleTTL(key string) (string, error) {
 		DataType: utils.Int,
 		Value:    val,
 	}
+	h.cache.IncrementFrequency(key)
 	return resp.SerializeCacheItem(cacheItem), nil
 }
 
@@ -255,6 +265,7 @@ func (h *Handler) handlePERSIST(key string) (string, error) {
 	}
 
 	h.cache.EXPIRE(key, 0)
+	h.cache.IncrementFrequency(key)
 	return "+OK\r\n", nil
 }
 

@@ -22,7 +22,6 @@ func (c *Cache) GET(key string) (DataItem, bool) {
 	defer c.mu.RUnlock()
 
 	item, exists := c.data[key]
-	item.Frequency++
 	return item, exists
 }
 
@@ -60,7 +59,7 @@ func (c *Cache) INCR(key string) int {
 	intVal, _ := strconv.Atoi(string(item.Value))
 	intVal++
 
-	c.saveInt(key, intVal, item.ExpiryTime, item.Frequency+1)
+	c.saveInt(key, intVal, item.ExpiryTime, item.Frequency)
 	return intVal
 }
 
@@ -73,7 +72,7 @@ func (c *Cache) DECR(key string) int {
 	intVal, _ := strconv.Atoi(string(item.Value))
 	intVal--
 
-	c.saveInt(key, intVal, item.ExpiryTime, item.Frequency+1)
+	c.saveInt(key, intVal, item.ExpiryTime, item.Frequency)
 	return intVal
 }
 
