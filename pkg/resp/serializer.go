@@ -40,7 +40,7 @@ func SerializeBool(arg bool) string {
 	}
 }
 
-func SerializeCacheItem(item cache.DataItem) string {
+func SerializeCacheItem(item *cache.DataItem) string {
 	switch item.DataType {
 	case utils.Int:
 		val, err := strconv.Atoi(string(item.Value))

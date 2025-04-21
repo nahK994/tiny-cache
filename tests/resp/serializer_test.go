@@ -26,7 +26,7 @@ func TestSerializeBool(t *testing.T) {
 
 func TestSerializeCacheItem(t *testing.T) {
 	for _, tc := range cacheItemTestCases {
-		got := resp.SerializeCacheItem(tc.input)
+		got := resp.SerializeCacheItem(&tc.input)
 		if got != tc.output {
 			t.Errorf("SerializeCacheItem(%v) = %v; want %v", tc.input, got, tc.output)
 		}
