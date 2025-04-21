@@ -98,14 +98,6 @@ func (h *Handler) handleIncDec(key, operation string) (*cache.DataItem, error) {
 	}, nil
 }
 
-func (h *Handler) handleINCR(key string) (*cache.DataItem, error) {
-	return h.handleIncDec(key, resp.INCR)
-}
-
-func (h *Handler) handleDECR(key string) (*cache.DataItem, error) {
-	return h.handleIncDec(key, resp.DECR)
-}
-
 func (h *Handler) handleDEL(key string) bool {
 	_, keyExists := h.cache.GET(key)
 	if keyExists {
@@ -201,14 +193,6 @@ func (h *Handler) handleListPop(key, popType string) (*cache.DataItem, error) {
 		DataType: utils.String,
 		Value:    val,
 	}, nil
-}
-
-func (h *Handler) handleLPOP(key string) (*cache.DataItem, error) {
-	return h.handleListPop(key, resp.LPOP)
-}
-
-func (h *Handler) handleRPOP(key string) (*cache.DataItem, error) {
-	return h.handleListPop(key, resp.RPOP)
 }
 
 func (h *Handler) handleEXPIRE(key string, ttl int) error {
@@ -316,28 +300,28 @@ func (h *Handler) HandleCommand(serializedRawCmd string) (string, error) {
 		h.cache.IncrementFrequency(key)
 		return resp.SerializeCacheItem(response), nil
 	case resp.LPOP:
-		response, err := h.handleLPOP(key)
+		response, err := h.handleListPop(key, resp.LPOP)
 		if err != nil {
 			return "", err
 		}
 		h.cache.IncrementFrequency(key)
 		return resp.SerializeCacheItem(response), nil
 	case resp.RPOP:
-		response, err := h.handleRPOP(key)
+		response, err := h.handleListPop(key, resp.RPOP)
 		if err != nil {
 			return "", err
 		}
 		h.cache.IncrementFrequency(key)
 		return resp.SerializeCacheItem(response), nil
 	case resp.INCR:
-		response, err := h.handleINCR(key)
+		response, err := h.handleIncDec(key, resp.INCR)
 		if err != nil {
 			return "", err
 		}
 		h.cache.IncrementFrequency(key)
 		return resp.SerializeCacheItem(response), nil
 	case resp.DECR:
-		response, err := h.handleDECR(key)
+		response, err := h.handleIncDec(key, resp.DECR)
 		if err != nil {
 			return "", err
 		}
