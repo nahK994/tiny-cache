@@ -9,6 +9,19 @@ import (
 	"github.com/nahK994/TinyCache/pkg/cache"
 )
 
+func TestEviction(t *testing.T) {
+	c := cache.NewCache(10, 100)
+	for i := 0; i < 10; i++ {
+		c.SET(strconv.Itoa(i), i)
+	}
+
+	c.SET("11", 11)
+
+	if _, exists := c.GET("0"); exists {
+		t.Errorf("Expected key '0' to be evicted")
+	}
+}
+
 func TestCache(t *testing.T) {
 	// Initialize a new cache
 	c := cache.NewCache(10, 100)
