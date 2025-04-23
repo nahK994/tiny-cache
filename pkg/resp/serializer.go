@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/nahK994/TinyCache/pkg/cache"
-	"github.com/nahK994/TinyCache/pkg/shared"
 	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
@@ -20,7 +19,7 @@ func processArray(segments []string) string {
 }
 
 func Serialize(rawCmd string) string {
-	words := shared.SplitCmd(rawCmd)
+	words := utils.SplitCmd(rawCmd)
 	commandName := strings.ToUpper(words[0])
 
 	if commandName == PING {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/nahK994/TinyCache/pkg/errors"
 	"github.com/nahK994/TinyCache/pkg/resp"
-	"github.com/nahK994/TinyCache/pkg/shared"
+	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
 type cmdArgInfoType struct {
@@ -144,7 +144,7 @@ func ValidateRawCommand(rawCmd string) error {
 		return errors.Err{Type: errors.InvalidCommand}
 	}
 
-	words := shared.SplitCmd(rawCmd)
+	words := utils.SplitCmd(rawCmd)
 
 	if len(words) == 0 {
 		return errors.Err{Type: errors.UnknownCommand}

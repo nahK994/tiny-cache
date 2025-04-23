@@ -19,6 +19,7 @@ elif [[ $cmd == 5 ]]; then
     go test -coverpkg=github.com/nahK994/TinyCache/pkg/cache ./tests/cache -v
     go test -coverpkg=github.com/nahK994/TinyCache/pkg/handlers ./tests/handlers -v
     go test -coverpkg=github.com/nahK994/TinyCache/pkg/validators ./tests/validators -v
+    go test -coverpkg=github.com/nahK994/TinyCache/pkg/utils ./tests/utils -v
 elif [[ $cmd == 6 ]]; then
     go build -ldflags="-s -w" -o ./bin/tinycache cmd/client/main.go
     go build -ldflags="-s -w" -o ./bin/tinycache-server cmd/server/main.go

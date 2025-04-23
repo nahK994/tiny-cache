@@ -1,10 +1,10 @@
-package shared
+package utils
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/nahK994/TinyCache/pkg/shared"
+	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
 type testCaseType struct {
@@ -29,7 +29,7 @@ var testCases = []testCaseType{
 
 func TestSplitCmd(t *testing.T) {
 	for _, tc := range testCases {
-		got := shared.SplitCmd(tc.input)
+		got := utils.SplitCmd(tc.input)
 		if !reflect.DeepEqual(got, tc.output) {
 			t.Errorf("input %s Expected = %v; got %v", tc.input, tc.output, got)
 		}
