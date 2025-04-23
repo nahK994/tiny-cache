@@ -42,7 +42,7 @@ func (h *Handler) handleGET(key string) (*cache.DataItem, error) {
 	}
 
 	item, _ := h.cache.GET(key)
-	return &item, nil
+	return item, nil
 }
 
 func (h *Handler) handleSET(key string, args []string) (string, error) {

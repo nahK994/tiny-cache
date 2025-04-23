@@ -24,7 +24,7 @@ func (c *Cache) evictLFU() {
 
 // saveData stores a value in the cache
 func (c *Cache) saveData(key string, value interface{}) {
-	var item DataItem
+	var item *DataItem
 	switch v := value.(type) {
 	case int:
 		item = createIntItem(v, nil, 1)
@@ -38,9 +38,9 @@ func (c *Cache) saveData(key string, value interface{}) {
 	c.data[key] = item
 }
 
-func createStringItem(value string, expiryTime *time.Time, frequency int) DataItem {
+func createStringItem(value string, expiryTime *time.Time, frequency int) *DataItem {
 	bytes := []byte(value)
-	return DataItem{
+	return &DataItem{
 		DataType:   utils.String,
 		Value:      bytes,
 		ExpiryTime: expiryTime,
@@ -48,9 +48,9 @@ func createStringItem(value string, expiryTime *time.Time, frequency int) DataIt
 	}
 }
 
-func createIntItem(value int, expiryTime *time.Time, frequency int) DataItem {
+func createIntItem(value int, expiryTime *time.Time, frequency int) *DataItem {
 	bytes := []byte(strconv.Itoa(value))
-	return DataItem{
+	return &DataItem{
 		DataType:   utils.Int,
 		Value:      bytes,
 		ExpiryTime: expiryTime,
@@ -58,9 +58,9 @@ func createIntItem(value int, expiryTime *time.Time, frequency int) DataItem {
 	}
 }
 
-func createListItem(values []string, expiryTime *time.Time, frequency int) DataItem {
+func createListItem(values []string, expiryTime *time.Time, frequency int) *DataItem {
 	bytes, _ := json.Marshal(values)
-	return DataItem{
+	return &DataItem{
 		DataType:   utils.Array,
 		Value:      bytes,
 		ExpiryTime: expiryTime,

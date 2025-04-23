@@ -8,7 +8,7 @@ import (
 // Init initializes the cache with an expiration sweeper
 func NewCache(expirationSweepInterval, maxSize int) *Cache {
 	cache := &Cache{
-		data:          make(map[string]DataItem),
+		data:          make(map[string]*DataItem),
 		SweepInterval: expirationSweepInterval,
 		MaxSize:       maxSize,
 	}
@@ -17,7 +17,7 @@ func NewCache(expirationSweepInterval, maxSize int) *Cache {
 }
 
 // GET retrieves an item from the cache
-func (c *Cache) GET(key string) (DataItem, bool) {
+func (c *Cache) GET(key string) (*DataItem, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -76,26 +76,48 @@ func (c *Cache) DECR(key string) int {
 	return intVal
 }
 
-// LPUSH adds values to the left of a list
 func (c *Cache) LPUSH(key string, values []string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	oldItem := c.data[key]
-	vals := append(reverseSlice(values), getList(oldItem.Value)...)
+	var vals []string
+	var expiry *time.Time
+	var freq int
 
-	c.data[key] = createListItem(vals, oldItem.ExpiryTime, oldItem.Frequency)
+	if oldItem != nil {
+		vals = append(reverseSlice(values), getList(oldItem.Value)...)
+		expiry = oldItem.ExpiryTime
+		freq = oldItem.Frequency
+	} else {
+		vals = reverseSlice(values)
+		expiry = nil
+		freq = 0
+	}
+
+	c.data[key] = createListItem(vals, expiry, freq)
 }
 
-// RPUSH adds values to the right of a list
 func (c *Cache) RPUSH(key string, values []string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	oldItem := c.data[key]
-	vals := append(getList(oldItem.Value), values...)
+	var vals []string
+	var expiry *time.Time
+	var freq int
 
-	c.data[key] = createListItem(vals, oldItem.ExpiryTime, oldItem.Frequency)
+	if oldItem != nil {
+		vals = append(getList(oldItem.Value), values...)
+		expiry = oldItem.ExpiryTime
+		freq = oldItem.Frequency
+	} else {
+		vals = values
+		expiry = nil
+		freq = 0
+	}
+
+	c.data[key] = createListItem(vals, expiry, freq)
 }
 
 // LRANGE retrieves a range of values from a list
@@ -142,7 +164,7 @@ func (c *Cache) RPOP(key string) string {
 func (c *Cache) FLUSHALL() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.data = make(map[string]DataItem)
+	c.data = make(map[string]*DataItem)
 }
 
 // EXPIRE sets a time-to-live (TTL) for a key

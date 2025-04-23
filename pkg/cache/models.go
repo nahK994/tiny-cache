@@ -13,7 +13,7 @@ type DataItem struct {
 }
 
 type Cache struct {
-	data          map[string]DataItem
+	data          map[string]*DataItem
 	mu            sync.RWMutex
 	SweepInterval int
 	MaxSize       int
