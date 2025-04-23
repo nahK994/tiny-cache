@@ -50,12 +50,12 @@ func TestCache(t *testing.T) {
 
 	t.Run("TestINCRAndDECR", func(t *testing.T) {
 		c.SET("counter", 10)
-		val := c.INCR("counter")
+		val := c.IncrDecr("counter", 1)
 		if val != 11 {
 			t.Errorf("Expected 11, got %v", val)
 		}
 
-		val = c.DECR("counter")
+		val = c.IncrDecr("counter", -1)
 		if val != 10 {
 			t.Errorf("Expected 10, got %v", val)
 		}

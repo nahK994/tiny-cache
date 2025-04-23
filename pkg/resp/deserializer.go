@@ -6,6 +6,11 @@ import (
 
 func parseNumber(cmd string, index *int) int {
 	numSegments := 0
+	multiplier := 1
+	if cmd[*index] == '-' {
+		multiplier = -1
+		*index++
+	}
 	for {
 		ch := cmd[*index]
 		if ch == '\r' {
@@ -16,7 +21,7 @@ func parseNumber(cmd string, index *int) int {
 		numSegments = 10*numSegments + int(ch-48)
 		*index++
 	}
-	return numSegments
+	return multiplier * numSegments
 }
 
 func Deserializer(rawCmd string) interface{} {

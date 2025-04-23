@@ -80,13 +80,14 @@ func (h *Handler) handleIncDec(key, operation string) (*cache.DataItem, error) {
 		}
 	}
 
-	var val []byte
+	var delta int
 	switch operation {
 	case resp.INCR:
-		val = []byte(strconv.Itoa(h.cache.INCR(key)))
+		delta = 1
 	case resp.DECR:
-		val = []byte(strconv.Itoa(h.cache.DECR(key)))
+		delta = -1
 	}
+	val := []byte(strconv.Itoa(h.cache.IncrDecr(key, delta)))
 
 	if err := h.validateExpiry(key); err != nil {
 		return nil, err

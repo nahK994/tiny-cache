@@ -61,27 +61,13 @@ func (c *Cache) DEL(key string) {
 	delete(c.data, key)
 }
 
-// INCR increments an integer value
-func (c *Cache) INCR(key string) int {
+func (c *Cache) IncrDecr(key string, delta int) int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	item := c.data[key]
 	intVal, _ := strconv.Atoi(string(item.Value))
-	intVal++
-
-	c.data[key] = createIntItem(intVal, item.ExpiryTime, item.Frequency)
-	return intVal
-}
-
-// DECR decrements an integer value
-func (c *Cache) DECR(key string) int {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	item := c.data[key]
-	intVal, _ := strconv.Atoi(string(item.Value))
-	intVal--
+	intVal += delta
 
 	c.data[key] = createIntItem(intVal, item.ExpiryTime, item.Frequency)
 	return intVal
