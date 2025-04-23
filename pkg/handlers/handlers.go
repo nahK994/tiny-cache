@@ -131,14 +131,6 @@ func (h *Handler) handleLpushRpush(key string, args []string, operation string) 
 	}, nil
 }
 
-func (h *Handler) handleLPUSH(key string, args []string) (*cache.DataItem, error) {
-	return h.handleLpushRpush(key, args, resp.LPUSH)
-}
-
-func (h *Handler) handleRPUSH(key string, args []string) (*cache.DataItem, error) {
-	return h.handleLpushRpush(key, args, resp.RPUSH)
-}
-
 func (h *Handler) handleLRANGE(key string, startIdx, endIdx int) (*cache.DataItem, error) {
 	data, isExists := h.cache.GET(key)
 	if !isExists {
@@ -269,14 +261,14 @@ func (h *Handler) HandleCommand(serializedRawCmd string) (string, error) {
 	case resp.PING:
 		return "+PONG\r\n", nil
 	case resp.LPUSH:
-		response, err := h.handleLPUSH(key, args[1:])
+		response, err := h.handleLpushRpush(key, args, resp.LPUSH)
 		if err != nil {
 			return "", err
 		}
 		h.cache.IncrementFrequency(key)
 		return resp.SerializeCacheItem(response), nil
 	case resp.RPUSH:
-		response, err := h.handleRPUSH(key, args[1:])
+		response, err := h.handleLpushRpush(key, args, resp.RPUSH)
 		if err != nil {
 			return "", err
 		}
