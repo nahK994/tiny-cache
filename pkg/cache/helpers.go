@@ -22,22 +22,6 @@ func (c *Cache) evictLFU() {
 	delete(c.data, lfuKey)
 }
 
-// saveData stores a value in the cache
-func (c *Cache) saveData(key string, value interface{}) {
-	var item *DataItem
-	switch v := value.(type) {
-	case int:
-		item = createIntItem(v, nil, 1)
-	case string:
-		if val, err := strconv.Atoi(v); err == nil {
-			item = createIntItem(val, nil, 1)
-		} else {
-			item = createStringItem(v, nil, 1)
-		}
-	}
-	c.data[key] = item
-}
-
 func createStringItem(value string, expiryTime *time.Time, frequency int) *DataItem {
 	bytes := []byte(value)
 	return &DataItem{

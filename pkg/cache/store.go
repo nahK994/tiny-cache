@@ -29,7 +29,20 @@ func (c *Cache) GET(key string) (*DataItem, bool) {
 func (c *Cache) SET(key string, value interface{}) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.saveData(key, value)
+
+	var item *DataItem
+	switch v := value.(type) {
+	case int:
+		item = createIntItem(v, nil, 1)
+	case string:
+		if val, err := strconv.Atoi(v); err == nil {
+			item = createIntItem(val, nil, 1)
+		} else {
+			item = createStringItem(v, nil, 1)
+		}
+	}
+	c.data[key] = item
+
 	if len(c.data) >= c.MaxSize {
 		c.evictLFU()
 	}
