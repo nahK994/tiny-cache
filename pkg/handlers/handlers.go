@@ -248,7 +248,12 @@ func (h *Handler) HandleCommand(serializedRawCmd string) (string, error) {
 		h.cache.IncrementFrequency(key)
 		return resp.SerializeCacheItem(response), nil
 	case resp.SET:
-		return h.handleSET(key, args[1:])
+		response, err := h.handleSET(key, args[1:])
+		if err != nil {
+			return "", err
+		}
+		h.cache.IncrementFrequency(key)
+		return response, err
 	case resp.EXISTS:
 		isExists := h.handleEXISTS(key)
 		if isExists {

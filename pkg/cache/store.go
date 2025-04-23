@@ -33,19 +33,17 @@ func (c *Cache) SET(key string, value interface{}) {
 	var item *DataItem
 	switch v := value.(type) {
 	case int:
-		item = createIntItem(v, nil, 1)
+		item = createIntItem(v, nil, 0)
 	case string:
 		if val, err := strconv.Atoi(v); err == nil {
-			item = createIntItem(val, nil, 1)
+			item = createIntItem(val, nil, 0)
 		} else {
-			item = createStringItem(v, nil, 1)
+			item = createStringItem(v, nil, 0)
 		}
 	}
-	c.data[key] = item
 
-	if len(c.data) >= c.MaxSize {
-		c.evictLFU()
-	}
+	c.evictLFU()
+	c.data[key] = item
 }
 
 // EXISTS checks if a key exists in the cache
@@ -217,8 +215,25 @@ func (c *Cache) activeExpiration() {
 
 func (c *Cache) IncrementFrequency(key string) error {
 	item := c.data[key]
-	item.Frequency++
+	(*item).Frequency++
 
 	c.data[key] = item
 	return nil
+}
+
+func (c *Cache) evictLFU() {
+	if len(c.data) >= c.MaxSize {
+		return
+	}
+	var lfuKey string
+	minFreq := int(^uint(0) >> 1) // max int
+
+	for key, item := range c.data {
+		if item.Frequency < minFreq {
+			minFreq = item.Frequency
+			lfuKey = key
+		}
+	}
+
+	delete(c.data, lfuKey)
 }

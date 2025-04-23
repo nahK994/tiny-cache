@@ -8,20 +8,6 @@ import (
 	"github.com/nahK994/TinyCache/pkg/utils"
 )
 
-func (c *Cache) evictLFU() {
-	var lfuKey string
-	minFreq := int(^uint(0) >> 1) // max int
-
-	for key, item := range c.data {
-		if item.Frequency < minFreq {
-			minFreq = item.Frequency
-			lfuKey = key
-		}
-	}
-
-	delete(c.data, lfuKey)
-}
-
 func createStringItem(value string, expiryTime *time.Time, frequency int) *DataItem {
 	bytes := []byte(value)
 	return &DataItem{

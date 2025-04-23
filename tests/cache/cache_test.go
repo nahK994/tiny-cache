@@ -67,10 +67,32 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("TestLPUSHAndLRANGE", func(t *testing.T) {
-		// Test LPUSH
 		c.LPUSH("numbers", []string{"one", "two", "three"})
 		val := c.LRANGE("numbers", -5, 6)
 		expected := []string{"three", "two", "one"}
+		if !reflect.DeepEqual(val, expected) {
+			t.Errorf("Expected %v, got %v", expected, val)
+		}
+
+		c.LPUSH("numbers", []string{"four", "five", "six"})
+		val = c.LRANGE("numbers", 0, 2)
+		expected = []string{"six", "five", "four"}
+		if !reflect.DeepEqual(val, expected) {
+			t.Errorf("Expected %v, got %v", expected, val)
+		}
+	})
+
+	t.Run("TestRPUSHAndLRANGE", func(t *testing.T) {
+		c.RPUSH("numbers1", []string{"one", "two", "three"})
+		val := c.LRANGE("numbers1", -5, 6)
+		expected := []string{"one", "two", "three"}
+		if !reflect.DeepEqual(val, expected) {
+			t.Errorf("Expected %v, got %v", expected, val)
+		}
+
+		c.RPUSH("numbers1", []string{"four", "five", "six"})
+		val = c.LRANGE("numbers1", 3, 5)
+		expected = []string{"four", "five", "six"}
 		if !reflect.DeepEqual(val, expected) {
 			t.Errorf("Expected %v, got %v", expected, val)
 		}
@@ -117,6 +139,17 @@ func TestCache(t *testing.T) {
 		time.Sleep(6 * time.Second)
 		if !time.Now().After(*data.ExpiryTime) {
 			t.Errorf("'key' is supposed to be expired by now")
+		}
+	})
+
+	t.Run("TestIncrementFrequency", func(t *testing.T) {
+		c.SET("count", "0")
+		c.IncrementFrequency("count")
+		c.IncrementFrequency("count")
+
+		item, _ := c.GET("count")
+		if (*item).Frequency != 2 {
+			t.Errorf("Expected frequency 2, got %d", item.Frequency)
 		}
 	})
 }
