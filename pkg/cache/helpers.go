@@ -67,24 +67,23 @@ func (c *Cache) IncrementFrequency(key string) error {
 }
 
 // saveList stores a list
-func (c *Cache) saveList(key string, values []string, expiryTime *time.Time) {
+func (c *Cache) createListItem(values []string, expiryTime *time.Time, frequency int) DataItem {
 	bytes, _ := json.Marshal(values)
-	c.data[key] = DataItem{
+	return DataItem{
 		DataType:   utils.Array,
 		Value:      bytes,
 		ExpiryTime: expiryTime,
+		Frequency:  frequency,
 	}
 }
 
-// getList retrieves a list from cache
-func (c *Cache) getList(key string) []string {
-	item, exists := c.data[key]
-	if !exists {
+func getList(data []byte) []string {
+	if data == nil {
 		return []string{}
 	}
 
 	var vals []string
-	json.Unmarshal(item.Value, &vals)
+	json.Unmarshal(data, &vals)
 	return vals
 }
 

@@ -81,10 +81,10 @@ func (c *Cache) LPUSH(key string, values []string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	oldData := c.getList(key)
-	vals := append(reverseSlice(values), oldData...)
-	expiryTime := c.data[key].ExpiryTime
-	c.saveList(key, vals, expiryTime)
+	oldItem := c.data[key]
+	vals := append(reverseSlice(values), getList(oldItem.Value)...)
+
+	c.data[key] = c.createListItem(vals, oldItem.ExpiryTime, oldItem.Frequency)
 }
 
 // RPUSH adds values to the right of a list
@@ -92,10 +92,10 @@ func (c *Cache) RPUSH(key string, values []string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	oldData := c.getList(key)
-	vals := append(oldData, values...)
-	expiryTime := c.data[key].ExpiryTime
-	c.saveList(key, vals, expiryTime)
+	oldItem := c.data[key]
+	vals := append(getList(oldItem.Value), values...)
+
+	c.data[key] = c.createListItem(vals, oldItem.ExpiryTime, oldItem.Frequency)
 }
 
 // LRANGE retrieves a range of values from a list
@@ -103,7 +103,7 @@ func (c *Cache) LRANGE(key string, startIdx, endIdx int) []string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	vals := c.getList(key)
+	vals := getList(c.data[key].Value)
 	if len(vals) == 0 {
 		return []string{}
 	}
@@ -119,10 +119,10 @@ func (c *Cache) LPOP(key string) string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	vals := c.getList(key)
+	vals := getList(c.data[key].Value)
 
-	expiryTime := c.data[key].ExpiryTime
-	c.saveList(key, vals[1:], expiryTime)
+	oldItem := c.data[key]
+	c.data[key] = c.createListItem(vals[1:], oldItem.ExpiryTime, oldItem.Frequency)
 	return vals[0]
 }
 
@@ -131,10 +131,10 @@ func (c *Cache) RPOP(key string) string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	vals := c.getList(key)
+	vals := getList(c.data[key].Value)
 
-	expiryTime := c.data[key].ExpiryTime
-	c.saveList(key, vals[:len(vals)-1], expiryTime)
+	oldItem := c.data[key]
+	c.data[key] = c.createListItem(vals[:len(vals)-1], oldItem.ExpiryTime, oldItem.Frequency)
 	return vals[len(vals)-1]
 }
 

@@ -261,14 +261,14 @@ func (h *Handler) HandleCommand(serializedRawCmd string) (string, error) {
 	case resp.PING:
 		return "+PONG\r\n", nil
 	case resp.LPUSH:
-		response, err := h.handleLpushRpush(key, args, resp.LPUSH)
+		response, err := h.handleLpushRpush(key, args[1:], resp.LPUSH)
 		if err != nil {
 			return "", err
 		}
 		h.cache.IncrementFrequency(key)
 		return resp.SerializeCacheItem(response), nil
 	case resp.RPUSH:
-		response, err := h.handleLpushRpush(key, args, resp.RPUSH)
+		response, err := h.handleLpushRpush(key, args[1:], resp.RPUSH)
 		if err != nil {
 			return "", err
 		}
