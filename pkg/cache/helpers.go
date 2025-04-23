@@ -24,22 +24,23 @@ func (c *Cache) evictLFU() {
 
 // saveData stores a value in the cache
 func (c *Cache) saveData(key string, value interface{}) {
+	var item DataItem
 	switch v := value.(type) {
 	case int:
-		c.saveInt(key, v, nil, 1)
+		item = createIntItem(v, nil, 1)
 	case string:
 		if val, err := strconv.Atoi(v); err == nil {
-			c.saveInt(key, val, nil, 1)
+			item = createIntItem(val, nil, 1)
 		} else {
-			c.saveString(key, v, nil, 1)
+			item = createStringItem(v, nil, 1)
 		}
 	}
+	c.data[key] = item
 }
 
-// saveSting stores an string value
-func (c *Cache) saveString(key string, value string, expiryTime *time.Time, frequency int) {
+func createStringItem(value string, expiryTime *time.Time, frequency int) DataItem {
 	bytes := []byte(value)
-	c.data[key] = DataItem{
+	return DataItem{
 		DataType:   utils.String,
 		Value:      bytes,
 		ExpiryTime: expiryTime,
@@ -47,10 +48,9 @@ func (c *Cache) saveString(key string, value string, expiryTime *time.Time, freq
 	}
 }
 
-// saveInt stores an integer value
-func (c *Cache) saveInt(key string, value int, expiryTime *time.Time, frequency int) {
+func createIntItem(value int, expiryTime *time.Time, frequency int) DataItem {
 	bytes := []byte(strconv.Itoa(value))
-	c.data[key] = DataItem{
+	return DataItem{
 		DataType:   utils.Int,
 		Value:      bytes,
 		ExpiryTime: expiryTime,
@@ -58,16 +58,7 @@ func (c *Cache) saveInt(key string, value int, expiryTime *time.Time, frequency 
 	}
 }
 
-func (c *Cache) IncrementFrequency(key string) error {
-	item := c.data[key]
-	item.Frequency++
-
-	c.data[key] = item
-	return nil
-}
-
-// saveList stores a list
-func (c *Cache) createListItem(values []string, expiryTime *time.Time, frequency int) DataItem {
+func createListItem(values []string, expiryTime *time.Time, frequency int) DataItem {
 	bytes, _ := json.Marshal(values)
 	return DataItem{
 		DataType:   utils.Array,

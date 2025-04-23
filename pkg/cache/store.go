@@ -59,7 +59,7 @@ func (c *Cache) INCR(key string) int {
 	intVal, _ := strconv.Atoi(string(item.Value))
 	intVal++
 
-	c.saveInt(key, intVal, item.ExpiryTime, item.Frequency)
+	c.data[key] = createIntItem(intVal, item.ExpiryTime, item.Frequency)
 	return intVal
 }
 
@@ -72,7 +72,7 @@ func (c *Cache) DECR(key string) int {
 	intVal, _ := strconv.Atoi(string(item.Value))
 	intVal--
 
-	c.saveInt(key, intVal, item.ExpiryTime, item.Frequency)
+	c.data[key] = createIntItem(intVal, item.ExpiryTime, item.Frequency)
 	return intVal
 }
 
@@ -84,7 +84,7 @@ func (c *Cache) LPUSH(key string, values []string) {
 	oldItem := c.data[key]
 	vals := append(reverseSlice(values), getList(oldItem.Value)...)
 
-	c.data[key] = c.createListItem(vals, oldItem.ExpiryTime, oldItem.Frequency)
+	c.data[key] = createListItem(vals, oldItem.ExpiryTime, oldItem.Frequency)
 }
 
 // RPUSH adds values to the right of a list
@@ -95,7 +95,7 @@ func (c *Cache) RPUSH(key string, values []string) {
 	oldItem := c.data[key]
 	vals := append(getList(oldItem.Value), values...)
 
-	c.data[key] = c.createListItem(vals, oldItem.ExpiryTime, oldItem.Frequency)
+	c.data[key] = createListItem(vals, oldItem.ExpiryTime, oldItem.Frequency)
 }
 
 // LRANGE retrieves a range of values from a list
@@ -122,7 +122,7 @@ func (c *Cache) LPOP(key string) string {
 	vals := getList(c.data[key].Value)
 
 	oldItem := c.data[key]
-	c.data[key] = c.createListItem(vals[1:], oldItem.ExpiryTime, oldItem.Frequency)
+	c.data[key] = createListItem(vals[1:], oldItem.ExpiryTime, oldItem.Frequency)
 	return vals[0]
 }
 
@@ -134,7 +134,7 @@ func (c *Cache) RPOP(key string) string {
 	vals := getList(c.data[key].Value)
 
 	oldItem := c.data[key]
-	c.data[key] = c.createListItem(vals[:len(vals)-1], oldItem.ExpiryTime, oldItem.Frequency)
+	c.data[key] = createListItem(vals[:len(vals)-1], oldItem.ExpiryTime, oldItem.Frequency)
 	return vals[len(vals)-1]
 }
 
@@ -178,4 +178,12 @@ func (c *Cache) activeExpiration() {
 		}
 		c.mu.Unlock()
 	}
+}
+
+func (c *Cache) IncrementFrequency(key string) error {
+	item := c.data[key]
+	item.Frequency++
+
+	c.data[key] = item
+	return nil
 }
