@@ -208,18 +208,18 @@ func (c *Cache) IncrementFrequency(key string) error {
 }
 
 func (c *Cache) evictLFU() {
-	if len(c.data) >= c.MaxSize {
+	if len(c.data) < c.MaxSize {
 		return
 	}
-	var lfuKey string
+	var evictKey string
 	minFreq := int(^uint(0) >> 1) // max int
 
 	for key, item := range c.data {
 		if item.Frequency < minFreq {
 			minFreq = item.Frequency
-			lfuKey = key
+			evictKey = key
 		}
 	}
 
-	delete(c.data, lfuKey)
+	delete(c.data, evictKey)
 }

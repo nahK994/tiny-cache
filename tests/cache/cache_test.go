@@ -10,12 +10,12 @@ import (
 )
 
 func TestEviction(t *testing.T) {
-	c := cache.NewCache(10, 100)
+	c := cache.NewCache(10, 10)
 	for i := 0; i < 10; i++ {
 		c.SET(strconv.Itoa(i), i)
 	}
 
-	c.SET("11", 11)
+	c.SET("10", 10)
 
 	if _, exists := c.GET("0"); exists {
 		t.Errorf("Expected key '0' to be evicted")
