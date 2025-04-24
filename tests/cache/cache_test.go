@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nahK994/TinyCache/pkg/cache"
+	"github.com/nahK994/tiny-cache/pkg/cache"
 )
 
 func TestEviction(t *testing.T) {

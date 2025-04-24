@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/nahK994/TinyCache/pkg/resp"
+	"github.com/nahK994/tiny-cache/pkg/resp"
 )
 
 func TestDeserializer(t *testing.T) {

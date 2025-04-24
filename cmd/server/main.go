@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/nahK994/TinyCache/connection/server"
+	"github.com/nahK994/tiny-cache/connection/server"
 )
 
 func main() {

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Define download URLs for server and client binaries (use actual URLs from your release)
-SERVER_BINARY_URL="https://github.com/nahK994/TinyCache/releases/download/bin/tinycache-server"
-CLIENT_BINARY_URL="https://github.com/nahK994/TinyCache/releases/download/bin/tinycache"
+SERVER_BINARY_URL="https://github.com/nahK994/tiny-cache/releases/download/bin/tinycache-server"
+CLIENT_BINARY_URL="https://github.com/nahK994/tiny-cache/releases/download/bin/tinycache"
 # Define installation paths
 SERVER_INSTALL_PATH="/usr/local/sbin/tinycache-server"
 CLIENT_INSTALL_PATH="/usr/local/bin/tinycache"

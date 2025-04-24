@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/nahK994/TinyCache/pkg/utils"
+	"github.com/nahK994/tiny-cache/pkg/utils"
 )
 
 type testCaseType struct {

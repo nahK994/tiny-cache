@@ -3,8 +3,8 @@ package validators
 import (
 	"testing"
 
-	"github.com/nahK994/TinyCache/pkg/errors"
-	"github.com/nahK994/TinyCache/pkg/validators"
+	"github.com/nahK994/tiny-cache/pkg/errors"
+	"github.com/nahK994/tiny-cache/pkg/validators"
 )
 
 var testCases = []struct {

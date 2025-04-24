@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
-	"github.com/nahK994/TinyCache/pkg/config"
-	"github.com/nahK994/TinyCache/pkg/resp"
-	"github.com/nahK994/TinyCache/pkg/validators"
+	"github.com/nahK994/tiny-cache/pkg/config"
+	"github.com/nahK994/tiny-cache/pkg/resp"
+	"github.com/nahK994/tiny-cache/pkg/validators"
 )
 
 type Client struct {

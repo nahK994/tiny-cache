@@ -43,7 +43,7 @@ go version
 
 1. Clone the repository or download it manually:
     ```bash
-    git clone https://github.com/nahK994/TinyCache.git
+    git clone https://github.com/nahK994/tiny-cache.git
     cd TinyCache
     ```
 2. Use the `run.sh` script to manage the server and client. This script provides options to start the server, client, playground, and more.
@@ -91,7 +91,7 @@ We welcome contributions of all kinds! Whether you're fixing bugs, adding new fe
 
 ### 📬 Contact
 
-If you have any questions, feel free to reach out via [GitHub Issues](https://github.com/nahK994/TinyCache/issues) or email at nkskl6@gmail.com.
+If you have any questions, feel free to reach out via [GitHub Issues](https://github.com/nahK994/tiny-cache/issues) or email at nkskl6@gmail.com.
 
 
 ### 📝 License

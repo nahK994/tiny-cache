@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/nahK994/TinyCache/pkg/errors"
-	"github.com/nahK994/TinyCache/pkg/resp"
-	"github.com/nahK994/TinyCache/pkg/utils"
+	"github.com/nahK994/tiny-cache/pkg/errors"
+	"github.com/nahK994/tiny-cache/pkg/resp"
+	"github.com/nahK994/tiny-cache/pkg/utils"
 )
 
 type cmdArgInfoType struct {

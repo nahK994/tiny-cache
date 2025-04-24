@@ -3,7 +3,7 @@ package resp
 import (
 	"testing"
 
-	"github.com/nahK994/TinyCache/pkg/resp"
+	"github.com/nahK994/tiny-cache/pkg/resp"
 )
 
 func TestSerialize(t *testing.T) {

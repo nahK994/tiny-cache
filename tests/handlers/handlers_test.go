@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nahK994/TinyCache/pkg/cache"
-	"github.com/nahK994/TinyCache/pkg/config"
-	"github.com/nahK994/TinyCache/pkg/handlers"
+	"github.com/nahK994/tiny-cache/pkg/cache"
+	"github.com/nahK994/tiny-cache/pkg/config"
+	"github.com/nahK994/tiny-cache/pkg/handlers"
 )
 
 func TestHandlers(t *testing.T) {

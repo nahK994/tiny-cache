@@ -1,4 +1,4 @@
-module github.com/nahK994/TinyCache
+module github.com/nahK994/tiny-cache
 
 go 1.22.4
 

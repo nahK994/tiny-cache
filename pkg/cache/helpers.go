@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/nahK994/TinyCache/pkg/utils"
+	"github.com/nahK994/tiny-cache/pkg/utils"
 )
 
 func createStringItem(value string, expiryTime *time.Time, frequency int) *DataItem {

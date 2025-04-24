@@ -15,11 +15,11 @@ elif [[ $cmd == 3 ]]; then
 elif [[ $cmd == 4 ]]; then
     sudo kill -9 $(sudo lsof -t -i:8888)
 elif [[ $cmd == 5 ]]; then
-    go test -coverpkg=github.com/nahK994/TinyCache/pkg/resp ./tests/resp -v
-    go test -coverpkg=github.com/nahK994/TinyCache/pkg/cache ./tests/cache -v
-    go test -coverpkg=github.com/nahK994/TinyCache/pkg/handlers ./tests/handlers -v
-    go test -coverpkg=github.com/nahK994/TinyCache/pkg/validators ./tests/validators -v
-    go test -coverpkg=github.com/nahK994/TinyCache/pkg/utils ./tests/utils -v
+    go test -coverpkg=github.com/nahK994/tiny-cache/pkg/resp ./tests/resp -v
+    go test -coverpkg=github.com/nahK994/tiny-cache/pkg/cache ./tests/cache -v
+    go test -coverpkg=github.com/nahK994/tiny-cache/pkg/handlers ./tests/handlers -v
+    go test -coverpkg=github.com/nahK994/tiny-cache/pkg/validators ./tests/validators -v
+    go test -coverpkg=github.com/nahK994/tiny-cache/pkg/utils ./tests/utils -v
 elif [[ $cmd == 6 ]]; then
     go build -ldflags="-s -w" -o ./bin/tinycache cmd/client/main.go
     go build -ldflags="-s -w" -o ./bin/tinycache-server cmd/server/main.go

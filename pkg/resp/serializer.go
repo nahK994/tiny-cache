@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/nahK994/TinyCache/pkg/cache"
-	"github.com/nahK994/TinyCache/pkg/utils"
+	"github.com/nahK994/tiny-cache/pkg/cache"
+	"github.com/nahK994/tiny-cache/pkg/utils"
 )
 
 func processArray(segments []string) string {
