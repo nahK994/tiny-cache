@@ -1,10 +1,10 @@
-# TinyCache - A Lightweight Cache
+## TinyCache - A Lightweight Cache
 
 **TinyCache** is an efficient, lightweight caching system designed to provide easy and fast data storage and retrieval. This project is currently in progress and open for contributions!
 
-## Roadmap
+### Roadmap
 
-### Milestone 1: Basic Cache System (Completed ✅)
+#### Milestone 1: Basic Cache System (Completed ✅)
 - [x] **Cache server and client**: Set up a cache server that handles requests and a client that interacts with the server to store and retrieve data.
 - [x] **RESP**: Build a simple communication protocol to send and receive data.
 - [x] **In-memory cache storage**: Implement basic commands to create a basic caching system. Commands are-
@@ -17,18 +17,18 @@
 - [x] **Thread-safe operations**: Ensure that the cache works correctly in programs with multiple tasks running at the same time.
 - [x] **Unit tests**: Write tests to make sure all parts of the cache work as expected.
 
-### Milestone 2: Feature Expansion (Completed ✅)
+#### Milestone 2: Feature Expansion (Completed ✅)
 - [x] **TTL (Time-to-Live)**: Add a feature that automatically removes cached data after a set time.
 - [x] **LFU (Least Frequently Used) eviction policy**: Add an LFU eviction policy to remove the least frequently used items when the cache is full, providing an alternative to LRU.
 
-### Milestone 3: Advanced Features (Planned 🛠️)
+#### Milestone 3: Advanced Features (Planned 🛠️)
 - [ ] **Pluggable storage backends**: Allow users to store cache data in different places (e.g., in a file or a database like Redis).
 - [ ] **Persistent storage**: Ensure that cached data remains available even after the program restarts.
 
 
-## 🚀 How to Run the Project 🛠️
+### 🚀 How to Run the Project 🛠️
 
-### Prerequisites
+#### Prerequisites
 
 To run TinyCache, make sure you have the following installed on your machine:
 
@@ -39,7 +39,7 @@ Verify your Go version using:
 go version
 ```
 
-### Running the Project
+#### Running the Project
 
 1. Clone the repository or download it manually:
     ```bash
@@ -69,7 +69,7 @@ go version
 8. Type 6 to build binaries for client and server.
 
 
-## 📥 Installation
+### 📥 Installation
 If you'd like to install TinyCache on Linux without cloning the repository, use the following command to install both the server and client:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nahK994/TinyCache/master/install.sh | bash
@@ -77,7 +77,7 @@ curl -fsSL https://raw.githubusercontent.com/nahK994/TinyCache/master/install.sh
 This will download the binaries, install them to the appropriate locations, and set up the server as a systemd service.
 
 
-## 🧹 Uninstallation
+### 🧹 Uninstallation
 To uninstall from linex TinyCache, simply run the following command:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nahK994/TinyCache/master/uninstall.sh | bash
@@ -85,15 +85,15 @@ curl -fsSL https://raw.githubusercontent.com/nahK994/TinyCache/master/uninstall.
 This will stop the service, remove the binaries, and clean up all installed files.
 
 
-## 🤝 Contributing
+### 🤝 Contributing
 
 We welcome contributions of all kinds! Whether you're fixing bugs, adding new features, or improving documentation, your input is appreciated. Please follow our [contribution guideline](./CONTRIBUTING.md).
 
-## 📬 Contact
+### 📬 Contact
 
 If you have any questions, feel free to reach out via [GitHub Issues](https://github.com/nahK994/TinyCache/issues) or email at nkskl6@gmail.com.
 
 
-## 📝 License
+### 📝 License
 
 This project is open-source and available under the [MIT License](./LICENSE).
